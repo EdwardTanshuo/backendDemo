@@ -12,6 +12,9 @@
     ],
     "manager": [
       {"id":"manager-server-1","host":"127.0.0.1","port":3750}
+    ],
+    "scene": [
+      {"id":"manager-server-1","host":"127.0.0.1","port":3850}
     ]
   },
 
@@ -28,6 +31,9 @@
     ],
     "manager": [
       {"id":"manager-server-1","host":"127.0.0.1","port":3750}
+    ],
+    "scene": [
+      {"id":"manager-server-1","host":"127.0.0.1","port":3850}
     ]
   }
 }

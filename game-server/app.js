@@ -7,10 +7,28 @@ var routeUtil = require('./app/util/routeUtil');
 /**
  * Init app for client.
  */
- global.config = require('./config/default');
+global.config = require('./config/default');
 
- function initDB() {
-        mongoose.connect(config.mongo.uri);
+function initRoleCache() {
+       
+        var dbmem = new loki('game.json');
+        
+        var roleCollection = dbmem.addCollection('roleCollection');
+        roleCollection.constraints.unique['id'];
+        global.roleCollection = roleCollection;
+}
+
+function initSceneCache() {
+       
+        var dbmem = new loki('game.json');
+        
+        var sceneCollection = dbmem.addCollection('sceneCollection');
+        sceneCollection.constraints.unique['room'];
+        global.sceneCollection = sceneCollection;
+}
+
+function initMongo(){
+   mongoose.connect(config.mongo.uri);
         var db = mongoose.connection;
         //db.on('error', console.error.bind(console, 'connection error:'));
         db.once('open', () => {
@@ -20,12 +38,6 @@ var routeUtil = require('./app/util/routeUtil');
 
             loadModules();
         });
-
-        var dbmem = new loki('game.json');
-        
-        var roleCollection = dbmem.addCollection('roleCollection');
-        roleCollection.constraints.unique['id'];
-        global.roleCollection = roleCollection;
 }
 
 
@@ -71,7 +83,8 @@ app.configure('production|development', 'connector', function(){
       heartbeatTimeout : 60,
       heartbeatInterval : 25
     });
-  initDB();
+  initMongo();
+  initRoleCache();
 });
 
 app.configure('production|development', 'manager', function(){
@@ -90,6 +103,22 @@ app.configure('production|development', 'gate', function(){
       useProtobuf : true
     });
 });
+
+app.configure('production|development', 'scene', function(){
+  app.set('connectorConfig',
+    {
+      connector : pomelo.connectors.sioconnector,
+      //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
+      transports : ['websocket'],
+      heartbeats : true,
+      closeTimeout : 60,
+      heartbeatTimeout : 60,
+      heartbeatInterval : 25
+    });
+  initMongo();
+  initSceneCache();
+});
+
 
 
 // start app
