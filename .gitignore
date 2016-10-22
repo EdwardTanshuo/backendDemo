@@ -1,0 +1,4 @@
+game-server/logs/*
+npm-debug.log
+.idea/
+.DS_Store
