@@ -1,3 +1,6 @@
+var roleService = require('../../../service/role');
+var Code = require('../../../../../shared/code');
+
 module.exports = function(app) {
   return new Handler(app);
 };
@@ -15,37 +18,12 @@ var Handler = function(app) {
  * @return {Void}
  */
 Handler.prototype.entry = function(msg, session, next) {
-  next(null, {code: 200, msg: 'game server is ok.'});
-};
-
-/**
- * Publish route for mqtt connector.
- *
- * @param  {Object}   msg     request message
- * @param  {Object}   session current session object
- * @param  {Function} next    next step callback
- * @return {Void}
- */
-Handler.prototype.publish = function(msg, session, next) {
-	var result = {
-		topic: 'publish',
-		payload: JSON.stringify({code: 200, msg: 'publish message is ok.'})
-	};
-  next(null, result);
-};
-
-/**
- * Subscribe route for mqtt connector.
- *
- * @param  {Object}   msg     request message
- * @param  {Object}   session current session object
- * @param  {Function} next    next step callback
- * @return {Void}
- */
-Handler.prototype.subscribe = function(msg, session, next) {
-	var result = {
-		topic: 'subscribe',
-		payload: JSON.stringify({code: 200, msg: 'subscribe message is ok.'})
-	};
-  next(null, result);
+	  roleService.auth(msg.token, function(err, result){
+	  		if(err){
+	  			return next(new Error(err), {code: Code.FAIL});
+	  		}
+	  		else{
+	  			next(null, {code: Code.OK, result: result});
+	  		}
+	  });
 };

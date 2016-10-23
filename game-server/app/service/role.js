@@ -5,7 +5,7 @@ function RoleService() {
 }
 
 RoleService.prototype.auth = function(token, callback) {
-	if(data.token == null){
+	if(token == null){
 		return callback('missing token', null);
 	}
 	this.syncFromRemote(token, callback);
