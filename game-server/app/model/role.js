@@ -19,6 +19,10 @@ RoleSchema.methods.getBalance = function () {
     return this.wealth
 };
 
+RoleSchema.pre('save', true, function(next, done) {
+    ///todo; add sync script
+});
+
 
 var Role = mongoose.model('Role', RoleSchema);
 

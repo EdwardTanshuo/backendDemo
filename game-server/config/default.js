@@ -12,6 +12,9 @@ module.exports = {
 	    "remoteToken": {
 	      "name": "X_MCV_TOKEN",          
 	      "value": "d858bd235c7faf19f5da18a1118788e2"
+	    },
+	    "api": {
+	    	"userGet": "/api/account"
 	    }
   },
 }
