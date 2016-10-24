@@ -18,12 +18,21 @@ function initRoleCache() {
         global.roleCollection = roleCollection;
 }
 
+function initBroadcasterCache() {
+       
+        var dbmem = new loki('game.json');
+        
+        var broadcasterCollection = dbmem.addCollection('broadcasterCollection');
+        broadcasterCollection.constraints.unique['room'];
+        global.broadcasterCollection = broadcasterCollection;
+}
+
 function initSceneCache() {
        
         var dbmem = new loki('game.json');
         
         var sceneCollection = dbmem.addCollection('sceneCollection');
-        sceneCollection.constraints.unique['room'];
+        sceneCollection.constraints.unique['broad'];
         global.sceneCollection = sceneCollection;
 }
 
@@ -87,12 +96,19 @@ app.configure('production|development', 'connector', function(){
   initRoleCache();
 });
 
-app.configure('production|development', 'manager', function(){
-  var events = pomelo.events;
-
-  app.event.on(events.ADD_SERVERS, instanceManager.addServers);
-
-  app.event.on(events.REMOVE_SERVERS, instanceManager.removeServers);
+app.configure('production|development', 'broadcaster', function(){
+   app.set('connectorConfig',
+    {
+      connector : pomelo.connectors.sioconnector,
+      //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
+      transports : ['websocket'],
+      heartbeats : true,
+      closeTimeout : 60,
+      heartbeatTimeout : 60,
+      heartbeatInterval : 25
+    });
+  initMongo();
+  initBroadcasterCache();
 });
 
 
