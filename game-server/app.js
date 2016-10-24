@@ -9,24 +9,6 @@ var routeUtil = require('./app/util/routeUtil');
  */
 global.config = require('./config/default');
 
-function initRoleCache() {
-       
-        var dbmem = new loki('game.json');
-        
-        var roleCollection = dbmem.addCollection('roleCollection');
-        roleCollection.constraints.unique['id'];
-        global.roleCollection = roleCollection;
-}
-
-function initBroadcasterCache() {
-       
-        var dbmem = new loki('game.json');
-        
-        var broadcasterCollection = dbmem.addCollection('broadcasterCollection');
-        broadcasterCollection.constraints.unique['room'];
-        global.broadcasterCollection = broadcasterCollection;
-}
-
 function initSceneCache() {
        
         var dbmem = new loki('game.json');
@@ -93,7 +75,6 @@ app.configure('production|development', 'connector', function(){
       heartbeatInterval : 25
     });
   initMongo();
-  initRoleCache();
 });
 
 app.configure('production|development', 'broadcaster', function(){
@@ -108,7 +89,6 @@ app.configure('production|development', 'broadcaster', function(){
       heartbeatInterval : 25
     });
   initMongo();
-  initBroadcasterCache();
 });
 
 
