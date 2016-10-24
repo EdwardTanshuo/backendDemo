@@ -23,10 +23,19 @@ Handler.prototype.entry = function(msg, session, next) {
 	  			return next(new Error(err), {code: Code.FAIL});
 	  		}
 	  		else{
-	  			session.on('closed', onUserLeave.bind(null, self.app, session, 'connection closed'));
+	  			onRoleEnter
 	  			session.token = msg.token; 
 	  			session.currentRole = result;
-	  			next(null, {code: Code.OK, result: result});
+	  			roleEnter(this.app, session.currentRole, function(err, result){
+	  				if(err){
+	  					next(new Error(err));
+	  				}
+	  				else{
+	  					session.on('closed', onUserLeave.bind(null, this.app, session, 'connection closed'));
+	  					next(null, {code: Code.OK, result: result});
+	  				}
+	  			});
+	  			
 	  		}
 	  });
 };
@@ -38,4 +47,8 @@ var onRoleLeave = function (app, session, reason) {
 			logger.error('player leave error! %j', err);
 		}
 	});
+};
+
+var roleEnter = function (app, role, callback) {
+	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.token}, callback);
 };
