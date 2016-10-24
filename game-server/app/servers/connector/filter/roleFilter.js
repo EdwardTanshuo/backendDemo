@@ -6,13 +6,12 @@ module.exports = function() {
 };
 
 var Filter = function() {
-	
+
 };
 
 /**
  * Area filter
  */
 Filter.prototype.before = function(msg, session, next){
-	
 	next();
 };
