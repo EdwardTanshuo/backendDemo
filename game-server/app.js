@@ -66,13 +66,14 @@ app.configure('production|development', function() {
 app.configure('production|development', 'connector', function(){
   app.set('connectorConfig',
     {
-      connector : pomelo.connectors.sioconnector,
+      connector : pomelo.connectors.hybridconnector,
+      useProtobuf : true
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
-      transports : ['websocket'],
-      heartbeats : true,
-      closeTimeout : 60,
-      heartbeatTimeout : 60,
-      heartbeatInterval : 25
+      //transports : ['websocket'],
+      //heartbeats : true,
+      //closeTimeout : 60,
+      //heartbeatTimeout : 60,
+      //heartbeatInterval : 25
     });
   initMongo();
 });
@@ -80,13 +81,14 @@ app.configure('production|development', 'connector', function(){
 app.configure('production|development', 'broadcaster', function(){
    app.set('connectorConfig',
     {
-      connector : pomelo.connectors.sioconnector,
+      connector : pomelo.connectors.hybridconnector,
+      useProtobuf : true
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
-      transports : ['websocket'],
-      heartbeats : true,
-      closeTimeout : 60,
-      heartbeatTimeout : 60,
-      heartbeatInterval : 25
+      //transports : ['websocket'],
+      //heartbeats : true,
+      //closeTimeout : 60,
+      //heartbeatTimeout : 60,
+      //heartbeatInterval : 25
     });
   initMongo();
 });

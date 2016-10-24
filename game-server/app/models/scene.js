@@ -6,6 +6,6 @@ var SceneSchema = mongoose.Schema({
     broad: {type: String, required: true}
 });
 
-var Scene = mongoose.model('SceneSchema', RoleSchema);
+var Scene = mongoose.model('SceneSchema', SceneSchema);
 
 module.exports = Scene;

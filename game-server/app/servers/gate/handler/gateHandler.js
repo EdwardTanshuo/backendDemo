@@ -13,9 +13,9 @@ var Handler = function(app) {
 };
 
 Handler.prototype.queryEntry = function(msg, session, next) {
-	var uid = msg.uid;
-	if(!uid) {
-		next(null, {code: Code.FAIL, error: 'Missing uid'});
+	var token = msg.token;
+	if(!token) {
+		next(null, {code: Code.FAIL, error: 'Missing token'});
 		return;
 	}
 
@@ -25,7 +25,7 @@ Handler.prototype.queryEntry = function(msg, session, next) {
 		return;
 	}
 
-	var res = dispatcher.dispatch(uid, connectors);
+	var res = dispatcher.dispatch(token, connectors);
 	next(null, {code: Code.OK, host: res.host, port: res.clientPort});
   // next(null, {code: Code.OK, host: res.pubHost, port: res.clientPort});
 };

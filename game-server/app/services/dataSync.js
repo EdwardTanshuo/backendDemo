@@ -45,7 +45,7 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
          headers: headers
      };
 
-     request(options, (err, response, body) => {
+     request(options, function(err, response, body){
          if (err) {
              callback(err, null); // error response
          } else {
@@ -63,8 +63,7 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
                 catch(err){
                     callback(err, null); // successful response
                 }
-            }
-         }
+        }
      });
 };
 
