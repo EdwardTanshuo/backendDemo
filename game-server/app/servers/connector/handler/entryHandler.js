@@ -20,7 +20,7 @@ var Handler = function(app) {
 Handler.prototype.entry = function(msg, session, next) {
 	  roleService.auth(msg.token, function(err, result){
 	  		if(err){
-	  			return next(new Error(err), {code: Code.FAIL});
+	  			return next(new Error(err), {code: Code.FAIL, error: err});
 	  		}
 	  		else{
 	  			onRoleEnter
