@@ -15,7 +15,7 @@ var Handler = function(app) {
 Handler.prototype.queryEntry = function(msg, session, next) {
 	var uid = msg.uid;
 	if(!uid) {
-		next(null, {code: Code.FAIL});
+		next(null, {code: Code.FAIL, error: 'Missing uid'});
 		return;
 	}
 
