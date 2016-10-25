@@ -21,6 +21,8 @@ RoleSchema.methods.getBalance = function () {
 
 RoleSchema.pre('save', true, function(next, done) {
     ///todo; add sync script
+    next();
+    done();
 });
 
 

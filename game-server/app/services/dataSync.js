@@ -1,14 +1,13 @@
 var request = require("request");
 
-var roleService = require('./role');
-
 var dataSyncService = require('./scene');
 
 function DataSyncService() {
 }
 
 DataSyncService.prototype.syncRole = function(role, callback) {
-     roleService.hasRecord(role, function(err, record){
+    var roleService = require('./role');
+    roleService.hasOne(role, function(err, record){
         if(err){
             return callback(err, null);
         } 
@@ -20,6 +19,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
                 wealth: role.wealth,
                 token: role.token
             };
+            
             return roleService.create(obj, callback);
         }
         else{
@@ -27,9 +27,10 @@ DataSyncService.prototype.syncRole = function(role, callback) {
             record.name = role.username;
             record.avatar = role.avatar;
             record.wealth = role.wealth;
-            record.save(callback);
+            console.log('updating user in server cache...');
+            return record.save(callback);
         }
-     });
+    });
 };
 
 DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
@@ -45,6 +46,8 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
          headers: headers
      };
 
+     var syncRole = DataSyncService.prototype.syncRole;
+
      request(options, function(err, response, body){
          if (err) {
              callback(err, null); // error response
@@ -53,7 +56,7 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
                     var json = JSON.parse(body);
                     if(json.result){
                        json.result.token = token;
-                       return this.syncRole(json.result, callback); 
+                       return syncRole(json.result, callback); 
                     }
                     else{
                         return callback('user not exist', null); 

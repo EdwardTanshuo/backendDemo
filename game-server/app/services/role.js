@@ -19,21 +19,21 @@ RoleService.prototype.create = function(data, callback) {
 	try{
 		var role = Role(data);
 		role.save(callback);
+		console.log('creating user in server cache...');
 	}
 	catch(err){
 		callback(err, null);
 	}
 };
 
-RoleService.prototype.addToCache = function(role, callback) {
-	roleCollection
-};
 
-RoleService.prototype.hasRecord = function(role, callback) {
+RoleService.prototype.hasOne = function(role, callback) {
+	console.log('finding user from server cache...');
 	Role.findOne({foreignId: role.id}, callback);
 };
 
 RoleService.prototype.syncFromRemote = function(token, callback) {
+	console.log('sync user from server cache...');
 	return dataSyncService.syncRoleFromRemote(token, callback);
 };
 

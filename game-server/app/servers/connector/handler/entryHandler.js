@@ -18,37 +18,53 @@ var Handler = function(app) {
  * @return {Void}
  */
 Handler.prototype.entry = function(msg, session, next) {
+	  var self_app = this.app;
 	  roleService.auth(msg.token, function(err, result){
 	  		if(err){
 	  			return next(new Error(err), {code: Code.FAIL, error: err});
 	  		}
 	  		else{
-	  			onRoleEnter
-	  			session.token = msg.token; 
-	  			session.currentRole = result;
-	  			roleEnter(this.app, session.currentRole, function(err, result){
+	  			self_app.get('sessionService').kick(msg.token, function(err){
 	  				if(err){
 	  					next(new Error(err));
 	  				}
 	  				else{
-	  					session.on('closed', onUserLeave.bind(null, this.app, session, 'connection closed'));
-	  					next(null, {code: Code.OK, result: result});
+	  					session.bind(msg.token, function(err){
+			  				if(!err){
+			  					session.set('token', msg.token);
+								session.set('currentRole', result);
+								session.pushAll(function(err){
+									roleEnter(self_app, session.currentRole, function(err, result){
+					  				if(err){
+						  					next(new Error(err));
+						  				}
+						  				else{
+						  					session.on('closed', onRoleLeave.bind(null, self_app, session, 'connection closed'));
+						  					next(null, {code: Code.OK, result: session.get('currentRole')});
+						  				}
+						  			});
+								});
+			  				}
+			  				else{
+			  					next(new Error(err));
+			  				}
+			  			});
 	  				}
 	  			});
-	  			
 	  		}
 	  });
 };
 
 var onRoleLeave = function (app, session, reason) {
 
-	app.rpc.scene.sceneRemote.playerLeave(session, {token: session.token}, function(err){
+	/*app.rpc.scene.sceneRemote.playerLeave(session, {token: session.token}, function(err){
 		if(!!err){
 			logger.error('player leave error! %j', err);
 		}
-	});
+	});*/
 };
 
 var roleEnter = function (app, role, callback) {
-	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.token}, callback);
+	//app.rpc.scene.sceneRemote.playerEnter(session, {token: session.token}, callback);
+	callback(null);
 };
