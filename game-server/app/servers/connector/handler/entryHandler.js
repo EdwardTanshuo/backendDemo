@@ -56,15 +56,14 @@ Handler.prototype.entry = function(msg, session, next) {
 };
 
 var onRoleLeave = function (app, session, reason) {
-
-	/*app.rpc.scene.sceneRemote.playerLeave(session, {token: session.token}, function(err){
+	app.rpc.scene.sceneRemote.playerLeave(session, {token: session.token}, function(err){
 		if(!!err){
 			logger.error('player leave error! %j', err);
 		}
-	});*/
+	});
 };
 
 var roleEnter = function (app, role, callback) {
-	//app.rpc.scene.sceneRemote.playerEnter(session, {token: session.token}, callback);
+	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.token}, callback);
 	callback(null);
 };
