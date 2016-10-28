@@ -15,7 +15,7 @@ function initSceneCache() {
         var dbmem = new loki('game.json');
         
         var sceneCollection = dbmem.addCollection('sceneCollection');
-        sceneCollection.constraints.unique['broad'];
+        sceneCollection.constraints.unique['room'];
         global.sceneCollection = sceneCollection;
 }
 

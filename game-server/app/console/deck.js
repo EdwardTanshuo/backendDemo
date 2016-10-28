@@ -7,7 +7,7 @@ function DeckOperation() {
 
 Deck.prototype.drawCard = function(deck, callback){
   if(!deck.length){
-    return callback('no card', null);
+    return callback('no card', deck, null);
   }
   else{
     var total_weight = 0;
@@ -29,7 +29,7 @@ Deck.prototype.drawCard = function(deck, callback){
     }
     var result = deck[index];
     deck.splice(index, 1);
-    return callback(null, result);
+    return callback(null, deck, result);
   }
 }
 

@@ -11,9 +11,6 @@ function Blackjack() {
   this.BLACKJACK = this.calculator.BLACKJACK;
   this.BUSTED_VALUE = this.calculator.BUSTED_VALUE;
 
-  this.players = {};
-  this.table = [];
-  this.current = 0;
 
   this.dealNextCard = function(deck_array, callback) {
     return this.deck.drawCard(deck_array, callback);
