@@ -5,11 +5,11 @@ var dataSyncService = require('./dataSync');
 function BroadcasterService() {
 }
 
-BroadcasterService.prototype.auth = function(token, callback) {
-	if(token == null){
-		return callback('missing token', null);
+BroadcasterService.prototype.auth = function(room, callback) {
+	if(room_id == null){
+		return callback('missing room', null);
 	}
-	this.syncFromRemote(token, callback);
+	this.syncFromRemote(room, callback);
 };
 
 BroadcasterService.prototype.getBroadcatertByRoom = function(room_id, callback) {
@@ -30,7 +30,7 @@ BroadcasterService.prototype.create = function(data, callback) {
 
 BroadcasterService.prototype.hasOne = function(broadcaster, callback) {
 	console.log('finding broadcaster from server cache...');
-	Broadcaster.findOne({room: broadcaster.room}, callback);
+	Broadcaster.findOne({room: broadcaster.room, isDeleted: false}, callback);
 };
 
 BroadcasterService.prototype.syncFromRemote = function(room_id, callback) {

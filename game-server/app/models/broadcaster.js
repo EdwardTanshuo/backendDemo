@@ -2,11 +2,10 @@ var mongoose = require('mongoose');
 
 var BroadcasterSchema = mongoose.Schema({
     room: {type: String, required: true, unique: true},
+    avatar: {type: String, required: false},
     name: {type: String, required: true},
     bio: {type: String, required: false},
     location: {type: String, required: false},
-    password: {type: String, required: true},
-    email: {type: String, required: true, unique: true},
     isDeleted: {type: Boolean, required: true,default: false}
 });
 
