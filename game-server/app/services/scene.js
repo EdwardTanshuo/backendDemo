@@ -38,12 +38,18 @@ SceneService.prototype.createGame = function(dealer, room_id, callback) {
 
 SceneService.prototype.getNumberOfPlayers = function(room_id){
 	var scene = sceneCollection.findOne({'room': room_id});
+	if(!scene){
+		return 0;
+	}
 	return scene.players.length();
 }
 
 SceneService.prototype.nextTurn = function(room_id, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
+		if(!scene){
+			return callback('no scene', null);
+		}
 		scene.turns = scene.turns + 1;
 		sceneCollection.update(scene);
 		callback(null, scene);
@@ -56,6 +62,9 @@ SceneService.prototype.nextTurn = function(room_id, callback){
 SceneService.prototype.addPlayer = function(room_id, role, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
+		if(!scene){
+			return callback('no scene', null);
+		}
 		if(scene.status != 'init'){
 			return callback('game is not at init', null);
 		}
@@ -80,6 +89,9 @@ SceneService.prototype.addPlayer = function(room_id, role, callback){
 SceneService.prototype.start = function(room_id, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
+		if(!scene){
+			return callback('no scene', null);
+		}
 		if(scene.status == 'init'){
 			return callback('game is not at init', null);
 		}
@@ -95,6 +107,9 @@ SceneService.prototype.start = function(room_id, callback){
 SceneService.prototype.removePlayer = function(room_id, role, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
+		if(!scene){
+			return callback('no scene', null);
+		}
 		if(scene.players[role.token] == null){
 			return callback('player is not inside', null);
 		}

@@ -33,6 +33,7 @@ function initMongo(){
 
 var app = pomelo.createApp();
 app.set('name', 'luluvr');
+global.app = app;
 
 //globel
 // configure for global
@@ -86,16 +87,7 @@ app.configure('production|development', 'gate', function(){
 });
 
 app.configure('production|development', 'scene', function(){
-  app.set('connectorConfig',
-    {
-      connector : pomelo.connectors.sioconnector,
-      //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
-      transports : ['websocket'],
-      heartbeats : true,
-      closeTimeout : 60,
-      heartbeatTimeout : 60,
-      heartbeatInterval : 25
-    });
+ 
   initMongo();
   initSceneCache();
 });

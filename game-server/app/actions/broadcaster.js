@@ -1,18 +1,16 @@
-var sceneService = require('../services/scene');
+module.exports = function BroadcasterAction(session) {
+	this.session = session;
+	this.createGame = function(room_id, callback) {
+		app.rpc.scene.sceneRemote.createGame(this.session, {broadcaster: this.session.get('currentBroadcaster'), room_id: this.session.get('room')}, callback);
+	};
 
-module.exports = function BroadcasterAction(broadcaster) {
-	this.broadcaster = broadcaster;
+	this.getPlayerNumber = function(room_id, callback) {
+		app.rpc.scene.sceneRemote.getNumberOfPlayers(this.session, {room_id: this.session.get('room')}, callback);
+	};
+
+	this.startGame = function(room_id, callback) {
+		app.rpc.scene.sceneRemote.startGame(this.session, {room_id: this.session.get('room')}, callback);
+	};
 }
 
-module.exports.prototype.createGame = function(room_id, callback) {
-	sceneService.createGame(this.broadcaster, room_id, callback);
-};
 
-module.exports.prototype.getPlayerNumber = function(room_id, callback) {
-	var num = sceneService.getNumberOfPlayers(room_id);
-	callback(num);
-};
-
-module.exports.prototype.startGame = function(room_id, callback) {
-	sceneService.start(room_id, callback);
-};
