@@ -74,15 +74,15 @@ module.exports = function HandValueCalculator() {
     } else if (playerTotal.value > dealerTotal.value) {
       return 'win';
     } else if (playerTotal.value == dealerTotal.value) {
-      if(playerTotal.numberOfHigh > dealerTotal.numberOfHigh){
-        return 'win';
-      }
-      else if (playerTotal.numberOfHigh < dealerTotal.numberOfHigh){
-        return 'lose';
-      }
-      else{
-        return 'tie';
-      }
+        if(playerTotal.numberOfHigh > dealerTotal.numberOfHigh){
+          return 'win';
+        }
+        else if (playerTotal.numberOfHigh < dealerTotal.numberOfHigh){
+          return 'lose';
+        }
+        else{
+          return 'tie';
+        }
     } else {
       return 'lose';
     }

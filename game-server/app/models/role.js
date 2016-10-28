@@ -7,7 +7,7 @@ var RoleSchema = mongoose.Schema({
     wealth: {type: Number, required: true},
     //verification
     foreignId: {type: Number, required: true},
-    token: {type: String, required: false},
+    token: {type: String, required: true, unique: true},
     //game
     exp : {type: Number, required: false, "default": 0},
     level : {type: Number, required: false, "default": 0},

@@ -29,7 +29,7 @@ RoleService.prototype.create = function(data, callback) {
 
 RoleService.prototype.hasOne = function(role, callback) {
 	console.log('finding user from server cache...');
-	Role.findOne({foreignId: role.id}, callback);
+	Role.findOne({token: role.token}, callback);
 };
 
 RoleService.prototype.syncFromRemote = function(token, callback) {
