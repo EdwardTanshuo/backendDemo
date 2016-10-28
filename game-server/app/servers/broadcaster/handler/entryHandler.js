@@ -34,7 +34,7 @@ Handler.prototype.entry = function(msg, session, next) {
 			  					session.set('room', msg.room);
 								session.set('currentBroadcaster', result);
 								session.pushAll(function(err){
-									broadcasterEnter(self_app, session.get('currentBroadcaster'), function(err, result){
+									broadcasterEnter(self_app, session, function(err, result){
 					  				if(err){
 						  					return next(new Error(err));
 						  				}

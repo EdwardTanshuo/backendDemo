@@ -34,7 +34,7 @@ Handler.prototype.entry = function(msg, session, next) {
 			  					session.set('token', msg.token);
 								session.set('currentRole', result);
 								session.pushAll(function(err){
-									roleEnter(self_app, session.get('currentRole'), function(err, result){
+									roleEnter(self_app, session, function(err, result){
 					  				if(err){
 						  					return next(new Error(err));
 						  				}
