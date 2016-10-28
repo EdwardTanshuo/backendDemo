@@ -34,7 +34,7 @@ BroadcasterService.prototype.hasOne = function(broadcaster, callback) {
 };
 
 BroadcasterService.prototype.syncFromRemote = function(room_id, callback) {
-	console.log('sync user from server cache...');
+	console.log('sync broadcaster from server cache...');
 	return dataSyncService.syncBroadcasterFromRemote(room_id, callback);
 };
 
