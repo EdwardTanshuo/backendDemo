@@ -1,10 +1,10 @@
 var HandValueCalculator = require('./handValueCalculator.js');
-var DeckOperation = require('./deck.js');
+var deckOperation = require('./deck.js');
 
 
 function Blackjack() {
 
-  this.deck = new DeckOperation();
+  this.deck = deckOperation;
   this.calculator = new HandValueCalculator();
 
   // constants

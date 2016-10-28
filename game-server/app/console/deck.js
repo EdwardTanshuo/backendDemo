@@ -5,7 +5,7 @@
 function DeckOperation() {  
 };
 
-Deck.prototype.drawCard = function(deck, callback){
+DeckOperation.prototype.drawCard = function(deck, callback){
   if(!deck.length){
     return callback('no card', deck, null);
   }

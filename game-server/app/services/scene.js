@@ -48,7 +48,7 @@ SceneService.prototype.nextTurn = function(room_id, callback){
 		sceneCollection.update(scene);
 		callback(null, scene);
 	}
-	cacth(err){
+	catch(err){
 		callback(err, null);
 	}
 }
@@ -87,7 +87,7 @@ SceneService.prototype.start = function(room_id, callback){
 		sceneCollection.update(scene);
 		callback(null, scene);
 	}
-	cacth(err){
+	catch(err){
 		callback(err, null);
 	}
 }

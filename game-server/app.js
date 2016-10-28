@@ -56,12 +56,13 @@ app.configure('production|development', function() {
 
   // route configures
   app.route('connector', routeUtil.connector);
+  app.route('broadcaster', routeUtil.broadcaster);
   app.filter(pomelo.filters.timeout());
 
 });
 
 // app configuration
-app.configure('production|development', 'connector', function(){
+app.configure('production|development', 'connector|broadcaster', function(){
   app.set('connectorConfig',
     {
       connector : pomelo.connectors.hybridconnector,
@@ -75,22 +76,6 @@ app.configure('production|development', 'connector', function(){
     });
   initMongo();
 });
-
-app.configure('production|development', 'broadcaster', function(){
-   app.set('connectorConfig',
-    {
-      connector : pomelo.connectors.hybridconnector,
-      useProtobuf : true,
-      //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
-      //transports : ['websocket'],
-      heartbeats : true,
-      closeTimeout : 60,
-      heartbeatTimeout : 60,
-      heartbeatInterval : 25
-    });
-  initMongo();
-});
-
 
 app.configure('production|development', 'gate', function(){
   app.set('connectorConfig',

@@ -63,7 +63,7 @@ var onBroadcasterLeave = function (app, session, reason) {
 	});
 };
 
-var broadcasterEnter = function (app, broadcaster, callback) {
-	app.rpc.scene.sceneRemote.broadcasterEnter(session, {token: session.token}, callback);
+var broadcasterEnter = function (app, session, callback) {
+	app.rpc.scene.sceneRemote.broadcasterEnter(session, {room: session.room}, callback);
 	callback(null);
 };

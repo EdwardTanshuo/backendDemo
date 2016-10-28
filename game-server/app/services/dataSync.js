@@ -121,7 +121,7 @@ DataSyncService.prototype.syncBroadcasterFromRemote = function(room_id, callback
         'content-type': 'application/json',
         'cache-control': 'no-cache'
      };
-     headers[config.remote.remoteToken.name] = config.remote.remoteToken;
+     headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
 
      var options = {
          method: 'GET',

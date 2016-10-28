@@ -6,7 +6,7 @@ function BroadcasterService() {
 }
 
 BroadcasterService.prototype.auth = function(room, callback) {
-	if(room_id == null){
+	if(room == null){
 		return callback('missing room', null);
 	}
 	this.syncFromRemote(room, callback);
