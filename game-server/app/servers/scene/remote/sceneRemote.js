@@ -4,20 +4,20 @@ var utils = require('../../../util/utils');
 
 var logger = require('pomelo-logger').getLogger(__filename);
 
-exp.playerLeave = function(data, callback){
-	callback();
+exp.playerLeave = function(args, callback){
+	utils.invokeCallback(callback, null, {});
 }
 
-exp.playerEnter = function(data, callback){
-        callback();
+exp.playerEnter = function(args, callback){
+    utils.invokeCallback(callback, null, {});
 }
 
-exp.broadcasterLeave = function(data, callback){
-        callback();
+exp.broadcasterLeave = function(args, callback){
+    utils.invokeCallback(callback, null, {});
 }
 
-exp.broadcasterEnter = function(data, callback){
-        callback();
+exp.broadcasterEnter = function(args, callback){
+    utils.invokeCallback(callback, null, {});
 }
 
 exp.getNumberOfPlayers = function(args, callback){

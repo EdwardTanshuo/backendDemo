@@ -29,17 +29,22 @@ Handler.prototype.entry = function(msg, session, next) {
 	  					return next(new Error(err));
 	  				}
 	  				else{
+
 	  					session.bind(msg.token, function(err){
+
 			  				if(!err){
 			  					session.set('token', msg.token);
 								session.set('currentRole', result);
 								session.pushAll(function(err){
+
 									roleEnter(self_app, session, function(err, result){
-					  				if(err){
+										
+					  					if(err){
 						  					return next(new Error(err));
 						  				}
 						  				else{
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session, 'connection closed'));
+
 						  					return next(null, {code: Code.OK, result: session.get('currentRole')});
 						  				}
 						  			});
@@ -56,14 +61,14 @@ Handler.prototype.entry = function(msg, session, next) {
 };
 
 var onRoleLeave = function (app, session, reason) {
-	app.rpc.scene.sceneRemote.playerLeave(session, {token: session.token}, function(err){
+	app.rpc.scene.sceneRemote.playerLeave(session, {token: session.get('token')}, function(err){
 		if(!!err){
 			logger.error('player leave error! %j', err);
 		}
 	});
 };
 
-var roleEnter = function (app, role, callback) {
-	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.token}, callback);
+var roleEnter = function (app, session, callback) {
+	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.get('token')}, callback);
 	callback(null);
 };
