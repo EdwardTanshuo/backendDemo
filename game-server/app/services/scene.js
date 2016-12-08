@@ -92,7 +92,7 @@ SceneService.prototype.start = function(room_id, callback){
 		if(!scene){
 			return callback('no scene', null);
 		}
-		if(scene.status == 'init'){
+		if(scene.status != 'init'){
 			return callback('game is not at init', null);
 		}
 		scene.status = 'started';
