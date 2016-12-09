@@ -1,4 +1,15 @@
-game-server/logs/*
-npm-debug.log
 .idea/
 .DS_Store
+.project
+*/node-log.log
+logs/*.log
+*.log
+!.gitignore
+game-server/node_modules/*
+web-server/node_modules/*
+.settings/
+**/*.svn
+*.svn
+*.swp
+*.sublime-project
+*.sublime-workspace
