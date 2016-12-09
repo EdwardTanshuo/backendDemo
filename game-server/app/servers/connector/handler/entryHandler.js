@@ -37,7 +37,7 @@ Handler.prototype.entry = function(msg, session, next) {
 	  					session.bind(msg.token, function(err){
 			  				if(!err){
 			  					session.set('token', msg.token);
-			  					session.set('roomid', msg.room);
+			  					session.set('room', msg.room);
 								session.set('currentRole', result);
 								
 								session.pushAll(function(err){
@@ -80,6 +80,6 @@ var onRoleLeave = function (app, session, reason) {
 };
 
 var roleEnter = function (app, session, callback) {
-	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.get('token'), roomid: session.get('roomid'), role: session.get('currentRole')}, callback);
+	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.get('token'), roomid: session.get('room'), role: session.get('currentRole')}, callback);
 	callback(null);
 };

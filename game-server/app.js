@@ -57,6 +57,7 @@ app.configure('production|development', function() {
   // route configures
   app.route('connector', routeUtil.connector);
   app.route('broadcaster', routeUtil.broadcaster);
+  app.route('scene', routeUtil.scene);
   app.filter(pomelo.filters.timeout());
 
 });

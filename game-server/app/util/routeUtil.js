@@ -1,14 +1,12 @@
 var exp = module.exports;
 
-exp.area = function(session, msg, app, cb) {
-	var serverId = session.get('serverId');
-
-	if(!serverId) {
-		cb(new Error('can not find server info for type: ' + msg.serverType));
-		return;
-	}
-
-	cb(null, serverId);
+exp.scene = function(session, msg, context, cb) {
+	var sceneServers = app.getServersByType('scene');
+	var hash = session.get('room');
+	var lastChar = hash[hash.length -1];
+	var code = lastChar.charCodeAt(0);
+ 	var id = sceneServers[code % sceneServers.length].id;
+  	cb(null, id);
 };
 
 exp.connector = function(session, msg, app, cb) {
