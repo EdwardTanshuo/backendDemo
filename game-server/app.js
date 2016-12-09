@@ -63,7 +63,7 @@ app.configure('production|development', function() {
 });
 
 // app configuration
-app.configure('production|development', 'connector|broadcaster', function(){
+app.configure('production|development', 'connector', function(){
   app.set('connectorConfig',
     {
       connector : pomelo.connectors.hybridconnector,
@@ -71,12 +71,29 @@ app.configure('production|development', 'connector|broadcaster', function(){
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
       //transports : ['websocket'],
       heartbeats : true,
-      closeTimeout : 60,
+      closeTimeout : 6000,
       heartbeatTimeout : 60,
       heartbeatInterval : 25
     });
   initMongo();
 });
+
+// app configuration
+app.configure('production|development', 'broadcaster', function(){
+  app.set('connectorConfig',
+    {
+      connector : pomelo.connectors.sioconnector,
+      useProtobuf : true,
+      //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
+      //transports : ['websocket'],
+      heartbeats : true,
+      closeTimeout : 6000,
+      heartbeatTimeout : 60,
+      heartbeatInterval : 25
+    });
+  initMongo();
+});
+
 
 app.configure('production|development', 'gate', function(){
   app.set('connectorConfig',
