@@ -65,14 +65,13 @@ SceneService.prototype.addPlayer = function(room_id, role, callback){
 		if(!scene){
 			return callback('no scene', null);
 		}
-		if(scene.status != 'init'){
-			return callback('game is not at init', null);
-		}
-
+		
+		//如果玩家已加入游戏， 返回当前游戏状态
 		if(scene.players[role.token] != null){
-			return callback('player has already inside', null);
+			return callback(null, scene);
 		}
 
+		//否则创建新的玩家状态
 		scene.players[role.token] = role;
 		scene.player_platfroms[role.token] = [];
 		scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
@@ -139,7 +138,5 @@ SceneService.prototype.removePlayer = function(room_id, role, callback){
 SceneService.prototype.removeAllPlayers = function(room_id,callback){
 
 }
-
-
 
 module.exports = new SceneService();

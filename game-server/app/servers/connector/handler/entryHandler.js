@@ -19,6 +19,9 @@ var Handler = function(app) {
  */
 Handler.prototype.entry = function(msg, session, next) {
 	  var self_app = this.app;
+	  if(msg.token == null || msg.room == null){
+	  	return next(new Error('missing params'), {code: Code.FAIL, error: 'missing params'});
+	  }
 	  roleService.auth(msg.token, function(err, result){
 	  		if(err){
 	  			return next(new Error(err), {code: Code.FAIL, error: err});
@@ -26,32 +29,38 @@ Handler.prototype.entry = function(msg, session, next) {
 	  		else{
 	  			self_app.get('sessionService').kick(msg.token, function(err){
 	  				if(err){
-	  					return next(new Error(err));
+	  					return next(new Error(err), {code: Code.FAIL, error: err});
 	  				}
 	  				else{
 
 	  					session.bind(msg.token, function(err){
-
 			  				if(!err){
 			  					session.set('token', msg.token);
+			  					session.set('roomid', msg.room);
 								session.set('currentRole', result);
+								
 								session.pushAll(function(err){
-
-									roleEnter(self_app, session, function(err, result){
-										
+									
+									if(err){
+										return next(new Error(err), {code: Code.FAIL, error: err});
+									}
+									roleEnter(self_app, session, function(err, scene){
+										if(err == null && scene == null){
+											return;
+										}
 					  					if(err){
-						  					return next(new Error(err));
+						  					return next(new Error(err), {code: Code.FAIL, error: err});
 						  				}
 						  				else{
+						  					
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session, 'connection closed'));
-
-						  					return next(null, {code: Code.OK, result: session.get('currentRole')});
+						  					return next(null, {code: Code.OK, result: scene});
 						  				}
 						  			});
 								});
 			  				}
 			  				else{
-			  					return next(new Error(err));
+			  					return next(new Error(err), {code: Code.FAIL, error: err});
 			  				}
 			  			});
 	  				}
@@ -61,14 +70,15 @@ Handler.prototype.entry = function(msg, session, next) {
 };
 
 var onRoleLeave = function (app, session, reason) {
-	app.rpc.scene.sceneRemote.playerLeave(session, {token: session.get('token')}, function(err){
-		if(!!err){
+	//TODO: 断开连接后需要完成的代码
+	/*app.rpc.scene.sceneRemote.playerLeave(session, {token: session.get('token'), roomid: session.get('roomid')}, function(err){
+		if(err){
 			logger.error('player leave error! %j', err);
 		}
-	});
+	});*/
 };
 
 var roleEnter = function (app, session, callback) {
-	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.get('token')}, callback);
+	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.get('token'), roomid: session.get('roomid'), role: session.get('currentRole')}, callback);
 	callback(null);
 };

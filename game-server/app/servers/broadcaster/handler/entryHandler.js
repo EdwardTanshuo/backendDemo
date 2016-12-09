@@ -26,7 +26,7 @@ Handler.prototype.entry = function(msg, session, next) {
 	  		else{
 	  			self_app.get('sessionService').kick(msg.room, function(err){
 	  				if(err){
-	  					return next(new Error(err));
+	  					return next(new Error(err), {code: Code.FAIL, error: err});
 	  				}
 	  				else{
 	  					session.bind(msg.room, function(err){
@@ -36,7 +36,7 @@ Handler.prototype.entry = function(msg, session, next) {
 								session.pushAll(function(err){
 									broadcasterEnter(self_app, session, function(err, result){
 					  				if(err){
-						  					return next(new Error(err));
+						  					return next(new Error(err), {code: Code.FAIL, error: err});
 						  				}
 						  				else{
 						  					session.on('closed', onBroadcasterLeave.bind(null, self_app, session, 'connection closed'));
@@ -46,7 +46,7 @@ Handler.prototype.entry = function(msg, session, next) {
 								});
 			  				}
 			  				else{
-			  					return next(new Error(err));
+			  					return next(new Error(err), {code: Code.FAIL, error: err});
 			  				}
 			  			});
 	  				}

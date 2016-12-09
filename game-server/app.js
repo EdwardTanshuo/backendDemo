@@ -93,6 +93,9 @@ app.configure('production|development', 'scene', function(){
 });
 
 
+app.set('errorHandler', function(err, msg, resp, session, next) {
+  next(err, resp); 
+});
 
 // start app
 app.start();
