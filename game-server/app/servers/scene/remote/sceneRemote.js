@@ -11,16 +11,18 @@ exp.playerLeave = function(args, callback){
 exp.playerEnter = function(args, callback){
 	sceneService.addPlayer(args.roomid, args.role, function(err, scene){
 		if(scene != null){
+			console.log(JSON.stringify(scene));
+
 			scene.player = scene.players[args.role.token];
 			scene.player_platfrom = scene.player_platfroms[args.role.token];
 			scene.player_value = scene.player_values[args.role.token];
 			scene.player_bet = scene.player_bets[args.role.token];
 			
 			//清理冗余信息
-			scene.players = null;
-			scene.player_platfroms = null;
-			scene.player_values = null;
-			scene.player_bets = null;
+			delete scene.players;
+			delete scene.player_platfroms;
+			delete scene.player_values;
+			delete scene.player_bets;
 		}
 		utils.invokeCallback(callback, err, scene);
 	});	

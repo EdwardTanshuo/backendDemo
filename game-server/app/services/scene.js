@@ -28,6 +28,7 @@ SceneService.prototype.createGame = function(dealer, room_id, callback) {
 	
 		try{
 			sceneCollection.insert(new_scene);
+			
 			return callback(null, new_scene);
 		}
 		catch(err){
@@ -62,13 +63,19 @@ SceneService.prototype.nextTurn = function(room_id, callback){
 SceneService.prototype.addPlayer = function(room_id, role, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
+
 		if(!scene){
 			return callback('no scene', null);
 		}
 		
 		//如果玩家已加入游戏， 返回当前游戏状态
-		if(scene.players[role.token] != null){
-			return callback(null, scene);
+		try{
+			if(scene.players[role.token] != null){
+				return callback(null, scene);
+			}
+		}
+		catch(e){
+
 		}
 
 		//否则创建新的玩家状态
