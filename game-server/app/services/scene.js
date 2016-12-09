@@ -92,7 +92,7 @@ SceneService.prototype.addPlayer = function(room_id, role, callback){
 	}
 }
 
-SceneService.prototype.start = function(room_id, callback){
+SceneService.prototype.startGame = function(room_id, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
 		if(!scene){
