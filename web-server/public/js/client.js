@@ -223,65 +223,63 @@ $(document).ready(function() {
     //deal with login button click.
     $("#login").click(function() {
         username = $("#loginUser").attr("value");
-        rid = $('#channelList').val();
-        token = Date.now().toString();
+        roomId = $('#roomId').val();
+        token = 'd858bd235c7faf19f5da18a1118788e2';
         roleType = $('#role').val();
         if(username.length > 20 || username.length == 0 || rid.length > 20 || rid.length == 0) {
             showError(LENGTH_ERROR);
             return false;
         }
-
         if(!reg.test(username) || !reg.test(rid)) {
             showError(NAME_ERROR);
             return false;
         }
-
-        ////query entry of connection
-        //queryEntry(token, function(host, port) {
-        //    pomelo.init({
-        //        host: host,
-        //        port: port,
-        //        log: true
-        //    }, function() {
-        //        pomelo.request("connector.entryHandler.entry", {
-        //            username: username,
-        //            token: token,
-        //            roleType: roleType,
-        //            rid: rid
-        //        }, function(data) {
-        //            if(data.error) {
-        //                showError(DUPLICATE_ERROR);
-        //                return;
-        //            }
-        //            setName();
-        //            setRoom();
-        //            showChat();
-        //            initUserList(data);
-        //        });
-        //    });
-        //});
-        pomelo.init({
-            host: '127.0.0.1',
-            port: 3020,
-            log: true
-        }, function() {
-            pomelo.request("broadcaster.entryHandler.entry", {
-                username: username,
-                token: token,
-                room: '57f5e15f908766837cb858c7',
-                roleType: roleType,
-                rid: rid
-            }, function(data) {
-                if(data.error) {
-                    showError(DUPLICATE_ERROR);
-                    return;
-                }
-                setName();
-                setRoom();
-                showChat();
-                initUserList(data);
+        if(roleType == 'player'){
+            //player entry of connection
+            queryEntry(roomId, function(host, port) {
+                pomelo.init({
+                    host: host,
+                    port: port,
+                    log: true
+                }, function() {
+                    pomelo.request("connector.entryHandler.entry", {
+                        username: username,
+                        token: token,
+                        roomId: roomId
+                    }, function(data) {
+                        if(data.error) {
+                            showError(DUPLICATE_ERROR);
+                            return;
+                        }
+                        setName();
+                        setRoom();
+                        showChat();
+                        initUserList(data);
+                    });
+                });
+            });
+        }else{
+            // broadcaster entry
+            pomelo.init({
+                host: '127.0.0.1',
+                port: 3020,
+                log: true
+            }, function() {
+                pomelo.request("broadcaster.entryHandler.entry", {
+                    username: username,
+                    roomId: roomId
+                }, function(data) {
+                    if(data.error) {
+                        showError(DUPLICATE_ERROR);
+                        return;
+                    }
+                    setName();
+                    setRoom();
+                    showChat();
+                    initUserList(data);
+                })
             })
-        })
+        }
     });
 
     //deal with chat mode.
