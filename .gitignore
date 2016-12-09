@@ -2,7 +2,7 @@
 .DS_Store
 .project
 */node-log.log
-logs/*.log
+game-server/logs/*
 *.log
 !.gitignore
 game-server/node_modules/*
