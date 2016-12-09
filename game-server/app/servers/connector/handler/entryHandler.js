@@ -1,4 +1,5 @@
 var roleService = require('../../../services/role');
+var channelService = app.get('channelService');
 var Code = require('../../../../../shared/code');
 
 module.exports = function(app) {

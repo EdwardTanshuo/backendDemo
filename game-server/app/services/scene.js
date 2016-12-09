@@ -1,5 +1,6 @@
 var Scene = require('../models/scene');
 var game = require('../console/game');
+var channelService = app.get('channelService');
 
 function SceneService() {
 }
@@ -28,8 +29,25 @@ SceneService.prototype.createGame = function(dealer, room_id, callback) {
 	
 		try{
 			sceneCollection.insert(new_scene);
-			
+			channelService.createChannel(room_id);
 			return callback(null, new_scene);
+		}
+		catch(err){
+			return callback(err, null);
+		}
+	}
+}
+
+SceneService.prototype.endGame = function(dealer, room_id, callback) {
+	var scene = sceneCollection.findOne({'room': room_id});
+	if(!scene){
+		return callback('game has not been created', scene);
+	}
+	else{
+		try{
+			sceneCollection.remove(scene);
+			channelService.destroyChannel(room_id);
+			return callback(null, scene);
 		}
 		catch(err){
 			return callback(err, null);

@@ -30,7 +30,6 @@ function initMongo(){
         });
 }
 
-
 var app = pomelo.createApp();
 app.set('name', 'luluvr');
 global.app = app;
@@ -91,7 +90,7 @@ app.configure('production|development', 'broadcaster', function(){
       heartbeatTimeout : 60,
       heartbeatInterval : 25
     });
-  initMongo();
+   initMongo();
 });
 
 
@@ -104,9 +103,9 @@ app.configure('production|development', 'gate', function(){
 });
 
 app.configure('production|development', 'scene', function(){
- 
   initMongo();
   initSceneCache();
+  
 });
 
 
