@@ -9,6 +9,15 @@ exp.scene = function(session, msg, context, cb) {
   	cb(null, id);
 };
 
+exp.channel = function(roomId) {
+	var sceneServers = app.getServersByType('scene');
+	var hash = roomId;
+	var lastChar = hash[hash.length -1];
+	var code = lastChar.charCodeAt(0);
+ 	var id = sceneServers[code % sceneServers.length].id;
+ 	return id;
+};
+
 exp.connector = function(session, msg, app, cb) {
 	if(!session) {
 		cb(new Error('fail to route to connector server for session is empty'));

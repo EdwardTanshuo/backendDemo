@@ -78,7 +78,7 @@ SceneService.prototype.nextTurn = function(room_id, callback){
 	}
 }
 
-SceneService.prototype.addPlayer = function(room_id, role, callback){
+SceneService.prototype.addPlayer = function(room_id, role, callback, serverId){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
 
@@ -86,6 +86,20 @@ SceneService.prototype.addPlayer = function(room_id, role, callback){
 			return callback('no scene', null);
 		}
 		
+		var channel = channelService.getChannel(room_id);
+		if(channel){
+			try{
+				channel.add(role.token, serverId);
+			}
+			catch(e){
+				return callback(e, null);
+			}
+			
+		}
+		else{
+			return callback('no channel', null);
+		}
+
 		//如果玩家已加入游戏， 返回当前游戏状态
 		try{
 			if(scene.players[role.token] != null){
@@ -128,7 +142,7 @@ SceneService.prototype.startGame = function(room_id, callback){
 	}
 }
 
-SceneService.prototype.removePlayer = function(room_id, role, callback){
+SceneService.prototype.removePlayer = function(room_id, role, callback, serverId){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
 		if(!scene){

@@ -1,6 +1,7 @@
 var sceneService = require('../../../services/scene');
 var exp = module.exports;
 var utils = require('../../../util/utils');
+var router = require('../../../util/routeUtil');
 
 var logger = require('pomelo-logger').getLogger(__filename);
 
@@ -25,7 +26,7 @@ exp.playerEnter = function(args, callback){
 			delete scene.player_bets;
 		}
 		utils.invokeCallback(callback, err, scene);
-	});	
+	}, router.channel(args.roomid));	
 }
 
 exp.broadcasterLeave = function(args, callback){
