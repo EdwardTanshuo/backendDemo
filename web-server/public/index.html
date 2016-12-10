@@ -8,10 +8,13 @@
     </title>
     <link rel="stylesheet" href="style.css" type="text/css" />
     <script src="js/lib/jquery-1.8.0.min.js" type="text/javascript"></script>
-    <script src="js/lib/build/build.js"></script>
-    <script type="text/javascript">
-        require('boot');
-    </script>
+    <!--<script src="js/lib/build/build.js"></script>-->
+    <!--<script type="text/javascript">-->
+        <!--require('boot');-->
+    <!--</script>-->
+
+    <script src="js/lib/socket.io.js"></script>
+    <script src="js/lib/pomeloclient.js"></script>
     <script src="js/client.js"></script>
     <script src="js/pop.js" type="text/javascript"></script>
 
@@ -26,12 +29,7 @@
         <table>
             <tr>
                 <td>
-                    <input id="loginUser" type="text" placeholder="填写昵称" />
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input name="roomId" type="text" id="roomId" placeholder="roomId"/>
+                    <input name="roomId" type="text" id="roomId" placeholder="roomId" value="57f5e15f908766837cb858c7"/>
                 </td>
             <tr>
             <tr>

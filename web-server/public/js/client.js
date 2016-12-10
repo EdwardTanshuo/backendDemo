@@ -3,18 +3,14 @@
  */
 
 var pomelo = window.pomelo;
-var username;
 var users;
-var rid;
+var username;
 var token;
 var role;
+var roomId;
 var base = 1000;
 var increase = 25;
 var reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]+$/;
-var LOGIN_ERROR = "There is no server to log in, please wait.";
-var LENGTH_ERROR = "Name/Channel is too long or too short. 20 character max.";
-var NAME_ERROR = "Bad character in Name/Channel. Can only have letters, numbers, Chinese characters, and '_'";
-var DUPLICATE_ERROR = "Please change your name to login.";
 
 util = {
     urlRE: /https?:\/\/([-\w\.]+)+(:\d+)?(\/([^\s]*(\?\S+)?)?)?/g,
@@ -106,14 +102,9 @@ function tip(type, name) {
 };
 
 // init user list
-function initUserList(data) {
-    users = data.users;
-    for(var i = 0; i < users.length; i++) {
-        var slElement = $(document.createElement("option"));
-        slElement.attr("value", users[i]);
-        slElement.text(users[i]);
-        $("#usersList").append(slElement);
-    }
+function initGame(data) {
+    broadcaster = data.result;
+    username = broadcaster.name
 };
 
 // add user in user list
@@ -139,7 +130,7 @@ function setName() {
 
 // set your room
 function setRoom() {
-    $("#room").text(rid);
+    $("#room").text(roomId);
 };
 
 // show error
@@ -222,16 +213,11 @@ $(document).ready(function() {
 
     //deal with login button click.
     $("#login").click(function() {
-        username = $("#loginUser").attr("value");
         roomId = $('#roomId').val();
         token = 'd858bd235c7faf19f5da18a1118788e2';
         roleType = $('#role').val();
-        if(username.length > 20 || username.length == 0 || rid.length > 20 || rid.length == 0) {
+        if(roomId.length == 0) {
             showError(LENGTH_ERROR);
-            return false;
-        }
-        if(!reg.test(username) || !reg.test(rid)) {
-            showError(NAME_ERROR);
             return false;
         }
         if(roleType == 'player'){
@@ -266,17 +252,19 @@ $(document).ready(function() {
                 log: true
             }, function() {
                 pomelo.request("broadcaster.entryHandler.entry", {
-                    username: username,
                     roomId: roomId
                 }, function(data) {
+                    console.log(data);
                     if(data.error) {
-                        showError(DUPLICATE_ERROR);
+                        showError(data.error);
                         return;
                     }
                     setName();
                     setRoom();
                     showChat();
-                    initUserList(data);
+                    console.log(data.code);
+                    console.log(data.result);
+                    //initGame(data);
                 })
             })
         }
