@@ -4,7 +4,7 @@
 
 var pomelo = window.pomelo;
 var users;
-var username;
+var curName;
 var token;
 var role;
 var roomId;
@@ -102,9 +102,18 @@ function tip(type, name) {
 };
 
 // init user list
-function initGame(data) {
-    broadcaster = data.result;
-    username = broadcaster.name
+function initGame(scene) {
+    broadcaster = scene.dealer;
+    users = scene.players;
+    curName = broadcaster.name;
+    if(users){
+        for(var i = 0; i < users.length; i++) {
+            var slElement = $(document.createElement("option"));
+            slElement.attr("value", users[i]);
+            slElement.text(users[i]);
+            $("#usersList").append(slElement);
+        }
+    }
 };
 
 // add user in user list
@@ -125,7 +134,7 @@ function removeUser(user) {
 
 // set your name
 function setName() {
-    $("#name").text(username);
+    $("#name").text(curName);
 };
 
 // set your room
@@ -259,12 +268,13 @@ $(document).ready(function() {
                         showError(data.error);
                         return;
                     }
+
+
+                    console.log(data.result);
+                    initGame(data.result);
                     setName();
                     setRoom();
                     showChat();
-                    console.log(data.code);
-                    console.log(data.result);
-                    //initGame(data);
                 })
             })
         }

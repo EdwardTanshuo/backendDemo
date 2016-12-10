@@ -19,37 +19,30 @@ var Handler = function(app) {
  */
 Handler.prototype.entry = function(msg, session, next) {
 	  var self_app = this.app;
-	  broadcasterService.auth(msg.room, function(err, result){
+    console.log('---broadcaster entry-------');
+    console.log(msg);
+	  broadcasterService.auth(msg.roomId, function(err, result){
 	  		if(err){
 	  			return next(new Error(err), {code: Code.FAIL, error: err});
 	  		}
 	  		else{
-	  			self_app.get('sessionService').kick(msg.room, function(err){
+	  			self_app.get('sessionService').kick(msg.roomId, function(err){
 	  				if(err){
 	  					return next(new Error(err), {code: Code.FAIL, error: err});
-	  				}
-	  				else{
-	  					session.bind(msg.room, function(err){
-			  				if(!err){
-			  					session.set('room', msg.room);
+	  				} else{
+	  					session.bind(msg.roomId, function(bindErr){
+			  				if(!bindErr){
+			  					session.set('room', msg.roomId);
 								session.set('currentBroadcaster', result);
-								session.pushAll(function(err){
-									broadcasterEnter(self_app, session, function(err, result){
-									if(err == null && result == null){
-										return;
-									}
-					  				if(err){
-						  					return next(new Error(err), {code: Code.FAIL, error: err});
-						  				}
-						  				else{
-						  					session.on('closed', onBroadcasterLeave.bind(null, self_app, session, 'connection closed'));
-						  					return next(null, {code: Code.OK, result: session.get('currentBroadcaster')});
-						  				}
-						  			});
+								session.pushAll(function(pushErr){
+                                    if(pushErr) {
+                                        logger.error('set Broadcaster for session service failed! error is: %j', pushErr.stack);
+                                    }
+                                    session.on('closed', onBroadcasterLeave.bind(null, self_app, 'connection closed'));
+                                    onBroadcasterEnter(self_app, session, next);
 								});
-			  				}
-			  				else{
-			  					return next(new Error(err), {code: Code.FAIL, error: err});
+			  				} else{
+                                next(new Error(bindErr), {code: Code.FAIL, error: bindErr});
 			  				}
 			  			});
 	  				}
@@ -66,7 +59,15 @@ var onBroadcasterLeave = function (app, session, reason) {
 	});
 };
 
-var broadcasterEnter = function (app, session, callback) {
-	app.rpc.scene.sceneRemote.broadcasterEnter(session, {room: session.room}, callback);
-	callback(null);
+var onBroadcasterEnter = function (app, session, next) {
+    console.log('---onBroadcasterEnter-------');
+	app.rpc.scene.sceneRemote.createGame(session, {roomId: session.get('room'), broadcaster: session.get('currentBroadcaster')}, function(err, scene){
+        if(scene){
+            console.log('---broadcaster create or get scene-------');
+            console.log(scene);
+            next(null, {code: Code.OK, result: scene});
+        } else{
+            next(new Error(err), {code: Code.FAIL, error: err});
+        }
+    });
 };

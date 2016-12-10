@@ -50,7 +50,9 @@ exp.startGame = function(args, callback){
 }
 
 exp.createGame = function(args, callback){
-	sceneService.createGame(args.broadcaster, args.room_id, function(err, result){
+    console.log('---createGame-------');
+    console.log(args);
+	sceneService.createGame(args.broadcaster, args.roomId, function(err, result){
 		utils.invokeCallback(callback, err, result);
-	});	
+	});
 } 
