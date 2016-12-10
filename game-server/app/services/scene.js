@@ -1,5 +1,6 @@
 var Scene = require('../models/scene');
 var game = require('../console/game');
+var channelService = app.get('channelService');
 
 function SceneService() {
 }
@@ -28,7 +29,25 @@ SceneService.prototype.createGame = function(dealer, room_id, callback) {
 	
 		try{
 			sceneCollection.insert(new_scene);
+			channelService.createChannel(room_id);
 			return callback(null, new_scene);
+		}
+		catch(err){
+			return callback(err, null);
+		}
+	}
+}
+
+SceneService.prototype.endGame = function(dealer, room_id, callback) {
+	var scene = sceneCollection.findOne({'room': room_id});
+	if(!scene){
+		return callback('game has not been created', scene);
+	}
+	else{
+		try{
+			sceneCollection.remove(scene);
+			channelService.destroyChannel(room_id);
+			return callback(null, scene);
 		}
 		catch(err){
 			return callback(err, null);
@@ -59,16 +78,36 @@ SceneService.prototype.nextTurn = function(room_id, callback){
 	}
 }
 
-SceneService.prototype.addPlayer = function(room_id, role, callback){
+SceneService.prototype.addPlayer = function(room_id, role, callback, serverId){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
+
 		if(!scene){
 			return callback('no scene', null);
 		}
 		
+		var channel = channelService.getChannel(room_id);
+		if(channel){
+			try{
+				channel.add(role.token, serverId);
+			}
+			catch(e){
+				return callback(e, null);
+			}
+			
+		}
+		else{
+			return callback('no channel', null);
+		}
+
 		//如果玩家已加入游戏， 返回当前游戏状态
-		if(scene.players[role.token] != null){
-			return callback(null, scene);
+		try{
+			if(scene.players[role.token] != null){
+				return callback(null, scene);
+			}
+		}
+		catch(e){
+
 		}
 
 		//否则创建新的玩家状态
@@ -85,7 +124,7 @@ SceneService.prototype.addPlayer = function(room_id, role, callback){
 	}
 }
 
-SceneService.prototype.start = function(room_id, callback){
+SceneService.prototype.startGame = function(room_id, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
 		if(!scene){
@@ -103,7 +142,7 @@ SceneService.prototype.start = function(room_id, callback){
 	}
 }
 
-SceneService.prototype.removePlayer = function(room_id, role, callback){
+SceneService.prototype.removePlayer = function(room_id, role, callback, serverId){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
 		if(!scene){
