@@ -104,25 +104,34 @@ SceneService.prototype.addPlayer = function(room_id, role, callback, serverId){
 		//如果玩家已加入游戏， 返回当前游戏状态
 		try{
 			if(scene.players[role.token] != null){
-				return callback(null, scene);
+				channel.pushMessage('PlayerEnterEvent', {role: role}, null, function(err){
+					if(err){
+						return callback(err, null);
+					}
+					return callback(null, scene);
+				});
 			}
 		}
 		catch(e){
 
 		}
-
 		//否则创建新的玩家状态
 		role.sid = serverId;
 		scene.players[role.token] = role;
 		scene.player_platfroms[role.token] = [];
 		scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
 		scene.player_bets[role.token] = 0;
-
 		sceneCollection.update(scene);
-		callback(null, scene);
+		channel.pushMessage('PlayerEnterEvent', {role: role}, null, function(err){
+			if(err){
+				return callback(err, null);
+			}
+			return callback(null, scene);
+		});
+		
 	}
 	catch(err){
-		callback(err, null);
+		return callback(err, null);
 	}
 }
 
