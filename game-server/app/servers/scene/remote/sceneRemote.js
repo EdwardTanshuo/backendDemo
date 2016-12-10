@@ -9,6 +9,21 @@ exp.playerLeave = function(args, callback){
 	utils.invokeCallback(callback, null, {});
 }
 
+exp.playerBet = function(args, callback){
+	utils.invokeCallback(callback, null, {});
+}
+
+exp.playerFinish = function(args, callback){
+	utils.invokeCallback(callback, null, {});
+}
+
+exp.playerDraw = function(args, callback){
+	sceneService.playerDraw(args.roomid, args.token, args.deck, function(err, new_deck, result){
+		utils.invokeCallback(callback, err, {new_deck: new_deck, result: result});
+	});
+	
+}
+
 exp.playerEnter = function(args, callback){
 	sceneService.addPlayer(args.roomid, args.role, function(err, scene){
 		if(scene != null){
@@ -48,7 +63,6 @@ exp.startGame = function(args, callback){
 	});	
   
 }
-
 exp.createGame = function(args, callback){
     console.log('---createGame-------');
     console.log(args);

@@ -19,6 +19,13 @@ function initSceneCache() {
         global.sceneCollection = sceneCollection;
 }
 
+function initRoleDeckCache() {
+        var dbmem = new loki('roleDeck.json');
+        var roleDeckCollection = dbmem.addCollection('roleDeckCollection');
+        roleDeckCollection.constraints.unique['token'];
+        global.roleDeckCollection = roleDeckCollection;
+}
+
 function initMongo(){
    mongoose.connect(config.mongo.uri);
         var db = mongoose.connection;
@@ -76,6 +83,7 @@ app.configure('production|development', 'connector', function(){
       heartbeatInterval : 25
     });
   initMongo();
+  initRoleDeckCache();
 });
 
 // app configuration

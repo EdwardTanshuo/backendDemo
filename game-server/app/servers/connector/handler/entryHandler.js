@@ -1,4 +1,5 @@
 var roleService = require('../../../services/role');
+var utils = require('../../../util/utils');
 var channelService = app.get('channelService');
 var Code = require('../../../../../shared/code');
 
@@ -53,7 +54,6 @@ Handler.prototype.entry = function(msg, session, next) {
 						  					return next(new Error(err), {code: Code.FAIL, error: err});
 						  				}
 						  				else{
-						  					
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session, 'connection closed'));
 						  					return next(null, {code: Code.OK, result: scene});
 						  				}
@@ -80,6 +80,28 @@ var onRoleLeave = function (app, session, reason) {
 };
 
 var roleEnter = function (app, session, callback) {
+	//本地创建卡组
+	var deckId = (session.get('currentRole').deckId != null) ? session.get('currentRole').deckId : 'default';
+	var deck = utils.createDeck(deckId);
+	if(deck == null){
+		return callback('no such deck');
+	}
+	var new_model = {};
+	new_model.deck = deck;
+	new_model.token = session.get('token');
+	try{
+		var find_result = users.find({'token': session.get('token')});
+		if(find_result != null){
+			roleDeckCollection.update(new_model);	
+		}
+		else{
+			roleDeckCollection.insert(new_model);
+		}
+	}
+	catch(e){
+		return callback(e);
+	}
+	
+	//加入游戏
 	app.rpc.scene.sceneRemote.playerEnter(session, {token: session.get('token'), roomid: session.get('room'), role: session.get('currentRole')}, callback);
-	callback(null);
 };
