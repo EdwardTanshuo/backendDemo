@@ -7,15 +7,14 @@ var fs = require('fs');
 
 utils.createDeck = function(deckId) {
   try{
-    var obj = JSON.parse(fs.readFileSync('../../config/deck.json', 'utf8'));
+    //var obj = JSON.parse(fs.readFileSync('../../config/deck.json', 'utf8'))
+    var obj = require('../../config/deck.json');
     if(obj != null){
       return obj[deckId];
-    }
-    else{
+    } else{
       return null;
     }
-  }
-  catch(e){
+  } catch(e){
     return null;
   }
 };

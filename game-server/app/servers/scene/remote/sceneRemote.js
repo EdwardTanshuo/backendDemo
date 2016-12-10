@@ -2,7 +2,7 @@ var sceneService = require('../../../services/scene');
 var exp = module.exports;
 var utils = require('../../../util/utils');
 var router = require('../../../util/routeUtil');
-
+var channelService = app.get('channelService');
 var logger = require('pomelo-logger').getLogger(__filename);
 
 exp.playerLeave = function(args, callback){
@@ -25,7 +25,7 @@ exp.playerDraw = function(args, callback){
 }
 
 exp.playerEnter = function(args, callback){
-	sceneService.addPlayer(args.roomid, args.role, function(err, scene){
+	sceneService.addPlayer(args.roomid, args.role, args.serverId, function(err, scene){
 		if(scene != null){
 			console.log(JSON.stringify(scene));
 
@@ -41,7 +41,7 @@ exp.playerEnter = function(args, callback){
 			delete scene.player_bets;
 		}
 		utils.invokeCallback(callback, err, scene);
-	}, router.channel(args.roomid));	
+	});
 }
 
 exp.broadcasterLeave = function(args, callback){
@@ -64,9 +64,7 @@ exp.startGame = function(args, callback){
   
 }
 exp.createGame = function(args, callback){
-    console.log('---createGame-------');
-    console.log(args);
-	sceneService.createGame(args.broadcaster, args.roomId, function(err, result){
-		utils.invokeCallback(callback, err, result);
+	sceneService.createGame(args.broadcaster, args.roomId, args.serverId, function(err, result){
+        utils.invokeCallback(callback, err, result);
 	});
 } 

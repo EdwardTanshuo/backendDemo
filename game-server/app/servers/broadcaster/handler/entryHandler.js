@@ -19,8 +19,6 @@ var Handler = function(app) {
  */
 Handler.prototype.entry = function(msg, session, next) {
 	  var self_app = this.app;
-    console.log('---broadcaster entry-------');
-    console.log(msg);
 	  broadcasterService.auth(msg.roomId, function(err, result){
 	  		if(err){
 	  			return next(new Error(err), {code: Code.FAIL, error: err});
@@ -61,10 +59,13 @@ var onBroadcasterLeave = function (app, session, reason) {
 
 var onBroadcasterEnter = function (app, session, next) {
     console.log('---onBroadcasterEnter-------');
-	app.rpc.scene.sceneRemote.createGame(session, {roomId: session.get('room'), broadcaster: session.get('currentBroadcaster')}, function(err, scene){
+    var serverId = app.get('serverId');
+	app.rpc.scene.sceneRemote.createGame(session, {
+        roomId: session.get('room'),
+        broadcaster: session.get('currentBroadcaster'),
+        serverId: serverId
+    }, function(err, scene){
         if(scene){
-            console.log('---broadcaster create or get scene-------');
-            console.log(scene);
             next(null, {code: Code.OK, result: scene});
         } else{
             next(new Error(err), {code: Code.FAIL, error: err});

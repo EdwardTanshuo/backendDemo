@@ -193,16 +193,20 @@ $(document).ready(function() {
     $('#token').val(Date.now().toString());
 
     //wait message from the server.
-    pomelo.on('onChat', function(data) {
-        addMessage(data.from, data.target, data.msg);
+    pomelo.on('PlayerEnterEvent', function(data) {
+        console.log(data);
+        var role = data.role
+        addMessage(role.sid, role.token, role.name);
         $("#chatHistory").show();
         if(data.from !== username)
             tip('message', data.from);
     });
 
     //update user list
-    pomelo.on('onAdd', function(data) {
-        var user = data.user;
+    pomelo.on('DealerEnterEvent', function(data) {
+        console.log(data);
+        var dealer = data.dealer
+        var user = dealer.name;
         tip('online', user);
         addUser(user);
     });
@@ -231,7 +235,7 @@ $(document).ready(function() {
         }
         if(roleType == 'player'){
             //player entry of connection
-            queryEntry(roomId, function(host, port) {
+            queryEntry(token, function(host, port) {
                 pomelo.init({
                     host: host,
                     port: port,
