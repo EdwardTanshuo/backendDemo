@@ -3,6 +3,22 @@ var utils = module.exports;
 // control variable of func "myPrint"
 var isPrintFlag = false;
 // var isPrintFlag = true;
+var fs = require('fs');
+
+utils.createDeck = function(deckId) {
+  try{
+    var obj = JSON.parse(fs.readFileSync('../../config/deck.json', 'utf8'));
+    if(obj != null){
+      return obj[deckId];
+    }
+    else{
+      return null;
+    }
+  }
+  catch(e){
+    return null;
+  }
+};
 
 /**
  * Check and invoke callback function

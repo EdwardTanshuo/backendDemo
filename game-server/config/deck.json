@@ -1,0 +1,108 @@
+{
+	"default": [
+		{
+			"name": "a",
+			"thumb": "",
+			"model": "",
+			"value": 2,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "b",
+			"thumb": "",
+			"model": "",
+			"value": 3,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "c",
+			"thumb": "",
+			"model": "",
+			"value": 4,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "d",
+			"thumb": "",
+			"model": "",
+			"value": 5,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "e",
+			"thumb": "",
+			"model": "",
+			"value": 6,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "f",
+			"thumb": "",
+			"model": "",
+			"value": 7,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "g",
+			"thumb": "",
+			"model": "",
+			"value": 8,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "h",
+			"thumb": "",
+			"model": "",
+			"value": 9,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "i",
+			"thumb": "",
+			"model": "",
+			"value": 10,
+			"type": "NORMAL",
+			"weight": 1.0
+		},
+		{
+			"name": "j",
+			"thumb": "",
+			"model": "",
+			"value": 11,
+			"type": "SUPER",
+			"weight": 1.0
+		},
+		{
+			"name": "k",
+			"thumb": "",
+			"model": "",
+			"value": 11,
+			"type": "SUPER",
+			"weight": 1.0
+		},
+		{
+			"name": "l",
+			"thumb": "",
+			"model": "",
+			"value": 11,
+			"type": "SUPER",
+			"weight": 1.0
+		},
+		{
+			"name": "l",
+			"thumb": "",
+			"model": "",
+			"value": 11,
+			"type": "TRANSFORM",
+			"weight": 1.0
+		}
+	]
+}

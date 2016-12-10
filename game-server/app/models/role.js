@@ -11,7 +11,8 @@ var RoleSchema = mongoose.Schema({
     //game
     exp : {type: Number, required: false, "default": 0},
     level : {type: Number, required: false, "default": 0},
-    bag : {type: Object, required: false, "default": {}}
+    bag : {type: Object, required: false, "default": {}},
+    deckId: {type: String, required: false, default: "default"}
 });
 
 

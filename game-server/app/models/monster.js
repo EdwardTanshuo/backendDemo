@@ -6,7 +6,7 @@ var MonsterSchema = mongoose.Schema({
     model: {type: String, required: false},
     value: {type: Number, required: true},
     foreignId: {type: Number, required: true},
-    deckId: {type: String, required: false},
+    deckId: {type: String, required: false, default: "default"},
     type: {
         type: String,
         'enum': ['NORMAL', 'SUPER', 'TRANSFORM']

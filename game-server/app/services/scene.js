@@ -24,6 +24,7 @@ SceneService.prototype.createGame = function(dealer, room_id, callback) {
 		new_scene.dealer_platfrom = [];
 		new_scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
 		new_scene.dealer_bets = 0;
+		new_scene.dealer_deck = [];
 		
 		new_scene.turns = 0;
 	
@@ -111,6 +112,7 @@ SceneService.prototype.addPlayer = function(room_id, role, callback, serverId){
 		}
 
 		//否则创建新的玩家状态
+		role.sid = serverId;
 		scene.players[role.token] = role;
 		scene.player_platfroms[role.token] = [];
 		scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
@@ -153,16 +155,16 @@ SceneService.prototype.removePlayer = function(room_id, role, callback, serverId
 		}
 		
 		var player = scene.players[role.token];
-		scene.players[role.token] = null;
+		delete scene.players[role.token];
 
 		var player_platfrom = scene.player_platfroms[role.token];
-		scene.player_platfroms[role.token] = null;
+		delete scene.player_platfroms[role.token];
 
 		var player_value = scene.player_values[role.token];
-		scene.player_values[role.token] = null;
+		delete scene.player_values[role.token];
 
 		var player_bet = scene.player_bets[role.token];
-		scene.player_bets[role.token] = null;
+		delete scene.player_bets[role.token];
 
 		sceneCollection.update(scene);
 		callback(null, {player_platfrom: player_platfrom, player_value: player_value, player_bet: player_bet, player: player});
@@ -174,8 +176,31 @@ SceneService.prototype.removePlayer = function(room_id, role, callback, serverId
 
 }
 
-SceneService.prototype.removeAllPlayers = function(room_id,callback){
+SceneService.prototype.addBet = function(room_id, token, callback){
 
 }
+
+SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
+	try{
+		var scene = sceneCollection.findOne({'room': room_id});
+		if(!scene){
+			return callback('no scene', null);
+		}
+		if(scene.players[token] == null){
+			return callback('player is not inside', null);
+		}
+		game.dealNextCard(deck, function(err, new_deck, result){
+			callback(err, new_deck, result);
+		});
+	}
+	catch(err){
+		callback(err, null);
+	}
+}
+
+SceneService.prototype.playerFinish = function(room_id, token, callback){
+	
+}
+
 
 module.exports = new SceneService();
