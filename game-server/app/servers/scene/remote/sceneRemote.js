@@ -45,7 +45,7 @@ exp.playerEnter = function(args, callback){
 }
 
 exp.broadcasterLeave = function(args, callback){
-    utils.invokeCallback(callback, null, {});
+    sceneService.dealerLeave(args.broadcaster, args.roomid, args.serverId);
 }
 
 exp.broadcasterEnter = function(args, callback){
@@ -58,7 +58,7 @@ exp.getNumberOfPlayers = function(args, callback){
 }
 
 exp.startGame = function(args, callback){
-	sceneService.startGame(args.room_id, function(err, result){
+	sceneService.startGame(args.roomId, args.serverId, function(err, result){
 		utils.invokeCallback(callback, err, result);
 	});	
   

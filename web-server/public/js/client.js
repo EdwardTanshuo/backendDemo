@@ -211,6 +211,15 @@ $(document).ready(function() {
         addUser(user);
     });
 
+    pomelo.on('GameStartEvent', function(data) {
+        alert('gameStart');
+        console.log(data);
+
+        var dealer = data.dealer
+        var user = dealer.name;
+        tip('online', user);
+
+    });
     //update user list
     pomelo.on('onLeave', function(data) {
         var user = data.user;
@@ -282,6 +291,27 @@ $(document).ready(function() {
                 })
             })
         }
+    });
+
+    $("#startGame").click(function() {
+        //roomId = $('#roomId').val();
+        token = 'd858bd235c7faf19f5da18a1118788e2';
+        roleType = $('#role').val();
+        if(roomId.length == 0) {
+            showError(LENGTH_ERROR);
+            return false;
+        }
+        pomelo.request("broadcaster.broadcasterHandler.startGame", {
+            roomId: roomId
+        }, function(data) {
+            console.log(data);
+            if(data.error) {
+                showError(data.error);
+                return;
+            }
+            console.log(data.result);
+
+        })
     });
 
     //deal with chat mode.

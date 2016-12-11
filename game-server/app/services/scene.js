@@ -1,15 +1,22 @@
 var Scene = require('../models/scene');
 var game = require('../console/game');
+var sceneConfig = require('../../config/scene');
 var channelService = app.get('channelService');
 function SceneService() {
 }
 
-var onPlayerEnter = function(roomId, role, serverId, cb){
-    var channel = channelService.getChannel(roomId, false);
+//主播进入游戏，推送 DealerEnterEvent 消息给当前room的所有人，消息内容为主播的模型
+// 然后把主播的roomId加入该room的channel
+var onDealerEnter = function(roomId, dealer, serverId, cb){
+    var channel = channelService.getChannel(roomId, true);
     if( !! channel) {
         try{
-            channel.pushMessage({route: 'PlayerEnterEvent', role: role});
-            channel.add(role.token, serverId);
+
+            channel.pushMessage({route: 'DealerEnterEvent', dealer: dealer});
+            channel.add(roomId, serverId);
+            console.log('-----current channel-------')
+            console.log(channel.getUserAmount())
+            console.log(channel.getMembers())
             cb(null)
         } catch(err){
             return cb(err);
@@ -19,12 +26,43 @@ var onPlayerEnter = function(roomId, role, serverId, cb){
     }
 }
 
-var onDealerEnter = function(roomId, dealer, serverId, cb){
-    var channel = channelService.getChannel(roomId, true);
+var onDealerLeave = function(roomId, dealer, serverId, cb){
+    var channel = channelService.getChannel(roomId, false);
     if( !! channel) {
         try{
-            channel.pushMessage({route: 'DealerEnterEvent', dealer: dealer});
-            channel.add(roomId, serverId);
+            channel.leave(roomId, serverId);
+            channel.pushMessage({route: 'DealerLeaverEvent', dealer: dealer});
+            cb(null)
+        } catch(err){
+            return cb(err);
+        }
+    }else{
+        cb('no channel')
+    }
+}
+
+// 开始游戏，推送 GameStartEvent 消息给当前room的所有人，消息内容为场景的模型
+var onStartGame = function(channel, scene, cb){
+    if( !! channel) {
+        try{
+            channel.pushMessage({route: 'GameStartEvent', scene: scene});
+            cb(null)
+        } catch(err){
+            return cb(err);
+        }
+    }else{
+        cb('no channel')
+    }
+}
+
+//玩家进入游戏，推送 PlayerEnterEvent 消息给当前room的所有人，消息内容为玩家的模型
+// 然后把玩家的token加入该room的channel
+var onPlayerEnter = function(roomId, role, serverId, cb){
+    var channel = channelService.getChannel(roomId, false);
+    if( !! channel) {
+        try{
+            channel.pushMessage({route: 'PlayerEnterEvent', role: role});
+            channel.add(role.token, serverId);
             cb(null)
         } catch(err){
             return cb(err);
@@ -42,8 +80,8 @@ SceneService.prototype.createGame = function(dealer, roomId, serverId, callback)
             if(err){
                 return callback(err, scene);
             }
+            return callback('game has been created', scene);
         });
-		return callback('game has been created', scene);
 	}
 	else{
 		var new_scene = new Scene();
@@ -69,8 +107,9 @@ SceneService.prototype.createGame = function(dealer, roomId, serverId, callback)
                 if(err){
                     return callback(err, new_scene);
                 }
+                return callback(null, new_scene);
+
             });
-			return callback(null, new_scene);
 		} catch(err){
 			return callback(err, null);
 		}
@@ -92,6 +131,10 @@ SceneService.prototype.endGame = function(dealer, room_id, callback) {
 			return callback(err, null);
 		}
 	}
+}
+
+SceneService.prototype.dealerLeave = function(dealer, roomId, serverId) {
+    onDealerLeave(roomId, dealer, serverId, function(err){ });
 }
 
 SceneService.prototype.getNumberOfPlayers = function(room_id){
@@ -153,22 +196,41 @@ SceneService.prototype.addPlayer = function(room_id, role, serverId, callback){
 	}
 }
 
-SceneService.prototype.startGame = function(room_id, callback){
-	try{
-		var scene = sceneCollection.findOne({'room': room_id});
-		if(!scene){
-			return callback('no scene', null);
-		}
-		if(scene.status != 'init'){
-			return callback('game is not at init', null);
-		}
-		scene.status = 'started';
-		sceneCollection.update(scene);
-		callback(null, scene);
-	}
-	catch(err){
-		callback(err, null);
-	}
+SceneService.prototype.startGame = function(roomId, serverId, callback){
+    try {
+        var channel = channelService.getChannel(roomId, true);
+        if (!!channel) {
+            console.log('-------channel info-------');
+            console.log(channel.getUserAmount());
+            console.log(sceneConfig.minPlayerCount);
+
+            if (channel.getUserAmount() > sceneConfig.minPlayerCount) {
+                var scene = sceneCollection.findOne({'room': roomId});
+                console.log('-------get scene-------');
+                console.log(scene);
+                if (!scene) {
+                    return callback('no scene', null);
+                }
+                if (scene.status != 'init') {
+                    return callback('game is not at init', null);
+                }
+                scene.status = 'started';
+                sceneCollection.update(scene);
+                onStartGame(channel, scene, function(err){
+                    if(err){
+                        return callback(err, null);
+                    }
+                    return callback(null, scene);
+                })
+            } else {
+                return callback('no enough player', null);
+            }
+        } else {
+            return callback('no channel', null);
+        }
+    } catch(err){
+        callback(err, null);
+    }
 }
 
 SceneService.prototype.removePlayer = function(room_id, role, callback, serverId){

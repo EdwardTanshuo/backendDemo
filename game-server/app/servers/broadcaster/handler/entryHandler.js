@@ -50,7 +50,10 @@ Handler.prototype.entry = function(msg, session, next) {
 };
 
 var onBroadcasterLeave = function (app, session, reason) {
-	app.rpc.scene.sceneRemote.broadcasterLeave(session, {token: session.token}, function(err){
+	app.rpc.scene.sceneRemote.dealerLeave(session, {
+        roomId: session.get('room'),
+        serverId: app.get('serverId')
+    }, function(err){
 		if(!!err){
 			logger.error('player leave error! %j', err);
 		}
@@ -59,11 +62,10 @@ var onBroadcasterLeave = function (app, session, reason) {
 
 var onBroadcasterEnter = function (app, session, next) {
     console.log('---onBroadcasterEnter-------');
-    var serverId = app.get('serverId');
 	app.rpc.scene.sceneRemote.createGame(session, {
         roomId: session.get('room'),
         broadcaster: session.get('currentBroadcaster'),
-        serverId: serverId
+        serverId: app.get('serverId')
     }, function(err, scene){
         if(scene){
             next(null, {code: Code.OK, result: scene});
