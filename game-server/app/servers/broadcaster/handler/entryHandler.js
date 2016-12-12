@@ -10,7 +10,7 @@ var Handler = function(app) {
 };
 
 /**
- * New client entry.
+ * 主播端 entry.
  *
  * @param  {Object}   msg     request message
  * @param  {Object}   session current session object
@@ -18,59 +18,64 @@ var Handler = function(app) {
  * @return {Void}
  */
 Handler.prototype.entry = function(msg, session, next) {
-	  var self_app = this.app;
-	  broadcasterService.auth(msg.roomId, function(err, result){
-	  		if(err){
-	  			return next(new Error(err), {code: Code.FAIL, error: err});
-	  		}
-	  		else{
-	  			self_app.get('sessionService').kick(msg.roomId, function(err){
-	  				if(err){
-	  					return next(new Error(err), {code: Code.FAIL, error: err});
-	  				} else{
-	  					session.bind(msg.roomId, function(bindErr){
-			  				if(!bindErr){
-			  					session.set('room', msg.roomId);
-								session.set('currentBroadcaster', result);
-								session.pushAll(function(pushErr){
-                                    if(pushErr) {
-                                        logger.error('set Broadcaster for session service failed! error is: %j', pushErr.stack);
-                                    }
-                                    session.on('closed', onBroadcasterLeave.bind(null, self_app, 'connection closed'));
-                                    onBroadcasterEnter(self_app, session, next);
-								});
-			  				} else{
-                                next(new Error(bindErr), {code: Code.FAIL, error: bindErr});
-			  				}
-			  			});
-	  				}
-	  			});
-	  		}
-	  });
+    var self_app = this.app;
+    broadcasterService.auth(msg.roomId, function(err, result){
+        if(err){
+            return next(new Error(err), {code: Code.FAIL, error: err});
+        }
+        else{
+            self_app.get('sessionService').kick(msg.roomId, function(err){
+                if(err){
+                    return next(new Error(err), {code: Code.FAIL, error: err});
+                } else{
+                    session.bind(msg.roomId, function(bindErr){
+                        if(!bindErr){
+                            session.set('room', msg.roomId);
+                            session.set('currentBroadcaster', result);
+                            session.pushAll(function(pushErr){
+                                if(pushErr) {
+                                    logger.error('set Broadcaster for session service failed! error is: %j', pushErr.stack);
+                                }
+                                session.on('closed', onBroadcasterLeave.bind(null, self_app));
+                                onBroadcasterEnter(self_app, session, next);
+                            });
+                        } else{
+                            next(new Error(bindErr), {code: Code.FAIL, error: bindErr});
+                        }
+                    });
+                }
+            });
+        }
+    });
 };
 
-var onBroadcasterLeave = function (app, session, reason) {
-	app.rpc.scene.sceneRemote.dealerLeave(session, {
-        roomId: session.get('room'),
-        serverId: app.get('serverId')
-    }, function(err){
+var onBroadcasterLeave = function (app, session) {
+    console.log('------onBroadcasterLeave----------');
+
+    if(!session || !session.uid) {
+        logger.error('Broadcaster leave error! %j', 'no session');
+    }
+    var roomId = session.get('room'),
+        broadcaster= session.get('currentBroadcaster'),
+        serverId= app.get('serverId');
+	app.rpc.scene.sceneRemote.dealerLeave(session, roomId, broadcaster, serverId, function(err){
 		if(!!err){
-			logger.error('player leave error! %j', err);
+			logger.error('Broadcaster leave error! %j', err);
 		}
 	});
 };
 
 var onBroadcasterEnter = function (app, session, next) {
-    console.log('---onBroadcasterEnter-------');
-	app.rpc.scene.sceneRemote.createGame(session, {
-        roomId: session.get('room'),
-        broadcaster: session.get('currentBroadcaster'),
-        serverId: app.get('serverId')
-    }, function(err, scene){
-        if(scene){
-            next(null, {code: Code.OK, result: scene});
-        } else{
+    console.log('------onBroadcasterEnter----------');
+
+    var roomId = session.get('room'),
+        broadcaster= session.get('currentBroadcaster'),
+        serverId= app.get('serverId');
+    app.rpc.scene.sceneRemote.dealerEnter(session, roomId, broadcaster, serverId, function(err, dealer){
+        if(err){
             next(new Error(err), {code: Code.FAIL, error: err});
+        } else{
+            next(null, {code: Code.OK, result: dealer});
         }
     });
 };

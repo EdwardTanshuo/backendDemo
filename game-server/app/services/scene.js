@@ -1,87 +1,13 @@
 var Scene = require('../models/scene');
 var game = require('../console/game');
-var sceneConfig = require('../../config/scene');
-var channelService = app.get('channelService');
 function SceneService() {
 }
 
-//主播进入游戏，推送 DealerEnterEvent 消息给当前room的所有人，消息内容为主播的模型
-// 然后把主播的roomId加入该room的channel
-var onDealerEnter = function(roomId, dealer, serverId, cb){
-    var channel = channelService.getChannel(roomId, true);
-    if( !! channel) {
-        try{
-
-            channel.pushMessage({route: 'DealerEnterEvent', dealer: dealer});
-            channel.add(roomId, serverId);
-            console.log('-----current channel-------')
-            console.log(channel.getUserAmount())
-            console.log(channel.getMembers())
-            cb(null)
-        } catch(err){
-            return cb(err);
-        }
-    }else{
-        cb('no channel')
-    }
-}
-
-var onDealerLeave = function(roomId, dealer, serverId, cb){
-    var channel = channelService.getChannel(roomId, false);
-    if( !! channel) {
-        try{
-            channel.leave(roomId, serverId);
-            channel.pushMessage({route: 'DealerLeaverEvent', dealer: dealer});
-            cb(null)
-        } catch(err){
-            return cb(err);
-        }
-    }else{
-        cb('no channel')
-    }
-}
-
-// 开始游戏，推送 GameStartEvent 消息给当前room的所有人，消息内容为场景的模型
-var onStartGame = function(channel, scene, cb){
-    if( !! channel) {
-        try{
-            channel.pushMessage({route: 'GameStartEvent', scene: scene});
-            cb(null)
-        } catch(err){
-            return cb(err);
-        }
-    }else{
-        cb('no channel')
-    }
-}
-
-//玩家进入游戏，推送 PlayerEnterEvent 消息给当前room的所有人，消息内容为玩家的模型
-// 然后把玩家的token加入该room的channel
-var onPlayerEnter = function(roomId, role, serverId, cb){
-    var channel = channelService.getChannel(roomId, false);
-    if( !! channel) {
-        try{
-            channel.pushMessage({route: 'PlayerEnterEvent', role: role});
-            channel.add(role.token, serverId);
-            cb(null)
-        } catch(err){
-            return cb(err);
-        }
-    }else{
-        cb('no channel')
-    }
-}
-
-SceneService.prototype.createGame = function(dealer, roomId, serverId, callback) {
+SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	var scene = sceneCollection.findOne({'room': roomId});
     //主播 非主观意图断开游戏，重新加入
 	if(scene){
-        onDealerEnter(roomId, dealer, serverId, function(err){
-            if(err){
-                return callback(err, scene);
-            }
-            return callback('game has been created', scene);
-        });
+        return callback('game has been created', scene);
 	}
 	else{
 		var new_scene = new Scene();
@@ -98,75 +24,72 @@ SceneService.prototype.createGame = function(dealer, roomId, serverId, callback)
 		new_scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
 		new_scene.dealer_bets = 0;
 		new_scene.dealer_deck = [];
-		
+
 		new_scene.turns = 0;
 	
 		try{
 			sceneCollection.insert(new_scene);
-            onDealerEnter(roomId, dealer, serverId, function(err){
-                if(err){
-                    return callback(err, new_scene);
-                }
-                return callback(null, new_scene);
-
-            });
+            return callback(null, new_scene);
 		} catch(err){
 			return callback(err, null);
 		}
 	}
 }
 
-
 SceneService.prototype.startGame = function(roomId, callback){
     try {
-        var channel = channelService.getChannel(roomId, true);
-        if (!!channel) {
-            if (channel.getUserAmount() > sceneConfig.minPlayerCount) {
-                var scene = sceneCollection.findOne({'room': roomId});
-                if (!scene) {
-                    return callback('no scene', null);
-                }
-                if (scene.status != 'init') {
-                    return callback('game is not at init', null);
-                }
-                scene.status = 'started';
-                sceneCollection.update(scene);
-                onStartGame(channel, scene, function(err){
-                    if(err){
-                        return callback(err, null);
-                    }
-                    return callback(null, scene);
-                })
-            } else {
-                return callback('no enough player', null);
-            }
-        } else {
-            return callback('no channel', null);
+        var scene = sceneCollection.findOne({'room': roomId});
+        if (!scene) {
+            return callback('no scene', null);
         }
+        if (scene.status != 'init') {
+            return callback('game is not at init', null);
+        }
+        scene.status = 'started';
+        sceneCollection.update(scene);
+        return callback(null, scene);
+
     } catch(err){
         callback(err, null);
     }
 }
 
 SceneService.prototype.endGame = function(roomId, callback) {
-	var scene = sceneCollection.findOne({'room': roomId});
-	if(!scene){
-		return callback('game has not been created', scene);
-	}
-	else{
-		try{
-			sceneCollection.remove(scene);
-			channelService.destroyChannel(roomId);
-			return callback(null, scene);
-		}
-		catch(err){
-			return callback(err, null);
-		}
-	}
+    try{
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback('game not exist', scene);
+        } else {
+            sceneCollection.remove(scene);
+            return callback(null, scene);
+        }
+    } catch(err){
+        return callback(err, null);
+    }
 }
 
-SceneService.prototype.dealerLeave = function(dealer, roomId, serverId) {
-    onDealerLeave(roomId, dealer, serverId, function(err){ });
+SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
+    try{
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback('no scene', null);
+        }
+        //如果玩家已加入游戏， 返回当前游戏状态
+        if(scene.players[role.token] != null){
+            return callback(null, scene);
+        }
+        //否则创建新的玩家状态
+        role.sid = serverId;
+        scene.players[role.token] = role;
+        scene.player_platfroms[role.token] = [];
+        scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
+        scene.player_bets[role.token] = 0;
+        sceneCollection.update(scene);
+        callback(null, scene);
+
+    } catch(err){
+        return callback(err, null);
+    }
 }
 
 SceneService.prototype.getNumberOfPlayers = function(room_id){
@@ -191,43 +114,6 @@ SceneService.prototype.nextTurn = function(room_id, callback){
 		callback(err, null);
 	}
 }
-
-SceneService.prototype.addPlayer = function(room_id, role, serverId, callback){
-	try{
-		var scene = sceneCollection.findOne({'room': room_id});
-
-		if(!scene){
-			return callback('no scene', null);
-		}
-		//如果玩家已加入游戏， 返回当前游戏状态
-        if(scene.players[role.token] != null){
-            onPlayerEnter(room_id, role, serverId, function(err){
-                if(err){
-                    return callback(err, null);
-                }
-                return callback(null, scene);
-            })
-        }
-		//否则创建新的玩家状态
-		role.sid = serverId;
-		scene.players[role.token] = role;
-		scene.player_platfroms[role.token] = [];
-		scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
-		scene.player_bets[role.token] = 0;
-		sceneCollection.update(scene);
-
-        onPlayerEnter(room_id, role, serverId, function(err){
-            if(err){
-                return callback(err, null);
-            }
-            return callback(null, scene);
-        })
-	}
-	catch(err){
-		return callback(err, null);
-	}
-}
-
 
 SceneService.prototype.removePlayer = function(room_id, role, callback, serverId){
 	try{

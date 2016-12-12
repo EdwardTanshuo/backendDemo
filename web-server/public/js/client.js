@@ -8,6 +8,7 @@ var curName;
 var token;
 var role;
 var roomId;
+var target= '*';
 var base = 1000;
 var increase = 25;
 var reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]+$/;
@@ -102,18 +103,16 @@ function tip(type, name) {
 };
 
 // init user list
-function initGame(scene) {
-    broadcaster = scene.dealer;
-    users = scene.players;
+function initGame(broadcaster) {
     curName = broadcaster.name;
-    if(users){
-        for(var i = 0; i < users.length; i++) {
-            var slElement = $(document.createElement("option"));
-            slElement.attr("value", users[i]);
-            slElement.text(users[i]);
-            $("#usersList").append(slElement);
-        }
-    }
+    //if(users){
+    //    for(var i = 0; i < users.length; i++) {
+    //        var slElement = $(document.createElement("option"));
+    //        slElement.attr("value", users[i]);
+    //        slElement.text(users[i]);
+    //        $("#usersList").append(slElement);
+    //    }
+    //}
 };
 
 // add user in user list
@@ -215,14 +214,14 @@ $(document).ready(function() {
         alert('gameStart');
         console.log(data);
 
-        var dealer = data.dealer
+        var dealer = data.scene.dealer
         var user = dealer.name;
         tip('online', user);
 
     });
     //update user list
     pomelo.on('onLeave', function(data) {
-        var user = data.user;
+        var user = data.scene.user;
         tip('offline', user);
         removeUser(user);
     });
@@ -281,8 +280,6 @@ $(document).ready(function() {
                         showError(data.error);
                         return;
                     }
-
-
                     console.log(data.result);
                     initGame(data.result);
                     setName();
@@ -293,6 +290,26 @@ $(document).ready(function() {
         }
     });
 
+    $("#createGame").click(function() {
+        //roomId = $('#roomId').val();
+        token = 'd858bd235c7faf19f5da18a1118788e2';
+        roleType = $('#role').val();
+        if(roomId.length == 0) {
+            showError(LENGTH_ERROR);
+            return false;
+        }
+        pomelo.request("scene.sceneHandler.createGame", {
+            roomId: roomId
+        }, function(data) {
+            console.log(data);
+            if(data.error) {
+                showError(data.error);
+                return;
+            }
+            addMessage(curName, target, '游戏已创建');
+        })
+    });
+
     $("#startGame").click(function() {
         //roomId = $('#roomId').val();
         token = 'd858bd235c7faf19f5da18a1118788e2';
@@ -301,7 +318,7 @@ $(document).ready(function() {
             showError(LENGTH_ERROR);
             return false;
         }
-        pomelo.request("broadcaster.broadcasterHandler.startGame", {
+        pomelo.request("scene.sceneHandler.startGame", {
             roomId: roomId
         }, function(data) {
             console.log(data);
@@ -309,10 +326,30 @@ $(document).ready(function() {
                 showError(data.error);
                 return;
             }
-            console.log(data.result);
-
+            addMessage(curName, target, '游戏已开始');
         })
     });
+
+    $("#endGame").click(function() {
+        //roomId = $('#roomId').val();
+        token = 'd858bd235c7faf19f5da18a1118788e2';
+        roleType = $('#role').val();
+        if(roomId.length == 0) {
+            showError(LENGTH_ERROR);
+            return false;
+        }
+        pomelo.request("scene.sceneHandler.endGame", {
+            roomId: roomId
+        }, function(data) {
+            console.log(data);
+            if(data.error) {
+                showError(data.error);
+                return;
+            }
+            addMessage(curName, target, '游戏已结束');
+        })
+    });
+
 
     //deal with chat mode.
     $("#entry").keypress(function(e) {
@@ -324,12 +361,12 @@ $(document).ready(function() {
             pomelo.request(route, {
                 rid: rid,
                 content: msg,
-                from: username,
+                from: curName,
                 target: target
             }, function(data) {
                 $("#entry").attr("value", ""); // clear the entry field.
-                if(target != '*' && target != username) {
-                    addMessage(username, target, msg);
+                if(target != '*' && target != curName) {
+                    addMessage(curName, target, msg);
                     $("#chatHistory").show();
                 }
             });

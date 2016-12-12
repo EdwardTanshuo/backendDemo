@@ -1,6 +1,9 @@
 var exp = module.exports;
 
 exp.scene = function(session, msg, context, cb) {
+    if(!session.get('room')) {
+        return cb(new Error('missing room'));
+    }
 	var sceneServers = app.getServersByType('scene');
 	var hash = session.get('room');
 	var lastChar = hash[hash.length -1];
@@ -9,6 +12,7 @@ exp.scene = function(session, msg, context, cb) {
   	cb(null, id);
 };
 
+// todo: 可能要废弃
 exp.channel = function(roomId) {
 	var sceneServers = app.getServersByType('scene');
 	var hash = roomId;
