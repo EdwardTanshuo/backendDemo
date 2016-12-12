@@ -58,11 +58,17 @@ exp.getNumberOfPlayers = function(args, callback){
 }
 
 exp.startGame = function(args, callback){
-	sceneService.startGame(args.roomId, args.serverId, function(err, result){
+	sceneService.startGame(args.roomId, function(err, result){
 		utils.invokeCallback(callback, err, result);
-	});	
-  
+	});
 }
+
+exp.endGame = function(args, callback){
+    sceneService.endGame(args.roomId, function(err, result){
+        utils.invokeCallback(callback, err, result);
+    });
+}
+
 exp.createGame = function(args, callback){
 	sceneService.createGame(args.broadcaster, args.roomId, args.serverId, function(err, result){
         utils.invokeCallback(callback, err, result);

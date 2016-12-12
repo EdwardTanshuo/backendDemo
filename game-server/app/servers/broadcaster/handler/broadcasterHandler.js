@@ -38,10 +38,18 @@ Handler.prototype.createGame = function(msg, session, next) {
 
 Handler.prototype.startGame = function(msg, session, next) {
     console.log('----startGame---------')
-    app.rpc.scene.sceneRemote.startGame(session, {
-        roomId: session.get('room'),
-        serverId: app.get('serverId')
-    }, function(err, scene){
+    app.rpc.scene.sceneRemote.startGame(session, { roomId: session.get('room') }, function(err, scene){
+        if(err){
+            next(new Error(err), {code: Code.FAIL, error: err});
+        } else{
+            next(null, {code: Code.OK, result: scene});
+        }
+    });
+};
+
+Handler.prototype.endGame = function(msg, session, next) {
+    console.log('----endGame---------')
+    app.rpc.scene.sceneRemote.endGame(session, { roomId: session.get('room') }, function(err, scene){
         if(err){
             next(new Error(err), {code: Code.FAIL, error: err});
         } else{

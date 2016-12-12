@@ -116,15 +116,47 @@ SceneService.prototype.createGame = function(dealer, roomId, serverId, callback)
 	}
 }
 
-SceneService.prototype.endGame = function(dealer, room_id, callback) {
-	var scene = sceneCollection.findOne({'room': room_id});
+
+SceneService.prototype.startGame = function(roomId, callback){
+    try {
+        var channel = channelService.getChannel(roomId, true);
+        if (!!channel) {
+            if (channel.getUserAmount() > sceneConfig.minPlayerCount) {
+                var scene = sceneCollection.findOne({'room': roomId});
+                if (!scene) {
+                    return callback('no scene', null);
+                }
+                if (scene.status != 'init') {
+                    return callback('game is not at init', null);
+                }
+                scene.status = 'started';
+                sceneCollection.update(scene);
+                onStartGame(channel, scene, function(err){
+                    if(err){
+                        return callback(err, null);
+                    }
+                    return callback(null, scene);
+                })
+            } else {
+                return callback('no enough player', null);
+            }
+        } else {
+            return callback('no channel', null);
+        }
+    } catch(err){
+        callback(err, null);
+    }
+}
+
+SceneService.prototype.endGame = function(roomId, callback) {
+	var scene = sceneCollection.findOne({'room': roomId});
 	if(!scene){
 		return callback('game has not been created', scene);
 	}
 	else{
 		try{
 			sceneCollection.remove(scene);
-			channelService.destroyChannel(room_id);
+			channelService.destroyChannel(roomId);
 			return callback(null, scene);
 		}
 		catch(err){
@@ -196,42 +228,6 @@ SceneService.prototype.addPlayer = function(room_id, role, serverId, callback){
 	}
 }
 
-SceneService.prototype.startGame = function(roomId, serverId, callback){
-    try {
-        var channel = channelService.getChannel(roomId, true);
-        if (!!channel) {
-            console.log('-------channel info-------');
-            console.log(channel.getUserAmount());
-            console.log(sceneConfig.minPlayerCount);
-
-            if (channel.getUserAmount() > sceneConfig.minPlayerCount) {
-                var scene = sceneCollection.findOne({'room': roomId});
-                console.log('-------get scene-------');
-                console.log(scene);
-                if (!scene) {
-                    return callback('no scene', null);
-                }
-                if (scene.status != 'init') {
-                    return callback('game is not at init', null);
-                }
-                scene.status = 'started';
-                sceneCollection.update(scene);
-                onStartGame(channel, scene, function(err){
-                    if(err){
-                        return callback(err, null);
-                    }
-                    return callback(null, scene);
-                })
-            } else {
-                return callback('no enough player', null);
-            }
-        } else {
-            return callback('no channel', null);
-        }
-    } catch(err){
-        callback(err, null);
-    }
-}
 
 SceneService.prototype.removePlayer = function(room_id, role, callback, serverId){
 	try{
