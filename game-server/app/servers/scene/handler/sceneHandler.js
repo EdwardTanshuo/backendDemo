@@ -50,6 +50,8 @@ Handler.prototype.startGame = function(msg, session, next) {
     console.log('----startGame---------')
 
     var roomId = session.get('room');
+    //移入 scene service
+    /*
     var channel = channelService.getChannel(roomId, true);
     if (!channel) {
         return next(new Error('no channel'), {code: Code.FAIL, error: err});
@@ -57,11 +59,13 @@ Handler.prototype.startGame = function(msg, session, next) {
     if (channel.getUserAmount() < sceneConfig.minPlayerCount) {
         return next(new Error('no enough player'), {code: Code.FAIL, error: err});
     }
+    */
     sceneService.startGame(roomId, function(err, scene){
         if(err){
             return next(new Error(err), {code: Code.FAIL, error: err});
         }
-        channel.pushMessage({route: 'GameStartEvent', scene: scene});
+        //移入 scene service
+        //channel.pushMessage({route: 'GameStartEvent', scene: scene});
         next(null, {code: Code.OK, result: scene});
     });
 };

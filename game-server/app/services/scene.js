@@ -1,8 +1,21 @@
 var Scene = require('../models/scene');
 var game = require('../console/game');
+var channelService = app.get('channelService');
+var sceneConfig = require('../../config/scene');
+
+function pushMessages(roomId, msg, route, callback){
+	var channel = channelService.getChannel(roomId, true);
+    if (!channel) {
+        return callback('no channel');
+    }
+    channel.pushMessage(route, msg, callback);
+    callback();
+}
+
 function SceneService() {
 }
 
+//直播创建游戏
 SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	var scene = sceneCollection.findOne({'room': roomId});
     //主播 非主观意图断开游戏，重新加入
@@ -36,8 +49,10 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	}
 }
 
+//直播开始游戏
 SceneService.prototype.startGame = function(roomId, callback){
     try {
+    	var self = this;
         var scene = sceneCollection.findOne({'room': roomId});
         if (!scene) {
             return callback('startGame: no scene created yet', null);
@@ -47,12 +62,50 @@ SceneService.prototype.startGame = function(roomId, callback){
         }
         scene.status = 'player_started';
         sceneCollection.update(scene);
-        return callback(null, scene);
 
+        pushMessages(roomId, scene, 'GameStartEvent', function(err){
+        	if(!!err){
+        		callback(err, null);
+        	}
+        	else{
+        		 //开启计时器
+		        setTimeout(function(roomId) {
+		        	//self.endPlayerTurn(roomId);
+				 	console.log(roomId);
+				}, 60000, roomId);
+		        return callback(null, scene);
+        	}
+        });
     } catch(err){
         callback(err, null);
     }
 }
+
+SceneService.prototype.endPlayerTurn = function(roomId, callback){
+    try {
+    	var self = this;
+        var scene = sceneCollection.findOne({'room': roomId});
+        if (!scene) {
+            return callback('startGame: no scene created yet', null);
+        }
+        if (scene.status != 'player_started') {
+            return callback('game is not at player turn', null);
+        }
+        scene.status = 'dealer_turn';
+        sceneCollection.update(scene);
+
+        //开启计时器
+        setTimeout(function(roomId) {
+        	//self.endGame(roomId);
+		 	console.log(roomId);
+		}, 60000, roomId);
+
+        return callback(null, scene);
+    } catch(err){
+        callback(err, null);
+    }
+}
+
 
 SceneService.prototype.endGame = function(roomId, callback) {
     try{
