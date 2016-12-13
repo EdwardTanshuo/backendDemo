@@ -5,6 +5,13 @@
 function DeckOperation() {  
 };
 
+/**
+ * Client draw card.
+ *
+ * @param  {Array}    deck      current deck array
+ * @param  {Function} callback  callback with error, new deck and result
+ * @return {Void}
+ */
 DeckOperation.prototype.drawCard = function(deck, callback){
   if(!deck.length){
     return callback('no card', deck, null);
@@ -27,7 +34,6 @@ DeckOperation.prototype.drawCard = function(deck, callback){
         break;
       }
     }
-    
     var result = deck[index];
     deck.splice(index, 1);
     return callback(null, deck, result);

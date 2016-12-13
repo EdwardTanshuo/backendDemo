@@ -34,7 +34,6 @@ Handler.prototype.entry = function(msg, session, next) {
 	  					return next(new Error(err), {code: Code.FAIL, error: err});
 	  				}
 	  				else{
-
 	  					session.bind(msg.token, function(err){
 			  				if(!err){
 			  					session.set('token', msg.token);
@@ -81,7 +80,8 @@ var onRoleLeave = function (app, session, reason) {
 
 var roleEnter = function (app, session, callback) {
     var serverId = app.get('serverId');
-	//本地创建卡组
+	
+	//本地创建卡组model
 	var deckId = (session.get('currentRole').deckId != null) ? session.get('currentRole').deckId : 'default';
 	var deck = utils.createDeck(deckId);
 	if(deck == null){
@@ -91,21 +91,21 @@ var roleEnter = function (app, session, callback) {
 	new_model.deck = deck;
 	new_model.token = session.get('token');
 
-    // todo 以下代码可能有问题， users ？？
-	//try{
-	//	var find_result = users.find({'token': session.get('token')});
-	//	if(find_result != null){
-	//		roleDeckCollection.update(new_model);
-	//	}
-	//	else{
-	//		roleDeckCollection.insert(new_model);
-	//	}
-	//}
-	//catch(e){
-	//	return callback(e);
-	//}
+    //新用户的卡组加入用户缓存
+	try{
+		var find_result = roleDeckCollection.find({'token': session.get('token')});
+		if(find_result != null){
+			roleDeckCollection.update(new_model);
+		}
+		else{
+			roleDeckCollection.insert(new_model);
+		}
+	}
+	catch(e){
+		return callback(e);
+	}
 
-	//加入游戏
+	//加入游戏scene
 	app.rpc.scene.sceneRemote.playerEnter(session, {
         token: session.get('token'),
         roomid: session.get('room'),
