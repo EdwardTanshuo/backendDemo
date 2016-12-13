@@ -9,7 +9,6 @@ function pushMessages(roomId, msg, route, callback){
         return callback('no channel');
     }
     channel.pushMessage(route, msg, callback);
-    callback();
 }
 
 function SceneService() {
