@@ -87,7 +87,7 @@ exp.playerFinish = function(args, callback){
 
 exp.playerDraw = function(args, callback){
     if(args.roomId == null || args.deck == null || args.token == null){
-        return utils.invokeCallback(callback, 'err: missing params');
+        return utils.invokeCallback(callback, 'playerDraw: missing params');
     }
 	sceneService.playerDraw(args.roomId, args.token, args.deck, function(err, new_deck, result){
 		return utils.invokeCallback(callback, err, {new_deck: new_deck, result: result});

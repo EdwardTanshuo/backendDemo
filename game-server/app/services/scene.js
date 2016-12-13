@@ -7,7 +7,7 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	var scene = sceneCollection.findOne({'room': roomId});
     //主播 非主观意图断开游戏，重新加入
 	if(scene){
-        return callback('game has been created', scene);
+        return callback('createGame: game has been created', scene);
 	}
 	else{
 		var new_scene = new Scene();
@@ -40,12 +40,12 @@ SceneService.prototype.startGame = function(roomId, callback){
     try {
         var scene = sceneCollection.findOne({'room': roomId});
         if (!scene) {
-            return callback('no scene', null);
+            return callback('startGame: no scene created yet', null);
         }
         if (scene.status != 'init') {
             return callback('game is not at init', null);
         }
-        scene.status = 'started';
+        scene.status = 'player_started';
         sceneCollection.update(scene);
         return callback(null, scene);
 
@@ -159,6 +159,9 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
 		}
 		if(scene.players[token] == null){
 			return callback('player is not inside', null);
+		}
+		if(scene.status != 'player_started'){
+			return callback('game has not started yet', null);
 		}
 		game.dealNextCard(deck, function(err, new_deck, result){
 			callback(err, new_deck, result);
