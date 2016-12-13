@@ -24,7 +24,7 @@ DeckOperation.prototype.drawCard = function(deck, callback){
       total_weight = total_weight + monster.weight;
       index_table.push(total_weight);
     }
-    var rd = Math.floor(Math.random() * total_weight);
+    var rd = Math.random() * total_weight;
     var index = 0;
     for(index = 0; index < deck.length; index ++){
       if(rd > index_table[index]){
@@ -35,8 +35,8 @@ DeckOperation.prototype.drawCard = function(deck, callback){
       }
     }
     var result = deck[index];
-    deck.splice(index, 1);
-    return callback(null, deck, result);
+    var new_deck = deck.splice(index, 1);
+    return callback(null, new_deck, result);
   }
 }
 
