@@ -13,6 +13,10 @@ module.exports = function(app) {
 var Handler = function(app) {
 	this.app = app;
 
+    this.errResult = function(errMsg, next){
+        next(new Error(errMsg), {code: Code.FAIL, error: errMsg});
+    };
+
 	if(!this.app)
 		logger.error(app);
 };
@@ -103,24 +107,30 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
 
     var dealerDeckCache = dealerDeckCollection.findOne({roomId: roomId});
     if(!result){
-        return callback('dealerDrawCard: can not find deck', null);
+        //errMessage = 'dealerDrawCard: can not find deck';
+        return this.errResult('dealerDrawCard: can not find deck', next)
     }
     oldDeck = dealerDeckCache.deck;
     if(!oldDeck){
-        return callback('dealerDrawCard: crash when query memdb', null);
+        //errMessage = 'dealerDrawCard: crash when query memdb';
+        //return next(new Error(errMessage), {code: Code.FAIL, error: errMessage});
+        return this.errResult('dealerDrawCard: crash when query memdb', next)
     }
     sceneService.dealerDrawCard(roomId, oldDeck, function(err, newDeck, newCard){
         if(err){
-            return next(new Error(err), {code: Code.FAIL, error: err});
+            //return next(new Error(err), {code: Code.FAIL, error: err});
+            return this.errResult(err, next)
         }
         if(!newDeck){
-            err = 'dealerDrawCard: deck is null';
-            return next(new Error(err), {code: Code.OK, error: err});
+            //errMessage = ;
+            //return next(new Error(errMessage), {code: Code.FAIL, error: errMessage});
+            return this.errResult('dealerDrawCard: deck is null', next)
         }
         oldDeck.deck = newDeck;
         dealerDeckCache.update(oldDeck);
         next(null, {code: Code.OK, new_deck: newDeck, result: newCard});
     });
 };
+
 
 
