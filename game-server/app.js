@@ -11,19 +11,24 @@ var routeUtil = require('./app/util/routeUtil');
 global.config = require('./config/default');
 
 function initSceneCache() {
-       
-        var dbmem = new loki('game.json');
-        
-        var sceneCollection = dbmem.addCollection('sceneCollection');
-        sceneCollection.constraints.unique['room'];
-        global.sceneCollection = sceneCollection;
+    var dbmem = new loki('game.json');
+    var sceneCollection = dbmem.addCollection('sceneCollection');
+    sceneCollection.constraints.unique['room'];
+    global.sceneCollection = sceneCollection;
 }
 
 function initRoleDeckCache() {
-        var dbmem = new loki('roleDeck.json');
-        var roleDeckCollection = dbmem.addCollection('roleDeckCollection');
-        roleDeckCollection.constraints.unique['token'];
-        global.roleDeckCollection = roleDeckCollection;
+    var dbmem = new loki('roleDeck.json');
+    var roleDeckCollection = dbmem.addCollection('roleDeckCollection');
+    roleDeckCollection.constraints.unique['token'];
+    global.roleDeckCollection = roleDeckCollection;
+}
+
+function initDealerDeckCache() {
+    var dbmem = new loki('dealerDeck.json');
+    var dealerDeckCollection = dbmem.addCollection('dealerDeckCollection');
+    dealerDeckCollection.constraints.unique['roomId'];
+    global.dealerDeckCollection = dealerDeckCollection;
 }
 
 function initMongo(){
@@ -99,7 +104,8 @@ app.configure('production|development', 'broadcaster', function(){
       heartbeatTimeout : 60,
       heartbeatInterval : 25
     });
-   initMongo();
+    initMongo();
+    initDealerDeckCache();
 });
 
 

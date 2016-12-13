@@ -71,6 +71,32 @@ var onBroadcasterEnter = function (app, session, next) {
     var roomId = session.get('room'),
         broadcaster= session.get('currentBroadcaster'),
         serverId= app.get('serverId');
+
+    console.log('------init dealerDeckCache----------');
+    var deckId = (broadcaster.deckId != null) ? broadcaster.deckId : 'default';
+    var deck = utils.createDeck(deckId);
+    if(deck == null){
+        return callback('no such deck');
+    }
+    var newModel = {};
+    newModel.deck = deck;
+    newModel.token = roomId;
+
+    //主播的卡组加入用户缓存
+    try{
+        var dealerDeck = dealerDeckCollection.findOne({'roomId': roomId});
+        if(dealerDeck != null){
+            dealerDeck.deck = newModel.deck;
+            dealerDeckCollection.update(dealerDeck);
+        } else{
+            console.log('------ create deck.. ----------');
+            dealerDeckCollection.insert(dealerDeck);
+        }
+    }
+    catch(e){
+        return next(new Error(e), {code: Code.FAIL, error: e});
+    }
+
     app.rpc.scene.sceneRemote.dealerEnter(session, roomId, broadcaster, serverId, function(err, dealer){
         if(err){
             next(new Error(err), {code: Code.FAIL, error: err});

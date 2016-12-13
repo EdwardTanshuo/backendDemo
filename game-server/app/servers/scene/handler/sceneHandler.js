@@ -89,3 +89,38 @@ Handler.prototype.endGame = function(msg, session, next) {
     });
 };
 
+
+/**
+ * 主播抽卡接口 scene.sceneHandler.dealerDrawCard
+ *
+ * 接收参数： 无
+ * 返回结果： {Object} new_deck
+ *          {Object} result
+ * 功能说明：
+ */
+Handler.prototype.dealerDrawCard = function(msg, session, next) {
+    var roomId = this.session.get('room');
+
+    var dealerDeckCache = dealerDeckCollection.findOne({roomId: roomId});
+    if(!result){
+        return callback('dealerDrawCard: can not find deck', null);
+    }
+    oldDeck = dealerDeckCache.deck;
+    if(!oldDeck){
+        return callback('dealerDrawCard: crash when query memdb', null);
+    }
+    sceneService.dealerDrawCard(roomId, oldDeck, function(err, newDeck, newCard){
+        if(err){
+            return next(new Error(err), {code: Code.FAIL, error: err});
+        }
+        if(!newDeck){
+            err = 'dealerDrawCard: deck is null';
+            return next(new Error(err), {code: Code.OK, error: err});
+        }
+        oldDeck.deck = newDeck;
+        dealerDeckCache.update(oldDeck);
+        next(null, {code: Code.OK, new_deck: newDeck, result: newCard});
+    });
+};
+
+

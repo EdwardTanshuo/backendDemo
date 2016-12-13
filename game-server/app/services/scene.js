@@ -105,7 +105,6 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
     }
 }
 
-
 SceneService.prototype.endGame = function(roomId, callback) {
     try{
         var scene = sceneCollection.findOne({'room': roomId});
@@ -226,6 +225,26 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
 
 SceneService.prototype.playerFinish = function(room_id, token, callback){
 	
+}
+
+SceneService.prototype.dealerDrawCard = function(roomId, deck, callback){
+    try{
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback('no scene', null);
+        }
+        //if(scene.players[token] == null){
+        //    return callback('player is not inside', null);
+        //}
+        if(scene.status != 'dealer_turn'){
+            return callback('game is not dealer turn yet', null);
+        }
+        game.dealNextCard(deck, function(err, newDeck, card){
+            callback(err, newDeck, card);
+        });
+    } catch(err){
+        callback(err, null);
+    }
 }
 
 module.exports = new SceneService();
