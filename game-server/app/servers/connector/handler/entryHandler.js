@@ -83,6 +83,7 @@ var roleEnter = function (app, session, callback) {
 	
 	//本地创建卡组model
 	var deckId = (session.get('currentRole').deckId != null) ? session.get('currentRole').deckId : 'default';
+	console.log('------create deck for: ' + session.get('currentRole').name + ' with deckId: ' + deckId + ' ----------');
 	var deck = utils.createDeck(deckId);
 	if(deck == null){
 		return callback('no such deck');
@@ -93,23 +94,21 @@ var roleEnter = function (app, session, callback) {
 
     //新用户的卡组加入用户缓存
 	try{
-		var find_result = roleDeckCollection.find({'token': session.get('token')});
+		var find_result = roleDeckCollection.findOne({'token': session.get('token')});
 		if(find_result != null){
-			roleDeckCollection.update(new_model);
+			find_result.deck = new_model.deck;
+			roleDeckCollection.update(find_result);
 		}
 		else{
+			console.log('------ create deck.. ----------');
 			roleDeckCollection.insert(new_model);
 		}
 	}
 	catch(e){
+		console.log('------ memdb ----------');
 		return callback(e);
 	}
 
 	//加入游戏scene
-	app.rpc.scene.sceneRemote.playerEnter(session, {
-        token: session.get('token'),
-        roomid: session.get('room'),
-        role: session.get('currentRole'),
-        serverId: serverId
-    }, callback);
+	app.rpc.scene.sceneRemote.playerEnter(session, session.get('room'), session.get('currentRole'), serverId, callback);
 };

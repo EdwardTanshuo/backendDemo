@@ -61,7 +61,7 @@ Handler.prototype.finish = function(msg, session, next) {
  */
 Handler.prototype.draw = function(msg, session, next) {
 	var roleAction = new RoleAction(session);
-	roleAction.draw(session.room, function(err, new_deck, result){
+	roleAction.draw(session.get('room'), function(err, new_deck, result){
 		if(!!err){
 			return next(new Error(err), {code: Code.FAIL, error: err});
 		}

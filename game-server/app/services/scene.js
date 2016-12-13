@@ -88,7 +88,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         callback(null, scene);
 
     } catch(err){
-        return callback(err, null);
+        return callback('memdb error when add player', null);
     }
 }
 

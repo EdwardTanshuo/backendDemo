@@ -27,34 +27,41 @@ module.exports = function RoleAction(session) {
 	};
 
 	this.draw = function(room_id, callback) {
+
 		var deck = [];
 		try{
-			var result = roleDeckCollection.find({token: this.session.get('token')});
+			var result = roleDeckCollection.findOne({token: this.session.get('token')});
 			if(!result){
 				return callback('can not find deck');
 			}
 			deck = result.deck;
 			if(!deck){
-				return callback('deck is null');
+				return callback('playerDraw: crash when query memdb');
 			}
 		}
 		catch(e){
 			return callback(e);
 		}
 
-		app.rpc.scene.sceneRemote.playerDraw(this.session, {room_id: this.session.get('room'), deck: deck}, function(err, result){
+		var self_session = this.session;
+		app.rpc.scene.sceneRemote.playerDraw(self_session, {roomId: self_session.get('room'), deck: deck, token: self_session.get('token')}, function(err, result){
 			if(err == null && result == null){
 				return;
 			}
 			if(result){
+				if(!result.new_deck){
+					console.log('-------------deck is empty-------------');
+					return callback('deck is null');
+				}
 				try{
-					var new_model = {};
-					new_model.deck = result.new_deck;
-					new_model.token =  this.session.get('token');
-					roleDeckCollection.update(new_model);
+					
+					var old_model = roleDeckCollection.find({token: self_session.get('token')});
+					old_model.deck = result.new_deck;
+					roleDeckCollection.update(old_model);
 				}
 				catch(e){
-					callback(e);
+					console.log('-------------memdb error-------------');
+					return callback('playerDraw: crash when update memdb');
 				}
 				return callback(null, result.new_deck, result.result);
 			}
