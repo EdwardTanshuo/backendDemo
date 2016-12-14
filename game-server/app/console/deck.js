@@ -36,7 +36,7 @@ DeckOperation.prototype.drawCard = function(deck, callback){
     }
     var result = deck[index];
     var new_deck = deck.splice(index, 1);
-    return callback(null, new_deck, result);
+    return callback(null, deck, result);
   }
 }
 
