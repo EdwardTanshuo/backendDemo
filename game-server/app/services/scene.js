@@ -65,7 +65,7 @@ SceneService.prototype.startGame = function(roomId, callback){
     try {
     	var self = this;
         var scene = sceneCollection.findOne({'room': roomId});
-        
+
         if (!scene) {
             return callback('startGame: no scene created yet', null);
         }
@@ -258,10 +258,17 @@ SceneService.prototype.dealerDrawCard = function(roomId, deck, callback){
             return callback('game is not dealer turn yet', null);
         }
         game.dealNextCard(deck, function(err, newDeck, card){
-            callback(err, newDeck, card);
+            //更新卡组
+            try{
+                scene.dealer_deck = newDeck;
+                sceneCollection.update(scene);
+            } catch(err){
+                return callback('can not update dealer deck', null);
+            }
+            return callback(err, newDeck, card);
         });
     } catch(err){
-        callback(err, null);
+        return callback(err, null);
     }
 }
 
