@@ -44,7 +44,11 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	
         //创建主播卡组
         try{
-            var new_deck = utils.createDeck(roomId);
+            var deckId = 'default';
+            var new_deck = utils.createDeck(deckId);
+            if(!new_deck){
+                return callback('dealer deck could not be created', null);
+            }
             new_scene.dealer_deck = new_deck;
         } catch(err){
             return callback('dealer deck could not be created', null);

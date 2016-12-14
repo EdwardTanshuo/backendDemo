@@ -70,10 +70,10 @@ var onBroadcasterEnter = function (app, session, next) {
     console.log('------onBroadcasterEnter----------');
 
     var roomId = session.get('room'),
-        broadcaster= session.get('currentBroadcaster'),
-        serverId= app.get('serverId');
+        broadcaster = session.get('currentBroadcaster'),
+        serverId = app.get('serverId');
 
-    console.log('------init dealerDeckCache----------');
+    /*console.log('------init dealerDeckCache----------');
     var deckId = (broadcaster.deckId != null) ? broadcaster.deckId : 'default';
     var deck = utils.createDeck(deckId);
     if(deck == null){
@@ -96,7 +96,7 @@ var onBroadcasterEnter = function (app, session, next) {
     }
     catch(e){
         return next(new Error(e), {code: Code.FAIL, error: e});
-    }
+    }*/
 
     app.rpc.scene.sceneRemote.dealerEnter(session, roomId, broadcaster, serverId, function(err, dealer){
         if(err){
