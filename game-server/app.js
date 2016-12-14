@@ -24,13 +24,6 @@ function initRoleDeckCache() {
     global.roleDeckCollection = roleDeckCollection;
 }
 
-function initDealerDeckCache() {
-    var dbmem = new loki('dealerDeck.json');
-    var dealerDeckCollection = dbmem.addCollection('dealerDeckCollection');
-    dealerDeckCollection.constraints.unique['roomId'];
-    global.dealerDeckCollection = dealerDeckCollection;
-}
-
 function initMongo(){
    mongoose.connect(config.mongo.uri);
         var db = mongoose.connection;
@@ -105,7 +98,6 @@ app.configure('production|development', 'broadcaster', function(){
       heartbeatInterval : 25
     });
     initMongo();
-    initDealerDeckCache();
 });
 
 
@@ -120,7 +112,6 @@ app.configure('production|development', 'gate', function(){
 app.configure('production|development', 'scene', function(){
   initMongo();
   initSceneCache();
-  
 });
 
 

@@ -1,5 +1,6 @@
 var Scene = require('../models/scene');
 var game = require('../console/game');
+var utils = require('../util/utils');
 var channelService = app.get('channelService');
 var sceneConfig = require('../../config/scene');
 
@@ -22,28 +23,39 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
         return callback('createGame: game has been created', scene);
 	}
 	else{
+        //初始化游戏场景
 		var new_scene = new Scene();
 		new_scene.room = roomId;
 		new_scene.status = 'init';
 
+        //初始化玩家列表
 		new_scene.players = {};
 		new_scene.player_platfroms = {};
 		new_scene.player_values = {};
 		new_scene.player_bets = {};
 		
+        //初始化主播信息
 		new_scene.dealer = dealer;
 		new_scene.dealer_platfrom = [];
 		new_scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
 		new_scene.dealer_bets = 0;
 		new_scene.dealer_deck = [];
-
 		new_scene.turns = 0;
 	
+        //创建主播卡组
+        try{
+            var new_deck = utils.createDeck(roomId);
+            new_scene.dealer_deck = new_deck;
+        } catch(err){
+            return callback('dealer deck could not be created', null);
+        }
+
+        //更新缓存
 		try{
 			sceneCollection.insert(new_scene);
             return callback(null, new_scene);
 		} catch(err){
-			return callback(err, null);
+			return callback('createGame: memdb error', null);
 		}
 	}
 }
@@ -53,14 +65,20 @@ SceneService.prototype.startGame = function(roomId, callback){
     try {
     	var self = this;
         var scene = sceneCollection.findOne({'room': roomId});
+        
         if (!scene) {
             return callback('startGame: no scene created yet', null);
         }
         if (scene.status != 'init') {
             return callback('game is not at init', null);
         }
-        scene.status = 'player_started';
-        sceneCollection.update(scene);
+        //更新缓存
+        try{
+            scene.status = 'player_started';
+            sceneCollection.update(scene);
+        }catch(err){
+            return callback('startGame: memdb error', null);
+        }
 
         pushMessages(roomId, scene, 'GameStartEvent', function(err){
         	if(!!err){

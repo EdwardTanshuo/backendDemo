@@ -105,7 +105,8 @@ Handler.prototype.endGame = function(msg, session, next) {
 Handler.prototype.dealerDrawCard = function(msg, session, next) {
     var roomId = this.session.get('room');
 
-    var dealerDeckCache = dealerDeckCollection.findOne({roomId: roomId});
+    //移入sceneService
+    /*var dealerDeckCache = dealerDeckCollection.findOne({roomId: roomId});
     if(!result){
         //errMessage = 'dealerDrawCard: can not find deck';
         return this.errResult('dealerDrawCard: can not find deck', next)
@@ -115,7 +116,7 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
         //errMessage = 'dealerDrawCard: crash when query memdb';
         //return next(new Error(errMessage), {code: Code.FAIL, error: errMessage});
         return this.errResult('dealerDrawCard: crash when query memdb', next)
-    }
+    }*/
     sceneService.dealerDrawCard(roomId, oldDeck, function(err, newDeck, newCard){
         if(err){
             //return next(new Error(err), {code: Code.FAIL, error: err});
@@ -126,8 +127,11 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
             //return next(new Error(errMessage), {code: Code.FAIL, error: errMessage});
             return this.errResult('dealerDrawCard: deck is null', next)
         }
-        oldDeck.deck = newDeck;
-        dealerDeckCache.update(oldDeck);
+
+        //移入sceneService
+        /*oldDeck.deck = newDeck;
+        dealerDeckCache.update(oldDeck);*/
+
         next(null, {code: Code.OK, new_deck: newDeck, result: newCard});
     });
 };
