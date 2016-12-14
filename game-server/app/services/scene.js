@@ -15,56 +15,55 @@ function pushMessages(roomId, msg, route, callback){
 function SceneService() {
 }
 
-//直播创建游戏
+//主播创建游戏
 SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	var scene = sceneCollection.findOne({'room': roomId});
     //主播 非主观意图断开游戏，重新加入
 	if(scene){
         return callback('createGame: game has been created', scene);
-	}
-	else{
+	} else{
         //初始化游戏场景
-		var new_scene = new Scene();
-		new_scene.room = roomId;
-		new_scene.status = 'init';
+		var newScene = new Scene();
+		newScene.room = roomId;
+		newScene.status = 'init';
 
         //初始化玩家列表
-		new_scene.players = {};
-		new_scene.player_platfroms = {};
-		new_scene.player_values = {};
-		new_scene.player_bets = {};
+		newScene.players = {};
+		newScene.player_platfroms = {};
+		newScene.player_values = {};
+		newScene.player_bets = {};
 		
         //初始化主播信息
-		new_scene.dealer = dealer;
-		new_scene.dealer_platfrom = [];
-		new_scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
-		new_scene.dealer_bets = 0;
-		new_scene.dealer_deck = [];
-		new_scene.turns = 0;
+		newScene.dealer = dealer;
+		newScene.dealer_platfrom = [];
+		newScene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
+		newScene.dealer_bets = 0;
+		newScene.dealer_deck = [];
+		newScene.turns = 0;
 	
         //创建主播卡组
         try{
             var deckId = 'default';
-            var new_deck = utils.createDeck(deckId);
-            if(!new_deck){
+            var newDeck = utils.createDeck(deckId);
+            if(!newDeck){
                 return callback('dealer deck could not be created', null);
             }
-            new_scene.dealer_deck = new_deck;
+            newScene.dealer_deck = newDeck;
         } catch(err){
             return callback('dealer deck could not be created', null);
         }
 
         //更新缓存
 		try{
-			sceneCollection.insert(new_scene);
-            return callback(null, new_scene);
+			sceneCollection.insert(newScene);
+            return callback(null, newScene);
 		} catch(err){
 			return callback('createGame: memdb error', null);
 		}
 	}
 }
 
-//直播开始游戏
+//主播开始游戏
 SceneService.prototype.startGame = function(roomId, callback){
     try {
     	var self = this;
@@ -249,19 +248,16 @@ SceneService.prototype.playerFinish = function(room_id, token, callback){
 	
 }
 
-SceneService.prototype.dealerDrawCard = function(roomId, deck, callback){
+SceneService.prototype.dealerDrawCard = function(roomId, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){
             return callback('no scene', null);
         }
-        //if(scene.players[token] == null){
-        //    return callback('player is not inside', null);
-        //}
         if(scene.status != 'dealer_turn'){
             return callback('game is not dealer turn yet', null);
         }
-        game.dealNextCard(deck, function(err, newDeck, card){
+        game.dealNextCard(scene.dealer_deck, function(err, newDeck, card){
             //更新卡组
             try{
                 scene.dealer_deck = newDeck;
@@ -270,6 +266,35 @@ SceneService.prototype.dealerDrawCard = function(roomId, deck, callback){
                 return callback('can not update dealer deck', null);
             }
             return callback(err, newDeck, card);
+        });
+    } catch(err){
+        return callback(err, null);
+    }
+}
+
+//主播
+SceneService.prototype.dealerFinish = function(room_id, callback){
+    try{
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback('no scene', null);
+        }
+        if(scene.status != 'dealer_turn'){
+            return callback('game is not dealer turn yet', null);
+        }
+
+        //更新游戏状态
+        scene.status = 'end';
+        sceneCollection.update(scene);
+
+        pushMessages(roomId, scene, 'DealerFinishEvent', function(err){
+            if(!!err){
+                return callback(err, null);
+            }
+
+            //todo: 主播抽完牌的逻辑
+
+            return callback(null, scene);
         });
     } catch(err){
         return callback(err, null);

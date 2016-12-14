@@ -53,23 +53,10 @@ Handler.prototype.createGame = function(msg, session, next) {
 Handler.prototype.startGame = function(msg, session, next) {
     console.log('----startGame---------')
 
-    var roomId = session.get('room');
-    //移入 scene service
-    /*
-    var channel = channelService.getChannel(roomId, true);
-    if (!channel) {
-        return next(new Error('no channel'), {code: Code.FAIL, error: err});
-    }
-    if (channel.getUserAmount() < sceneConfig.minPlayerCount) {
-        return next(new Error('no enough player'), {code: Code.FAIL, error: err});
-    }
-    */
-    sceneService.startGame(roomId, function(err, scene){
+    sceneService.startGame(session.get('room'), function(err, scene){
         if(err){
             return next(new Error(err), {code: Code.FAIL, error: err});
         }
-        //移入 scene service
-        //channel.pushMessage({route: 'GameStartEvent', scene: scene});
         next(null, {code: Code.OK, result: scene});
     });
 };
@@ -103,38 +90,34 @@ Handler.prototype.endGame = function(msg, session, next) {
  * 功能说明：
  */
 Handler.prototype.dealerDrawCard = function(msg, session, next) {
-    var roomId = this.session.get('room');
-
-    //移入sceneService
-    /*var dealerDeckCache = dealerDeckCollection.findOne({roomId: roomId});
-    if(!result){
-        //errMessage = 'dealerDrawCard: can not find deck';
-        return this.errResult('dealerDrawCard: can not find deck', next)
-    }
-    oldDeck = dealerDeckCache.deck;
-    if(!oldDeck){
-        //errMessage = 'dealerDrawCard: crash when query memdb';
-        //return next(new Error(errMessage), {code: Code.FAIL, error: errMessage});
-        return this.errResult('dealerDrawCard: crash when query memdb', next)
-    }*/
-    sceneService.dealerDrawCard(roomId, oldDeck, function(err, newDeck, newCard){
+    sceneService.dealerDrawCard(this.session.get('room'), function(err, newDeck, newCard){
         if(err){
-            //return next(new Error(err), {code: Code.FAIL, error: err});
             return this.errResult(err, next)
         }
         if(!newDeck){
-            //errMessage = ;
-            //return next(new Error(errMessage), {code: Code.FAIL, error: errMessage});
             return this.errResult('dealerDrawCard: deck is null', next)
         }
-
-        //移入sceneService
-        /*oldDeck.deck = newDeck;
-        dealerDeckCache.update(oldDeck);*/
-
         next(null, {code: Code.OK, new_deck: newDeck, result: newCard});
     });
 };
+
+/**
+ * 主播抽卡结束接口 scene.sceneHandler.dealerFinish
+ *
+ * 接收参数： 无
+ * 返回结果： {Object} scene
+ *
+ * 功能说明：
+ */
+Handler.prototype.dealerFinish = function(msg, session, next) {
+    sceneService.dealerFinish(this.session.get('room'), function(err, scene){
+        if(err){
+            return this.errResult(err, next)
+        }
+        next(null, {code: Code.OK, result: scene});
+    });
+};
+
 
 
 

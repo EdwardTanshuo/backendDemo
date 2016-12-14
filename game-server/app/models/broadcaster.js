@@ -6,8 +6,7 @@ var BroadcasterSchema = mongoose.Schema({
     name: {type: String, required: true},
     bio: {type: String, required: false},
     location: {type: String, required: false},
-    isDeleted: {type: Boolean, required: true,default: false},
-    deckId: {type: String, required: false, default: "default"}
+    isDeleted: {type: Boolean, required: true,default: false}
 });
 
 
