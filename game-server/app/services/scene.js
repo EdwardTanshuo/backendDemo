@@ -227,20 +227,28 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
 		if(!scene){
-			return callback('no scene', null);
+			return callback('no scene');
 		}
 		if(scene.players[token] == null){
-			return callback('player is not inside', null);
+			return callback('player is not inside');
 		}
 		if(scene.status != 'player_started'){
-			return callback('game has not started yet', null);
+			return callback('game has not started yet');
 		}
-		game.dealNextCard(deck, function(err, new_deck, result){
-			callback(err, new_deck, result);
+		game.dealNextCard(deck, function(err, newDeck, card){
+            try{
+                scene.player_platfroms[token].push(card); 
+                var newValue = game.calculateHandValue(scene.player_platfroms[token]);
+                scene.player_values = newValue;
+                return callback(null, newDeck, card, newValue);
+            } catch(err){
+                return callback('playerDraw: can not add card onto the platform');
+            }
+			
 		});
 	}
 	catch(err){
-		callback(err, null);
+		callback('playerDraw: memdb crashed');
 	}
 }
 

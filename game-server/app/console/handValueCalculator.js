@@ -7,22 +7,16 @@ module.exports = function HandValueCalculator() {
   this.BLACKJACK = 21;
   this.BUSTED_VALUE = 22;
 
-  // test if something is undefined
-  this.isUndefined = function(obj) {
-    // undefined and null are "==" but not identity equal ("===")
-    return anObject == null && anObject !== null;
-  };
-
   // the hand value calculator
   this.calculateHandValue = function(platform) {
     var totalValue = 0;
     var numberOfAces = 0;
 
     // protect against empty argument list or empty collection
-    if (this.isUndefined(platform) || platform.length === 0) {
-      return totalValue;
+    if (!platform || platform.length == 0) {
+      return {value: 0, busted: false, numberOfHigh: 0, numberOfTrans: 0};;
     }
-
+   
     // Calculate the non-Ace hand value, and count up the Aces. They're
     // trickier
     // so we'll do them later.
@@ -50,7 +44,7 @@ module.exports = function HandValueCalculator() {
 
       totalValue += cardValue;
     }
-
+   
     // Now we handle the case of the Aces, they're trickier because they can
     // be 1 or 11.
     if (totalValue < this.BLACKJACK) {

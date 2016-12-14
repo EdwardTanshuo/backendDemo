@@ -27,7 +27,6 @@ module.exports = function RoleAction(session) {
 	};
 
 	this.draw = function(room_id, callback) {
-		
 		var deck = [];
 		try{
 			var result = roleDeckCollection.findOne({token: this.session.get('token')});
@@ -48,20 +47,19 @@ module.exports = function RoleAction(session) {
 			if(err == null && result == null){
 				return;
 			}
-			if(result){
-				if(!result.new_deck){
+			if(!err){
+				if(!result.newDeck){
 					return callback('playerDraw: deck is null');
 				}
 				try{
-					
 					var old_model = roleDeckCollection.find({token: self_session.get('token')});
-					old_model.deck = result.new_deck;
+					old_model.deck = result.newDeck;
 					roleDeckCollection.update(old_model);
 				}
 				catch(e){
 					return callback('playerDraw: crash when update memdb');
 				}
-				return callback(null, result.new_deck, result.result);
+				return callback(null, result.newDeck, result.card, result.value);
 			}
 			else{
 				return callback(err);
