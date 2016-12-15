@@ -235,6 +235,9 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
 		if(scene.status != 'player_started'){
 			return callback('game has not started yet');
 		}
+        if(scene.player_values[token].busted){
+            return callback('busted');
+        }
         
 		game.dealNextCard(deck, function(err, newDeck, card){
             try{

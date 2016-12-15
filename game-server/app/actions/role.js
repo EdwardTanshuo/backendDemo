@@ -27,6 +27,7 @@ module.exports = function RoleAction(session) {
 	};
 
 	this.draw = function(room_id, callback) {
+		var self = this;
 		var deck = [];
 		try{
 			var result = roleDeckCollection.findOne({token: this.session.get('token')});
@@ -42,8 +43,7 @@ module.exports = function RoleAction(session) {
 			return callback('playerDraw: crash when query memdb');
 		}
 
-		var self_session = this.session;
-		app.rpc.scene.sceneRemote.playerDraw(self_session, {roomId: self_session.get('room'), deck: deck, token: self_session.get('token')}, function(err, result){
+		app.rpc.scene.sceneRemote.playerDraw(self.session, {roomId: self.session.get('room'), deck: deck, token: self.session.get('token')}, function(err, result){
 			if(err == null && result == null){
 				return;
 			}
@@ -52,7 +52,7 @@ module.exports = function RoleAction(session) {
 					return callback('playerDraw: deck is null');
 				}
 				try{
-					var old_model = roleDeckCollection.find({token: self_session.get('token')});
+					var old_model = roleDeckCollection.findOne({token: self.session.get('token')});
 					old_model.deck = result.newDeck;
 					roleDeckCollection.update(old_model);
 				}

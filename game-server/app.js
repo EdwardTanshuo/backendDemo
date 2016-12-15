@@ -72,7 +72,7 @@ app.configure('production|development', 'connector', function(){
   app.set('connectorConfig',
     {
       connector : pomelo.connectors.hybridconnector,
-      useProtobuf : true,
+      useProtobuf : false,
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
       //transports : ['websocket'],
       heartbeats : true,
