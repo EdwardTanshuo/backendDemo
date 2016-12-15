@@ -46,19 +46,27 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
             var deckId = 'default';
             var newDeck = utils.createDeck(deckId);
             if(!newDeck){
-                return callback('dealer deck could not be created', null);
+                return callback('dealer deck could not be created');
             }
             newScene.dealer_deck = newDeck;
         } catch(err){
-            return callback('dealer deck could not be created', null);
+            return callback('dealer deck could not be created');
         }
 
         //更新缓存
 		try{
 			sceneCollection.insert(newScene);
+            //开启计时器
+            setTimeout(function(roomId, scene) {
+                var scene = sceneCollection.findOne({'room': roomId});
+                if(!scene || scene.status != 'init'){
+                    return;
+                }
+                console.log('################ room: 'roomId + ', will start a new game');
+            }, sceneConfig.durationPlayerTurn, roomId);
             return callback(null, newScene);
 		} catch(err){
-			return callback('createGame: memdb error', null);
+			return callback('createGame: memdb error');
 		}
 	}
 }
@@ -70,29 +78,33 @@ SceneService.prototype.startGame = function(roomId, callback){
         var scene = sceneCollection.findOne({'room': roomId});
 
         if (!scene) {
-            return callback('startGame: no scene created yet', null);
+            return callback('startGame: no scene created yet');
         }
         if (scene.status != 'init') {
-            return callback('game is not at init', null);
+            return callback('game is not at init');
         }
         //更新缓存
         try{
             scene.status = 'player_started';
             sceneCollection.update(scene);
         }catch(err){
-            return callback('startGame: memdb error', null);
+            return callback('startGame: memdb error');
         }
 
         pushMessages(roomId, scene, 'GameStartEvent', function(err){
         	if(!!err){
-        		callback(err, null);
+        		callback(err);
         	}
         	else{
         		 //开启计时器
 		        setTimeout(function(roomId) {
-		        	//self.endPlayerTurn(roomId);
-				 	console.log(roomId);
-				}, 60000, roomId);
+                    var scene = sceneCollection.findOne({'room': roomId});
+                    if(!scene || scene.status != 'player_started'){
+                        return;
+                    }
+		        	self.endPlayerTurn(roomId);
+				 	console.log('################ room: 'roomId + ', will end players turn');
+				}, sceneConfig.durationPlayerTurn, roomId);
 		        return callback(null, scene);
         	}
         });
@@ -106,23 +118,17 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
     	var self = this;
         var scene = sceneCollection.findOne({'room': roomId});
         if (!scene) {
-            return callback('startGame: no scene created yet', null);
+            return callback('startGame: no scene created yet');
         }
         if (scene.status != 'player_started') {
-            return callback('game is not at player turn', null);
+            return callback('game is not at player turn');
         }
         scene.status = 'dealer_turn';
         sceneCollection.update(scene);
 
-        //开启计时器
-        setTimeout(function(roomId) {
-        	//self.endGame(roomId);
-		 	console.log(roomId);
-		}, 60000, roomId);
-
         return callback(null, scene);
     } catch(err){
-        callback(err, null);
+        callback(err);
     }
 }
 
@@ -136,16 +142,23 @@ SceneService.prototype.endGame = function(roomId, callback) {
             return callback(null, scene);
         }
     } catch(err){
-        return callback(err, null);
+        return callback(err);
     }
 }
 
 SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     try{
+        var self = this;
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){
-            return callback('no scene', null);
+            return callback('no scene');
         }
+        if(scene.status != 'init'){
+            return callback('game is not at init');
+        }
+
+        //TODO: 游戏人数不够的话
+        
         //如果玩家已加入游戏， 返回当前游戏状态
         if(scene.players[role.token] != null){
             return callback(null, scene);
@@ -171,20 +184,6 @@ SceneService.prototype.getNumberOfPlayers = function(room_id){
 	return scene.players.length();
 }
 
-SceneService.prototype.nextTurn = function(room_id, callback){
-	try{
-		var scene = sceneCollection.findOne({'room': room_id});
-		if(!scene){
-			return callback('no scene', null);
-		}
-		scene.turns = scene.turns + 1;
-		sceneCollection.update(scene);
-		callback(null, scene);
-	}
-	catch(err){
-		callback(err, null);
-	}
-}
 
 SceneService.prototype.removePlayer = function(room_id, role, callback, serverId){
 	try{
@@ -213,13 +212,25 @@ SceneService.prototype.removePlayer = function(room_id, role, callback, serverId
 
 	}
 	catch(err){
-		callback(err, null);
+		callback(err);
 	}
 
 }
 
-SceneService.prototype.addBet = function(room_id, token, callback){
+SceneService.prototype.addBet = function(room_id, token, value, callback){
+    var scene = sceneCollection.findOne({'room': room_id});
+        
+    if(!scene){
+        return callback('no scene');
+    }
+    if(scene.players[token] == null){
+        return callback('player is not inside');
+    }
+    if(scene.status != 'init'){
+        return callback('game is not at init');
+    }
 
+    return callback(null, {});
 }
 
 SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
@@ -233,7 +244,7 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
 			return callback('player is not inside');
 		}
 		if(scene.status != 'player_started'){
-			return callback('game has not started yet');
+			return callback('game is not at player turn');
 		}
         if(scene.player_values[token].busted){
             return callback('busted');
@@ -264,28 +275,33 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){
-            return callback('no scene', null);
+            return callback('no scene');
         }
         if(scene.status != 'dealer_turn'){
-            return callback('game is not dealer turn yet', null);
+            return callback('game is not dealer turn yet');
         }
+        if(scene.dealer_value.busted){
+            return callback('busted');
+        }
+
         game.dealNextCard(scene.dealer_deck, function(err, newDeck, card){
             //更新卡组
             try{
+                scene.dealer_platfrom.push(card);
                 var newValue = game.calculateHandValue(scene.dealer_platfrom);
                 scene.dealer_value = newValue;
                 scene.dealer_deck = newDeck;
                 sceneCollection.update(scene);
-
+                
                 //推送DealerGetCardEvent 广播主播抽到的卡
                 pushMessages(roomId, card, 'DealerGetCardEvent', function(err){
                     if(!!err){
-                        return callback(err, null);
+                        return callback(err);
                     }
                     return callback(err, newDeck, card, newValue);
                 });
             } catch(err){
-                return callback('can not update dealer deck', null);
+                return callback('can not update dealer deck');
             }
 
         });
@@ -299,10 +315,10 @@ SceneService.prototype.dealerFinish = function(room_id, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){
-            return callback('no scene', null);
+            return callback('no scene');
         }
         if(scene.status != 'dealer_turn'){
-            return callback('game is not dealer turn yet', null);
+            return callback('game is not dealer turn yet');
         }
 
         //更新游戏状态
@@ -311,12 +327,12 @@ SceneService.prototype.dealerFinish = function(room_id, callback){
 
         pushMessages(roomId, scene, 'DealerFinishEvent', function(err){
             if(!!err){
-                return callback(err, null);
+                return callback(err);
             }
             return callback(null, scene);
         });
     } catch(err){
-        return callback(err, null);
+        return callback(err);
     }
 }
 

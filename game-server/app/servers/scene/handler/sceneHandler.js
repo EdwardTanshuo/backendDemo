@@ -97,7 +97,7 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
         if(!newDeck){
             return this.errResult('dealerDrawCard: deck is null', next)
         }
-        next(null, {code: Code.OK,  result: { newDeck: newDeck, newCard: newCard, newValue: newValue }});
+        next(null, {code: Code.OK,  result: { newDeck: newDeck, newValue: newValue }});
     });
 };
 
