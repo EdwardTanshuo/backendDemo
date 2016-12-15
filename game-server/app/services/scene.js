@@ -62,7 +62,7 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
                 if(!scene || scene.status != 'init'){
                     return;
                 }
-                console.log('################ room: 'roomId + ', will start a new game');
+                console.log('################ room: ' + roomId + ', will start a new game');
             }, sceneConfig.durationPlayerTurn, roomId);
             return callback(null, newScene);
 		} catch(err){
@@ -103,7 +103,7 @@ SceneService.prototype.startGame = function(roomId, callback){
                         return;
                     }
 		        	self.endPlayerTurn(roomId);
-				 	console.log('################ room: 'roomId + ', will end players turn');
+				 	console.log('################ room: ' + roomId + ', will end players turn');
 				}, sceneConfig.durationPlayerTurn, roomId);
 		        return callback(null, scene);
         	}
