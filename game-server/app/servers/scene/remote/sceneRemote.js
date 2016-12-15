@@ -46,16 +46,14 @@ exp.playerEnter = function(roomId, role, serverId, callback){
             if(scene != null){
                 console.log(JSON.stringify(scene));
 
-                scene.player = scene.players[role.token];
-                scene.player_platfrom = scene.player_platfroms[role.token];
-                scene.player_value = scene.player_values[role.token];
-                scene.player_bet = scene.player_bets[role.token];
-
-                //清理冗余信息
-                delete scene.players;
-                delete scene.player_platfroms;
-                delete scene.player_values;
-                delete scene.player_bets;
+                var tempScene = {};
+                tempScene.player = scene.players[role.token];
+                tempScene.player_platfrom = scene.player_platfroms[role.token];
+                tempScene.player_value = scene.player_values[role.token];
+                tempScene.player_bet = scene.player_bets[role.token];
+                tempScene.dealer_platfrom = scene.dealer_platfrom;
+                tempScene.dealer_value = scene.dealer_value;
+                tempScene.status = scene.status;
 
                 var channel = channelService.getChannel(roomId, false);
                 if(!channel) {
@@ -63,9 +61,9 @@ exp.playerEnter = function(roomId, role, serverId, callback){
                 }
                 channel.pushMessage({route: 'PlayerEnterEvent', role: role});
                 channel.add(role.token, serverId);
-                return utils.invokeCallback(callback, null, scene);
+                return utils.invokeCallback(callback, null, tempScene);
             }
-            return utils.invokeCallback(callback, err, scene);
+            return utils.invokeCallback(callback, err, tempScene);
         });
     } catch(err){
         return utils.invokeCallback(callback, 'playerEnter: can not add player');

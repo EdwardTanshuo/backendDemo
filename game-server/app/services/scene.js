@@ -158,7 +158,6 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         scene.player_bets[role.token] = 0;
         sceneCollection.update(scene);
         callback(null, scene);
-
     } catch(err){
         return callback('memdb error when add player', null);
     }
@@ -226,6 +225,7 @@ SceneService.prototype.addBet = function(room_id, token, callback){
 SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
 	try{
 		var scene = sceneCollection.findOne({'room': room_id});
+        
 		if(!scene){
 			return callback('no scene');
 		}
@@ -235,6 +235,7 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
 		if(scene.status != 'player_started'){
 			return callback('game has not started yet');
 		}
+        
 		game.dealNextCard(deck, function(err, newDeck, card){
             try{
                 scene.player_platfroms[token].push(card); 

@@ -39,9 +39,7 @@ Handler.prototype.entry = function(msg, session, next) {
 			  					session.set('token', msg.token);
 			  					session.set('room', msg.room);
 								session.set('currentRole', result);
-
 								session.pushAll(function(err){
-
 									if(err){
 										return next(new Error(err), {code: Code.FAIL, error: err});
 									}
