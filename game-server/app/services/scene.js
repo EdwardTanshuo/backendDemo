@@ -62,6 +62,9 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
                 if(!scene || scene.status != 'init'){
                     return;
                 }
+                self.startGame(roomId, function(err, result){
+
+                });
                 console.log('################ room: ' + roomId + ', will start a new game');
             }, sceneConfig.durationPlayerTurn, roomId);
             return callback(null, newScene);
@@ -102,7 +105,9 @@ SceneService.prototype.startGame = function(roomId, callback){
                     if(!scene || scene.status != 'player_started'){
                         return;
                     }
-		        	self.endPlayerTurn(roomId);
+		        	self.endPlayerTurn(roomId, function(err, result){
+
+                    });
 				 	console.log('################ room: ' + roomId + ', will end players turn');
 				}, sceneConfig.durationPlayerTurn, roomId);
 		        return callback(null, scene);
@@ -125,7 +130,6 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
         }
         scene.status = 'dealer_turn';
         sceneCollection.update(scene);
-
         return callback(null, scene);
     } catch(err){
         callback(err);
