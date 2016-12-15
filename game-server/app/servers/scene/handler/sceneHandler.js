@@ -90,14 +90,14 @@ Handler.prototype.endGame = function(msg, session, next) {
  * 功能说明：
  */
 Handler.prototype.dealerDrawCard = function(msg, session, next) {
-    sceneService.dealerDrawCard(this.session.get('room'), function(err, newDeck, newCard){
+    sceneService.dealerDrawCard(this.session.get('room'), function(err, newDeck, newCard, newValue){
         if(err){
             return this.errResult(err, next)
         }
         if(!newDeck){
             return this.errResult('dealerDrawCard: deck is null', next)
         }
-        next(null, {code: Code.OK, new_deck: newDeck, result: newCard});
+        next(null, {code: Code.OK,  result: { newDeck: newDeck, newCard: newCard, newValue: newValue }});
     });
 };
 

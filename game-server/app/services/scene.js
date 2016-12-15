@@ -272,12 +272,22 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
         game.dealNextCard(scene.dealer_deck, function(err, newDeck, card){
             //更新卡组
             try{
+                var newValue = game.calculateHandValue(scene.dealer_platfrom);
+                scene.dealer_value = newValue;
                 scene.dealer_deck = newDeck;
                 sceneCollection.update(scene);
+
+                //推送DealerGetCardEvent 广播主播抽到的卡
+                pushMessages(roomId, card, 'DealerGetCardEvent', function(err){
+                    if(!!err){
+                        return callback(err, null);
+                    }
+                    return callback(err, newDeck, card, newValue);
+                });
             } catch(err){
                 return callback('can not update dealer deck', null);
             }
-            return callback(err, newDeck, card);
+
         });
     } catch(err){
         return callback(err, null);
@@ -303,9 +313,6 @@ SceneService.prototype.dealerFinish = function(room_id, callback){
             if(!!err){
                 return callback(err, null);
             }
-
-            //todo: 主播抽完牌的逻辑
-
             return callback(null, scene);
         });
     } catch(err){
