@@ -66,7 +66,13 @@ Handler.prototype.draw = function(msg, session, next) {
 			return next(new Error(err), {code: Code.FAIL, error: err});
 		}
 		else{
-			return next(null, {code: Code.OK, result: {card: card, value: value}});
+			var remain = 0;
+			if(!newDeck){
+				remain = 0;
+			} else{
+				remain = newDeck.length;
+			}
+			return next(null, {code: Code.OK, result: {card: card, value: value, remain: remain}});
 		}
 	});
 }

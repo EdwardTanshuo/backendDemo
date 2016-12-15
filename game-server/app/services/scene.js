@@ -197,16 +197,16 @@ SceneService.prototype.removePlayer = function(room_id, role, callback, serverId
 		}
 		
 		var player = scene.players[role.token];
-		delete scene.players[role.token];
+		scene.players[role.token] = undefined;
 
 		var player_platfrom = scene.player_platfroms[role.token];
-		delete scene.player_platfroms[role.token];
+		scene.player_platfroms[role.token] = undefined;
 
 		var player_value = scene.player_values[role.token];
-		delete scene.player_values[role.token];
+		scene.player_values[role.token] = undefined;
 
 		var player_bet = scene.player_bets[role.token];
-		delete scene.player_bets[role.token];
+		scene.player_bets[role.token] = undefined;
 
 		sceneCollection.update(scene);
 		callback(null, {player_platfrom: player_platfrom, player_value: player_value, player_bet: player_bet, player: player});
@@ -240,7 +240,7 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
             try{
                 scene.player_platfroms[token].push(card); 
                 var newValue = game.calculateHandValue(scene.player_platfroms[token]);
-                scene.player_values = newValue;
+                scene.player_values[token] = newValue;
                 return callback(null, newDeck, card, newValue);
             } catch(err){
                 return callback('playerDraw: can not add card onto the platform');

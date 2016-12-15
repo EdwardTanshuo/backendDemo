@@ -39,7 +39,7 @@ module.exports = function RoleAction(session) {
 			}
 		}
 		catch(e){
-			return callback(e);
+			return callback('playerDraw: crash when query memdb');
 		}
 
 		var self_session = this.session;
