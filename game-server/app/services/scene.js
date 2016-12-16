@@ -85,7 +85,7 @@ SceneService.prototype.startBet = function(roomId, callback){
 
         pushMessages(roomId, scene, 'BetStartEvent', function(err){
             if(!!err){
-                callback(err);
+                return callback(err);
             }
             else{
                  //开启计时器
@@ -97,13 +97,13 @@ SceneService.prototype.startBet = function(roomId, callback){
                     self.startGame(roomId, function(err, result){
 
                     });
-                    console.log('################ room: ' + roomId + ', will end betting');
+                    return console.log('################ room: ' + roomId + ', will end betting');
                 }, sceneConfig.durationBet, roomId);
                 return callback(null, scene);
             }
         });
     } catch(err){
-        callback(err, null);
+        return callback(err, null);
     }
 }
 

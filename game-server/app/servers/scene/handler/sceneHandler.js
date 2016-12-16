@@ -52,11 +52,12 @@ Handler.prototype.createGame = function(msg, session, next) {
  */
 Handler.prototype.startBet = function(msg, session, next) {
     console.log('----startBet---------')
+    
     var broadcaster = session.get('currentBroadcaster');
     if(broadcaster == null){
         return next(new Error('need entry'), {code: Code.FAIL, error: 'need entry'});
     }
-    sceneService.startBet(broadcaster, session.get('room'), function(err, scene){
+    sceneService.startBet(session.get('room'), function(err, scene){
         if(scene){
             next(null, {code: Code.OK, result: scene});
         } else{
