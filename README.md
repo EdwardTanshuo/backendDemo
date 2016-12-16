@@ -44,7 +44,20 @@ $ pomelo stop
   
 ```
 
-## 3. 主播开始游戏
+## 3. 主播通知下注
+
+```
+    route:  scene.sceneHandler.startBet
+
+    参数:  无
+
+    成功返回值: { code: 200, result: {scene object}  }
+
+    失败返回值: { code: 500, error: errMsg }
+
+```
+
+## 4. 主播开始游戏
 
 ```
   route:  scene.sceneHandler.startGame
@@ -57,7 +70,7 @@ $ pomelo stop
   
 ```
 
-## 4. 主播抽卡
+## 5. 主播抽卡
 
 ```
   route:  scene.sceneHandler.dealerDrawCard
@@ -75,7 +88,7 @@ $ pomelo stop
   
 ```
 
-## 5. 主播结束抽卡
+## 6. 主播结束抽卡
 
 ```
   route:  scene.sceneHandler.dealerFinish
@@ -88,7 +101,7 @@ $ pomelo stop
   
 ```
 
-## 6. 主播结束游戏
+## 7. 主播结束游戏
 
 ```
   route:  scene.sceneHandler.endGame
@@ -120,8 +133,15 @@ $ pomelo stop
   推送数据: { dealer object }
   
 ```
+## 3. 开始下注
 
-## 3. 游戏开始
+```
+Event:  BetStartEvent
+
+推送数据: { scene object }
+
+```
+## 4. 游戏开始
 
 ```
   Event:  GameStartEvent
@@ -130,7 +150,7 @@ $ pomelo stop
   
 ```
 
-## 4. 主播抽卡(抽一次发一次)
+## 5. 主播抽卡(抽一次发一次)
 
 ```
   Event:  DealerGetCardEvent
@@ -139,7 +159,7 @@ $ pomelo stop
   
 ```
 
-## 5. 主播结束抽卡
+## 6. 主播结束抽卡
 
 ```
   Event:  DealerFinishEvent
@@ -148,7 +168,7 @@ $ pomelo stop
   
 ```
 
-## 6. 结束游戏
+## 7. 结束游戏
 
 ```
   Event:  GameOverEvent
