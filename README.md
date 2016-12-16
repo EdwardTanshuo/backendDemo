@@ -177,7 +177,9 @@ Event:  BetStartEvent
 ```
 
 # 状态机说明
-init--->(BetStartEvent)--->betting--->(GameStartEvent)--->player_started--->(EndPlayerEvent)--->dealer_turn--->(DealerFinishEvent)--->init
+```
+ init--->(BetStartEvent)--->betting--->(GameStartEvent)--->player_started--->(EndPlayerEvent)--->dealer_turn--->(DealerFinishEvent)--->init
+```
 
 
 
