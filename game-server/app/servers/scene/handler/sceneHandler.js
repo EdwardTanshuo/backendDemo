@@ -44,6 +44,28 @@ Handler.prototype.createGame = function(msg, session, next) {
 };
 
 /**
+ * 游戏通知下注接口 scene.sceneHandler.createGame
+ *
+ * 接收参数: 无
+ * 返回结果: {Object} scene
+ * 功能说明: 通知用户开始下注；
+ */
+Handler.prototype.startBet = function(msg, session, next) {
+    console.log('----startBet---------')
+    var broadcaster = session.get('currentBroadcaster');
+    if(broadcaster == null){
+        return next(new Error('need entry'), {code: Code.FAIL, error: 'need entry'});
+    }
+    sceneService.startBet(broadcaster, session.get('room'), function(err, scene){
+        if(scene){
+            next(null, {code: Code.OK, result: scene});
+        } else{
+            next(new Error(err), {code: Code.FAIL, error: err});
+        }
+    });
+};
+
+/**
  * 开始游戏接口 scene.sceneHandler.startGame
  *
  * 接收参数： 无

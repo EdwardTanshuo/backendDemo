@@ -56,22 +56,55 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
         //更新缓存
 		try{
 			sceneCollection.insert(newScene);
-            //开启计时器
-            setTimeout(function(roomId, scene) {
-                var scene = sceneCollection.findOne({'room': roomId});
-                if(!scene || scene.status != 'init'){
-                    return;
-                }
-                self.startGame(roomId, function(err, result){
-
-                });
-                console.log('################ room: ' + roomId + ', will start a new game');
-            }, sceneConfig.durationPlayerTurn, roomId);
             return callback(null, newScene);
 		} catch(err){
 			return callback('createGame: memdb error');
 		}
 	}
+}
+
+//主播通知开始下注
+SceneService.prototype.startBet = function(roomId, callback){
+    try {
+        var self = this;
+        var scene = sceneCollection.findOne({'room': roomId});
+
+        if (!scene) {
+            return callback('startBet: no scene created yet');
+        }
+        if (scene.status != 'init') {
+            return callback('game is not at init');
+        }
+        //更新缓存
+        try{
+            scene.status = 'betting';
+            sceneCollection.update(scene);
+        }catch(err){
+            return callback('startBet: memdb error');
+        }
+
+        pushMessages(roomId, scene, 'BetStartEvent', function(err){
+            if(!!err){
+                callback(err);
+            }
+            else{
+                 //开启计时器
+                setTimeout(function(roomId) {
+                    var scene = sceneCollection.findOne({'room': roomId});
+                    if(!scene || scene.status != 'betting'){
+                        return;
+                    }
+                    self.startGame(roomId, function(err, result){
+
+                    });
+                    console.log('################ room: ' + roomId + ', will end betting');
+                }, sceneConfig.durationBet, roomId);
+                return callback(null, scene);
+            }
+        });
+    } catch(err){
+        callback(err, null);
+    }
 }
 
 //主播开始游戏
@@ -83,8 +116,8 @@ SceneService.prototype.startGame = function(roomId, callback){
         if (!scene) {
             return callback('startGame: no scene created yet');
         }
-        if (scene.status != 'init') {
-            return callback('game is not at init');
+        if (scene.status != 'betting') {
+            return callback('game status is not at betting');
         }
         //更新缓存
         try{
@@ -130,7 +163,14 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
         }
         scene.status = 'dealer_turn';
         sceneCollection.update(scene);
-        return callback(null, scene);
+        pushMessages(roomId, scene, 'EndPlayerEvent', function(err){
+            if(!!err){
+                return callback(err);
+            } else{
+                return callback(null, scene);
+            }
+        });
+        
     } catch(err){
         callback(err);
     }
@@ -326,7 +366,7 @@ SceneService.prototype.dealerFinish = function(room_id, callback){
         }
 
         //更新游戏状态
-        scene.status = 'end';
+        scene.status = 'init';
         sceneCollection.update(scene);
 
         pushMessages(roomId, scene, 'DealerFinishEvent', function(err){

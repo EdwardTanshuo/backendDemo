@@ -154,6 +154,10 @@ $ pomelo stop
   Event:  GameOverEvent
     
   推送数据: { scene object }
-  
 ```
+
+# 状态机说明
+init--->(BetStartEvent)--->betting--->(GameStartEvent)--->player_started--->(EndPlayerEvent)--->dealer_turn--->(DealerFinishEvent)--->init
+
+
 
