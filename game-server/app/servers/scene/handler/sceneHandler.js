@@ -133,9 +133,10 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
  * 功能说明：
  */
 Handler.prototype.dealerFinish = function(msg, session, next) {
-    sceneService.dealerFinish(this.session.get('room'), function(err, scene){
+    var self = this;
+    sceneService.dealerFinish(session.get('room'), function(err, scene){
         if(err){
-            return this.errResult(err, next)
+            return self.errResult(err, next)
         }
         next(null, {code: Code.OK, result: scene});
     });

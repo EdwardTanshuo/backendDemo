@@ -352,7 +352,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
 }
 
 //主播
-SceneService.prototype.dealerFinish = function(room_id, callback){
+SceneService.prototype.dealerFinish = function(roomId, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){

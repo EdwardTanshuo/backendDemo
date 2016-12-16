@@ -76,8 +76,8 @@ app.configure('production|development', 'connector', function(){
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
       //transports : ['websocket'],
       heartbeats : true,
-      closeTimeout : 6000,
-      heartbeatTimeout : 60,
+      closeTimeout : 60000,
+      heartbeatTimeout : 600,
       heartbeatInterval : 25
     });
   initMongo();
@@ -93,7 +93,7 @@ app.configure('production|development', 'broadcaster', function(){
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
       //transports : ['websocket'],
       heartbeats : true,
-      closeTimeout : 6000,
+      closeTimeout : 60000,
       heartbeatTimeout : 60,
       heartbeatInterval : 25
     });
