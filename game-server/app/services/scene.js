@@ -197,9 +197,6 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         if(!scene){
             return callback('no scene');
         }
-        if(scene.status != 'init'){
-            return callback('game is not at init');
-        }
 
         //TODO: 游戏人数不够的话
         
