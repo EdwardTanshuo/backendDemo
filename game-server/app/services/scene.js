@@ -167,6 +167,17 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
             if(!!err){
                 return callback(err);
             } else{
+                 //开启计时器
+                setTimeout(function(roomId) {
+                    var scene = sceneCollection.findOne({'room': roomId});
+                    if(!scene || scene.status != 'dealer_turn'){
+                        return;
+                    }
+                    self.dealerFinish(roomId, function(err, result){
+
+                    });
+                    console.log('################ room: ' + roomId + ', will end dealer turn');
+                }, sceneConfig.durationDealerTurn, roomId);
                 return callback(null, scene);
             }
         });
