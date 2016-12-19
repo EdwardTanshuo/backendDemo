@@ -59,7 +59,7 @@ exp.playerEnter = function(roomId, role, serverId, callback){
                 if(!channel) {
                     return callback('no channel', null);
                 }
-                channel.pushMessage({route: 'PlayerEnterEvent', role: role});
+                channel.pushMessage('PlayerEnterEvent', role);
                 channel.add(role.token, serverId);
                 return utils.invokeCallback(callback, null, tempScene);
             }
@@ -72,6 +72,7 @@ exp.playerEnter = function(roomId, role, serverId, callback){
 
 exp.playerLeave = function(args, callback){
     console.log('----' + args.role.name + 'leave game' + '---------');
+    channel.pushMessage('PlayerLeaveEvent', role);
 	utils.invokeCallback(callback, null, {});
 }
 
