@@ -388,4 +388,32 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
     }
 }
 
+
+// TODO:主播端人脸识别 并推送 UpdateFaceDetectorCoorEvent
+SceneService.prototype.updateFaceDetectorCoor = function(roomId, params, callback){
+    try{
+        //var scene = sceneCollection.findOne({'room': roomId});
+        //if(!scene){
+        //    return callback('no scene');
+        //}
+        //if(scene.status != 'dealer_turn'){
+        //    return callback('game is not dealer turn yet');
+        //}
+
+        ////更新游戏状态
+        //scene.status = 'init';
+        //sceneCollection.update(scene);
+
+        //pushMessages(roomId, scene, 'UpdateFaceDetectorCoorEvent', function(err){
+        //    if(!!err){
+        //        return callback(err);
+        //    }
+        //    return callback(null, scene);
+        //});
+    } catch(err){
+        return callback(err);
+    }
+}
+
+
 module.exports = new SceneService();
