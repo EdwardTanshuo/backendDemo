@@ -1,106 +1,114 @@
 {
 	"default": [
 		{
-			"name": "a",
-			"thumb": "",
+			"name": "baiyang.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/baiyang.png",
 			"model": "",
 			"value": 2,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "b",
-			"thumb": "",
+			"name": "chunv.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/chunv.png",
 			"model": "",
 			"value": 3,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "c",
-			"thumb": "",
+			"name": "jinniu.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/jinniu.png",
 			"model": "",
 			"value": 4,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "d",
-			"thumb": "",
+			"name": "juxie.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/juxie.png",
 			"model": "",
 			"value": 5,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "e",
-			"thumb": "",
+			"name": "mojie.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/mojie.png",
 			"model": "",
 			"value": 6,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "f",
-			"thumb": "",
+			"name": "renma.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/renma.png",
 			"model": "",
 			"value": 7,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "g",
-			"thumb": "",
+			"name": "shefu.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/shefu.png",
 			"model": "",
 			"value": 8,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "h",
-			"thumb": "",
+			"name": "shizi.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/shizi.png",
 			"model": "",
 			"value": 9,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "i",
-			"thumb": "",
+			"name": "shuangyu.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/shuangyu.png",
 			"model": "",
 			"value": 10,
 			"type": "NORMAL",
 			"weight": 1.0
 		},
 		{
-			"name": "j",
-			"thumb": "",
+			"name": "shuangzia.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/shuangzia.png",
 			"model": "",
 			"value": 11,
 			"type": "SUPER",
 			"weight": 1.0
 		},
 		{
-			"name": "k",
-			"thumb": "",
+			"name": "shuangzib.pn",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/shuangzib.pn",
 			"model": "",
-			"value": 11,
+			"value": 12,
 			"type": "SUPER",
 			"weight": 1.0
 		},
 		{
-			"name": "l",
-			"thumb": "",
+			"name": "shuiping.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/shuiping.png",
 			"model": "",
-			"value": 11,
+			"value": 13,
 			"type": "SUPER",
 			"weight": 1.0
 		},
 		{
-			"name": "l",
-			"thumb": "",
+			"name": "tianping.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/tianping.png",
 			"model": "",
-			"value": 11,
+			"value": 14,
+			"type": "TRANSFORM",
+			"weight": 1.0
+		},
+		{
+			"name": "tianxie.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/tianxie.png",
+			"model": "",
+			"value": 15,
 			"type": "TRANSFORM",
 			"weight": 1.0
 		}
