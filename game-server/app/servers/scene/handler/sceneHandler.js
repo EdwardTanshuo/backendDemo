@@ -113,12 +113,13 @@ Handler.prototype.endGame = function(msg, session, next) {
  * 功能说明：
  */
 Handler.prototype.dealerDrawCard = function(msg, session, next) {
-    sceneService.dealerDrawCard(this.session.get('room'), function(err, newDeck, newCard, newValue){
+    var self = this;
+    sceneService.dealerDrawCard(session.get('room'), function(err, newDeck, newCard, newValue){
         if(err){
-            return this.errResult(err, next)
+            return self.errResult(err, next)
         }
         if(!newDeck){
-            return this.errResult('dealerDrawCard: deck is null', next)
+            return self.errResult('dealerDrawCard: deck is null', next)
         }
         next(null, {code: Code.OK,  result: { newDeck: newDeck, newValue: newValue }});
     });
@@ -153,7 +154,6 @@ Handler.prototype.dealerFinish = function(msg, session, next) {
  */
 Handler.prototype.updateFaceDetectorCoor = function(msg, session, next) {
     var self = this;
-
 
     sceneService.updateFaceDetectorCoor(session.get('room'), msg, function(err, scene){
         if(err){

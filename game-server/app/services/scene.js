@@ -364,7 +364,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
 
         });
     } catch(err){
-        return callback(err, null);
+        return callback('dealerDrawCard: memdb crash', null);
     }
 }
 
