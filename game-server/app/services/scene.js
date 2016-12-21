@@ -32,6 +32,11 @@ function initScene(roomId, dealer, callback){
 	newScene.dealer_deck = [];
 	newScene.turns = 0;
 
+    //初始化计时器信息
+    newScene.durationBet = sceneConfig.durationBet;
+    newScene.durationPlayerTurn = sceneConfig.durationPlayerTurn;
+    newScene.durationDealerTurn = sceneConfig.durationDealerTurn;
+    
 	//创建主播卡组
     try{
         var deckId = 'default';
