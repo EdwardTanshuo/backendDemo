@@ -94,10 +94,10 @@ SceneService.prototype.startBet = function(roomId, callback){
                     if(!scene || scene.status != 'betting'){
                         return;
                     }
-                    self.startGame(roomId, function(err, result){
+                    self.cancelGame(roomId, function(err, result){
 
                     });
-                    return console.log('################ room: ' + roomId + ', will end betting');
+                    return console.log('################ room: ' + roomId + ', will cancel game');
                 }, sceneConfig.durationBet, roomId);
                 return callback(null, scene);
             }
@@ -362,7 +362,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
     }
 }
 
-//主播
+//主播结束回合
 SceneService.prototype.dealerFinish = function(roomId, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
@@ -378,6 +378,32 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         sceneCollection.update(scene);
 
         pushMessages(roomId, scene, 'DealerFinishEvent', function(err){
+            if(!!err){
+                return callback(err);
+            }
+            return callback(null, scene);
+        });
+    } catch(err){
+        return callback(err);
+    }
+}
+
+//主播取消游戏
+SceneService.prototype.cancelGame = function(roomId, callback){
+    try{
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback('no scene');
+        }
+        if(scene.status != 'betting'){
+            return callback('game is not at betting yet');
+        }
+
+        //更新游戏状态
+        scene.status = 'init';
+        sceneCollection.update(scene);
+
+        pushMessages(roomId, scene, 'CancelGameEvent', function(err){
             if(!!err){
                 return callback(err);
             }
