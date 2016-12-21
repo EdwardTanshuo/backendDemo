@@ -12,6 +12,40 @@ function pushMessages(roomId, msg, route, callback){
     channel.pushMessage(route, msg, callback);
 }
 
+function initScene(roomId, dealer, callback){
+	//初始化游戏场景
+	var newScene = new Scene();
+	newScene.room = roomId;
+	newScene.status = 'init';
+
+    //初始化玩家列表
+	newScene.players = {};
+	newScene.player_platfroms = {};
+	newScene.player_values = {};
+	newScene.player_bets = {};
+		
+    //初始化主播信息
+	newScene.dealer = dealer;
+	newScene.dealer_platfrom = [];
+	newScene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
+	newScene.dealer_bets = 0;
+	newScene.dealer_deck = [];
+	newScene.turns = 0;
+
+	//创建主播卡组
+    try{
+        var deckId = 'default';
+        var newDeck = utils.createDeck(deckId);
+        if(!newDeck){
+            return callback('dealer deck could not be created');
+        }
+        newScene.dealer_deck = newDeck;
+        return callback(null, newScene);
+    } catch(err){
+       return callback('dealer deck could not be created');
+    }
+}
+
 function SceneService() {
 }
 
@@ -23,43 +57,15 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
         return callback('createGame: game has been created', scene);
 	} else{
         //初始化游戏场景
-		var newScene = new Scene();
-		newScene.room = roomId;
-		newScene.status = 'init';
-
-        //初始化玩家列表
-		newScene.players = {};
-		newScene.player_platfroms = {};
-		newScene.player_values = {};
-		newScene.player_bets = {};
-		
-        //初始化主播信息
-		newScene.dealer = dealer;
-		newScene.dealer_platfrom = [];
-		newScene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
-		newScene.dealer_bets = 0;
-		newScene.dealer_deck = [];
-		newScene.turns = 0;
-	
-        //创建主播卡组
-        try{
-            var deckId = 'default';
-            var newDeck = utils.createDeck(deckId);
-            if(!newDeck){
-                return callback('dealer deck could not be created');
-            }
-            newScene.dealer_deck = newDeck;
-        } catch(err){
-            return callback('dealer deck could not be created');
-        }
-
-        //更新缓存
-		try{
-			sceneCollection.insert(newScene);
-            return callback(null, newScene);
-		} catch(err){
-			return callback('createGame: memdb error');
-		}
+		initScene(roomId, dealer, function(err, newScene){
+			 //更新缓存
+			try{
+				sceneCollection.insert(newScene);
+	            return callback(null, newScene);
+			} catch(err){
+				return callback('createGame: memdb error');
+			}
+		});
 	}
 }
 
