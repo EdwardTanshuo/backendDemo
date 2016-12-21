@@ -12,7 +12,10 @@ var SceneSchema = mongoose.Schema({
     dealer_platfrom: {type: Array, required: false},
     dealer_value: {type: Object, required: false},
     dealer_bets: {type: Number, required: false},
-    dealer_deck: {type: Array, required: false}
+    dealer_deck: {type: Array, required: false},
+    durationBet: {type: Number, required: false},
+    durationPlayerTurn: {type: Number, required: false},
+    durationDealerTurn: {type: Number, required: false}
 });
 
 var Scene = mongoose.model('SceneSchema', SceneSchema);
