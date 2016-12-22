@@ -12,6 +12,7 @@ function pushMessages(roomId, msg, route, callback){
     channel.pushMessage(route, msg, callback);
 }
 
+//初始化游戏信息
 function initScene(roomId, dealer, callback){
 	//初始化游戏场景
 	var newScene = new Scene();
@@ -48,6 +49,40 @@ function initScene(roomId, dealer, callback){
         return callback(null, newScene);
     } catch(err){
        return callback('dealer deck could not be created');
+    }
+}
+
+//重置游戏信息
+function resetScene(roomId, scene, callback){
+    //回合加一
+    scene.turns = scene.turns + 1;
+
+    //重置玩家列表
+    var tokens = Object.keys(scene.players);
+    var i = 0;
+    for(var i = 0; i < tokens.length; i++){
+        scene.player_platfroms[tokens[i]] = [];
+        scene.player_values[tokens[i]] = {value: 0, busted: false, numberOfHigh: 0};
+        scene.player_bets[tokens[i]] = 0;
+    }
+    
+    //重置主播信息
+    scene.dealer_platfrom = [];
+    scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
+    scene.dealer_bets = 0;
+    scene.dealer_deck = [];
+    
+    //创建主播卡组
+    try{
+        var deckId = 'default';
+        var newDeck = utils.createDeck(deckId);
+        if(!newDeck){
+            return callback('dealer deck could not be created');
+        }
+        scene.dealer_deck = newDeck;
+        return callback(null, scene);
+    } catch(err){
+       return callback('dealer deck could not be reseted');
     }
 }
 
@@ -386,13 +421,23 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         //更新游戏状态
         scene.status = 'init';
-        sceneCollection.update(scene);
-
-        pushMessages(roomId, scene, 'DealerFinishEvent', function(err){
-            if(!!err){
+        
+        resetScene(roomId, scene, function(err, newScene){
+            if(err){
                 return callback(err);
             }
-            return callback(null, scene);
+            try{
+                sceneCollection.update(newScene); 
+            } catch(e){
+                return callback('dealerFinish: memdb crash');
+            }
+            
+            pushMessages(roomId, newScene, 'DealerFinishEvent', function(err){
+                if(!!err){
+                    return callback(err);
+                }
+                return callback(null, newScene);
+            });
         });
     } catch(err){
         return callback(err);
