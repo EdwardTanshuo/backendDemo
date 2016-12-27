@@ -474,11 +474,6 @@ SceneService.prototype.cancelGame = function(roomId, callback){
 // TODO:主播端人脸识别 并推送 UpdateFaceDetectorCoorEvent
 SceneService.prototype.updateFaceDetectorCoor = function(roomId, params, callback){
     try{
-        var scene = sceneCollection.findOne({'room': roomId});
-        if(!scene){
-            return callback('no scene');
-        }
-
         pushMessages(roomId, params, 'UpdateFaceDetectorCoorEvent', function(err){
             if(!!err){
                 return callback(err);
