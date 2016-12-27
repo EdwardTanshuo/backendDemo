@@ -159,7 +159,7 @@ Handler.prototype.updateFaceDetectorCoor = function(msg, session, next) {
         if(err){
             return self.errResult(err, next)
         }
-        next(null, {code: Code.OK, result: scene});
+        next(null, {code: Code.OK});
     });
 };
 
