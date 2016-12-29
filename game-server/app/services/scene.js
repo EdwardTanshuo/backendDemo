@@ -392,7 +392,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
                 sceneCollection.update(scene);
                 
                 //推送DealerGetCardEvent 广播主播抽到的卡
-                pushMessages(roomId, card, 'DealerGetCardEvent', function(err){
+                pushMessages(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
                     if(!!err){
                         return callback(err);
                     }
