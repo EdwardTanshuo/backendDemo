@@ -51,7 +51,7 @@ Handler.prototype.entry = function(msg, session, next) {
 						  					return next(new Error(err), {code: Code.FAIL, error: err});
 						  				}
 						  				else{
-						  					session.on('closed', onRoleLeave.bind(null, self_app, session, 'connection closed'));
+						  					session.on('closed', onRoleLeave.bind(null, self_app, session));
 						  					return next(null, {code: Code.OK, result: scene});
 						  				}
 						  			});
@@ -67,13 +67,20 @@ Handler.prototype.entry = function(msg, session, next) {
 	  });
 };
 
-var onRoleLeave = function (app, session, reason) {
-	//TODO: 断开连接后需要完成的代码
-	/*app.rpc.scene.sceneRemote.playerLeave(session, {token: session.get('token'), roomid: session.get('roomid')}, function(err){
+var onRoleLeave = function (app, session) {
+    console.log('------onRoleLeave----------');
+    if(!session || !session.uid) {
+        logger.error('Role leave error! %j', 'no session');
+    }
+    var roomId = session.get('room'),
+        currentRole= session.get('currentRole'),
+        serverId= app.get('serverId');
+
+	app.rpc.scene.sceneRemote.playerLeave(session, roomId, currentRole, serverId, function(err){
 		if(err){
 			logger.error('player leave error! %j', err);
 		}
-	});*/
+	});
 };
 
 var roleEnter = function (app, session, callback) {

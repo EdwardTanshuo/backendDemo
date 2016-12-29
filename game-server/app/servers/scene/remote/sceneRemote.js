@@ -25,8 +25,7 @@ exp.dealerEnter = function(roomId, dealer, serverId, callback){
 //主播离开游戏， 从channel中去掉主播信息， 推送 DealerLeaverEvent 给当前room内的全部人员
 exp.dealerLeave = function(roomId, dealer, serverId, callback){
     try{
-
-    var channel = channelService.getChannel(roomId, true);
+        var channel = channelService.getChannel(roomId, true);
         if(!channel) {
             return callback('no channel', null);
         }
@@ -70,10 +69,19 @@ exp.playerEnter = function(roomId, role, serverId, callback){
     }
 }
 
-exp.playerLeave = function(args, callback){
-    console.log('----' + args.role.name + 'leave game' + '---------');
-    channel.pushMessage('PlayerLeaveEvent', role);
-	utils.invokeCallback(callback, null, {});
+exp.playerLeave = function(roomId, role, serverId, callback){
+    console.log('----' + role.name + 'leave game' + '---------');
+    try{
+        var channel = channelService.getChannel(roomId, true);
+        if(!channel) {
+            return callback('no channel', null);
+        }
+        channel.leave(role.token, serverId);
+        channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
+        callback(null);
+    } catch(err){
+        return callback(err);
+    }
 }
 
 exp.playerBet = function(args, callback){
