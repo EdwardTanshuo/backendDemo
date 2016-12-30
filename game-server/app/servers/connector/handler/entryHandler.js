@@ -76,11 +76,13 @@ var onRoleLeave = function (app, session) {
         currentRole= session.get('currentRole'),
         serverId= app.get('serverId');
 
-	app.rpc.scene.sceneRemote.playerLeave(session, roomId, currentRole, serverId, function(err){
-		if(err){
-			logger.error('player leave error! %j', err);
-		}
-	});
+    //从channel中去除 player 并推送PlayerLeaveEvent消息
+    var channel = channelService.getChannel(roomId, true);
+    if(!channel) {
+        logger.error('Role leave error! %j', 'no channel');
+    }
+    channel.leave(currentRole.token, serverId);
+    channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
 };
 
 var roleEnter = function (app, session, callback) {

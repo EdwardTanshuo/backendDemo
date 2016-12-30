@@ -282,10 +282,10 @@ SceneService.prototype.getNumberOfPlayers = function(room_id){
 	return scene.players.length();
 }
 
-
-SceneService.prototype.removePlayer = function(room_id, role, callback, serverId){
+SceneService.prototype.removePlayer = function(roomId, role, callback){
 	try{
-		var scene = sceneCollection.findOne({'room': room_id});
+        //更新scene
+		var scene = sceneCollection.findOne({'room': roomId});
 		if(!scene){
 			return callback('no scene', null);
 		}
@@ -306,7 +306,15 @@ SceneService.prototype.removePlayer = function(room_id, role, callback, serverId
 		scene.player_bets[role.token] = undefined;
 
 		sceneCollection.update(scene);
-		callback(null, {player_platfrom: player_platfrom, player_value: player_value, player_bet: player_bet, player: player});
+
+        //从channel中去除 player 并推送PlayerLeaveEvent消息
+        var channel = channelService.getChannel(roomId, true);
+        if(!channel) {
+            return callback('no channel', null);
+        }
+        channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
+
+		callback(null, player_platfrom, player_value, player_bet, player);
 
 	}
 	catch(err){

@@ -2,23 +2,33 @@ var game = require('../console/game');
 
 module.exports = function RoleAction(session) {
 	this.session = session;
-	this.bet = function(room_id, callback) {
-		app.rpc.scene.sceneRemote.playerBet(this.session, {broadcaster: this.session.get('currentBroadcaster'), room_id: this.session.get('room')}, function(err, result){
+
+
+	this.bet = function(callback) {
+        var self = this;
+        var broadcaster = self.session.get('currentBroadcaster');
+        var roomId = self.session.get('room');
+		app.rpc.scene.sceneRemote.playerBet(self.session, roomId, broadcaster, function(err, result){
 			if(err == null && result == null){
 				return;
 			}
 		});
 	};
 
-	this.leave = function(room_id, callback) {
-		app.rpc.scene.sceneRemote.playerLeave(this.session, {room_id: this.session.get('room')}, function(err, result){
-			if(err == null && result == null){
-				return;
-			}
-		});
+	this.leave = function(callback) {
+        var self = this;
+        var roomId = self.session.get('room'),
+            currentRole= self.session.get('currentRole');
+
+        app.rpc.scene.sceneRemote.playerLeave(session, roomId, currentRole, function(err, result){
+            if(err){
+                logger.error('player leave error! %j', err);
+            }
+            return callback(null, result.player_platfrom, result.player_value, result.player_bet, result.player);
+        });
 	};
 
-	this.finish = function(room_id, callback) {
+	this.finish = function(roomId, callback) {
 		app.rpc.scene.sceneRemote.playerFinish(this.session, {room_id: this.session.get('room')}, function(err, result){
 			if(err == null && result == null){
 				return;
@@ -26,7 +36,7 @@ module.exports = function RoleAction(session) {
 		});
 	};
 
-	this.draw = function(room_id, callback) {
+	this.draw = function(roomId, callback) {
 		var self = this;
 		var deck = [];
 		try{

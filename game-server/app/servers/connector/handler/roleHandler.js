@@ -25,6 +25,20 @@ var Handler = function(app) {
  */
 Handler.prototype.bet = function(msg, session, next) {
 	var roleAction = new RoleAction(session);
+    roleAction.bet(function(err, value){
+        if(!!err){
+            return next(new Error(err), {code: Code.FAIL, error: err});
+        }
+        //else{
+        //    var remain = 0;
+        //    if(!newDeck){
+        //        remain = 0;
+        //    } else{
+        //        remain = newDeck.length;
+        //    }
+        //    return next(null, {code: Code.OK, result: {card: card, value: value, remain: remain}});
+        //}
+    });
 }
 
 /**
@@ -37,6 +51,22 @@ Handler.prototype.bet = function(msg, session, next) {
  */
 Handler.prototype.leave = function(msg, session, next) {
 	var roleAction = new RoleAction(session);
+    roleAction.leave(app.get('serverId'), function(err, player_platfrom, player_value, player_bet, player){
+        if(!!err){
+            return next(new Error(err), {code: Code.FAIL, error: err});
+        }
+        else{
+            return next(null, {
+                code: Code.OK,
+                result: {
+                    player_platfrom: player_platfrom,
+                    player_value: player_value,
+                    player_bet: player_bet,
+                    player: player
+                }
+            });
+        }
+    });
 }
 
 /**

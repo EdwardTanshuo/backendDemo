@@ -69,22 +69,25 @@ exp.playerEnter = function(roomId, role, serverId, callback){
     }
 }
 
-exp.playerLeave = function(roomId, role, serverId, callback){
+exp.playerLeave = function(roomId, role, callback){
     console.log('----' + role.name + 'leave game' + '---------');
     try{
-        var channel = channelService.getChannel(roomId, true);
-        if(!channel) {
-            return callback('no channel', null);
-        }
-        channel.leave(role.token, serverId);
-        channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
+        sceneService.removePlayer(roomId, role, function(err, player_platfrom, player_value, player_bet, player){
+            return utils.invokeCallback(callback, err, {
+                    player_platfrom: player_platfrom,
+                    player_value: player_value,
+                    player_bet: player_bet,
+                    player: player
+                });
+        });
         callback(null);
     } catch(err){
         return callback(err);
     }
 }
 
-exp.playerBet = function(args, callback){
+exp.playerBet = function(roomId, callback){
+    // todo:
 	utils.invokeCallback(callback, null, {});
 }
 
