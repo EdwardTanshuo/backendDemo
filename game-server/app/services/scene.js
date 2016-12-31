@@ -180,7 +180,13 @@ SceneService.prototype.startGame = function(roomId, callback){
             if(err){
                 return callback(err);
             } 
-            pushMessages(roomId, scene, 'GameStartEvent', function(err){
+            try{
+                var init_scene = sceneCollection.findOne({'room': roomId});
+            }
+            catch(e){
+                return callback('startGame： 主播无法抽卡');
+            }
+            pushMessages(roomId, init_scene, 'GameStartEvent', function(err){
                 if(!!err){
                     callback(err);
                 }
