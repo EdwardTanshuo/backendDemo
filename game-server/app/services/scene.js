@@ -48,11 +48,7 @@ function initScene(roomId, dealer, callback){
             return callback('dealer deck could not be created');
         }
         newScene.dealer_deck = newDeck;
-
-        //加入随机的卡
-        self.dealerDrawCard(roomId, function(err, result){
-            return callback(null, newScene);
-        });
+        return callback(null, newScene);
     } catch(err){
        return callback('dealer deck could not be created');
     }
@@ -179,24 +175,30 @@ SceneService.prototype.startGame = function(roomId, callback){
             return callback('startGame: memdb error');
         }
 
-        pushMessages(roomId, scene, 'GameStartEvent', function(err){
-        	if(!!err){
-        		callback(err);
-        	}
-        	else{
-        		 //开启计时器
-		        setTimeout(function(roomId) {
-                    var scene = sceneCollection.findOne({'room': roomId});
-                    if(!scene || scene.status != 'player_started'){
-                        return;
-                    }
-		        	self.endPlayerTurn(roomId, function(err, result){
+        //加入随机的卡
+        self.dealerDrawCard(roomId, function(err, result){
+            if(err){
+                return callback(err);
+            } 
+            pushMessages(roomId, scene, 'GameStartEvent', function(err){
+                if(!!err){
+                    callback(err);
+                }
+                else{
+                     //开启计时器
+                    setTimeout(function(roomId) {
+                        var scene = sceneCollection.findOne({'room': roomId});
+                        if(!scene || scene.status != 'player_started'){
+                            return;
+                        }
+                        self.endPlayerTurn(roomId, function(err, result){
 
-                    });
-				 	console.log('################ room: ' + roomId + ', will end players turn');
-				}, sceneConfig.durationPlayerTurn, roomId);
-		        return callback(null, scene);
-        	}
+                        });
+                        console.log('################ room: ' + roomId + ', will end players turn');
+                    }, sceneConfig.durationPlayerTurn, roomId);
+                    return callback(null, scene);
+                }
+            });
         });
     } catch(err){
         callback(err, null);
