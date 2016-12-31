@@ -14,6 +14,8 @@ function pushMessages(roomId, msg, route, callback){
 
 //初始化游戏信息
 function initScene(roomId, dealer, callback){
+    var self = this;
+
 	//初始化游戏场景
 	var newScene = new Scene();
 	newScene.room = roomId;
@@ -46,7 +48,11 @@ function initScene(roomId, dealer, callback){
             return callback('dealer deck could not be created');
         }
         newScene.dealer_deck = newDeck;
-        return callback(null, newScene);
+
+        //加入随机的卡
+        self.dealerDrawCard(roomId, function(err, result){
+            return callback(null, newScene);
+        });
     } catch(err){
        return callback('dealer deck could not be created');
     }
