@@ -82,7 +82,7 @@ var onRoleLeave = function (app, session) {
         logger.error('Role leave error! %j', 'no channel');
     }
     channel.leave(currentRole.token, serverId);
-    channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
+    channel.pushMessage({route: 'PlayerLeaveEvent', role: session.get('currentRole')});
 };
 
 var roleEnter = function (app, session, callback) {

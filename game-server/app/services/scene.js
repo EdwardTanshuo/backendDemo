@@ -58,7 +58,7 @@ function initScene(roomId, dealer, callback){
 function resetScene(roomId, scene, callback){
     //回合加一
     scene.turns = scene.turns + 1;
-
+    scene.status = 'init';
     //重置玩家列表
     var tokens = Object.keys(scene.players);
     var i = 0;
