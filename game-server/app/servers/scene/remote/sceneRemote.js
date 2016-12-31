@@ -54,12 +54,6 @@ exp.playerEnter = function(roomId, role, serverId, callback){
                 tempScene.dealer_value = scene.dealer_value;
                 tempScene.status = scene.status;
 
-                var channel = channelService.getChannel(roomId, false);
-                if(!channel) {
-                    return callback('no channel', null);
-                }
-                channel.pushMessage('PlayerEnterEvent', role);
-                channel.add(role.token, serverId);
                 return utils.invokeCallback(callback, null, tempScene);
             }
             return utils.invokeCallback(callback, err, tempScene);

@@ -268,7 +268,14 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
         scene.player_bets[role.token] = 0;
         sceneCollection.update(scene);
-        callback(null, scene);
+        
+        var channel = channelService.getChannel(roomId, false);
+        if(!channel) {
+            return callback('no channel', null);
+        }
+        channel.pushMessage('PlayerEnterEvent', role);
+        channel.add(role.token, serverId);
+        return callback(null, scene);
     } catch(err){
         return callback('memdb error when add player', null);
     }
