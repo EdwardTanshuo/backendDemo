@@ -176,17 +176,21 @@ SceneService.prototype.startGame = function(roomId, callback){
         }
 
         //加入随机的卡
-        self.dealerDrawCard(roomId, function(err, result){
+        game.dealNextCard(scene.dealer_deck, function(err, newDeck, card){
             if(err){
                 return callback(err);
             } 
             try{
-                var init_scene = sceneCollection.findOne({'room': roomId});
+                scene.dealer_platfrom.push(card);
+                var newValue = game.calculateHandValue(scene.dealer_platfrom);
+                scene.dealer_value = newValue;
+                scene.dealer_deck = newDeck;
+                sceneCollection.update(scene);
             }
             catch(e){
                 return callback('startGame： 主播无法抽卡');
             }
-            pushMessages(roomId, init_scene, 'GameStartEvent', function(err){
+            pushMessages(roomId, scene, 'GameStartEvent', function(err){
                 if(!!err){
                     callback(err);
                 }
