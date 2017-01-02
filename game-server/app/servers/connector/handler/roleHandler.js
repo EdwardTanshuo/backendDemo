@@ -50,6 +50,10 @@ Handler.prototype.bet = function(msg, session, next) {
  * @return {Void}
  */
 Handler.prototype.leave = function(msg, session, next) {
+    //清除玩家端缓存
+    var find_result = roleDeckCollection.findOne({'token': session.get('token')});
+    roleDeckCollection.remove(find_result);
+    //清除scene缓存
 	var roleAction = new RoleAction(session);
     roleAction.leave(app.get('serverId'), function(err, player_platfrom, player_value, player_bet, player){
         if(!!err){
