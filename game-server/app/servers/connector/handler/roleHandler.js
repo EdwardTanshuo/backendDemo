@@ -16,38 +16,44 @@ var Handler = function(app) {
 };
 
 /**
- * client place bet
+ * 玩家下注接口 connector.roleHandler.bet
  *
- * @param  {Object}   msg     request message
- * @param  {Object}   session current session object
- * @param  {Function} next    next step callback
- * @return {Void}
+ * 接收参数: { bet: xx  }  玩家下注金额
+ * 返回结果: { transaction: transaction } 交易记录
+ * 功能说明: 玩家下注接口
  */
 Handler.prototype.bet = function(msg, session, next) {
+    // 没有赌注
+    if(msg.bet == null ){
+        return next(new Error('no bet'), {code: Code.FAIL, error: 'no bet'});
+    }
+    var player = self.session.get('currentRole');
+    // 财富值不够
+    if(player.wealth > msg.bet){
+        return next(new Error('no enough wealth'), {code: Code.FAIL, error: 'no enough wealth'});
+    }
 	var roleAction = new RoleAction(session);
-    roleAction.bet(function(err, value){
+    roleAction.bet(msg.bet, function(err, transaction){
         if(!!err){
             return next(new Error(err), {code: Code.FAIL, error: err});
+        } else{
+            return next(null, {code: Code.OK, result: { transaction: transaction }});
         }
-        //else{
-        //    var remain = 0;
-        //    if(!newDeck){
-        //        remain = 0;
-        //    } else{
-        //        remain = newDeck.length;
-        //    }
-        //    return next(null, {code: Code.OK, result: {card: card, value: value, remain: remain}});
-        //}
     });
 }
 
+
 /**
- * client leave game
+ * 玩家退出游戏接口 connector.roleHandler.leave
  *
- * @param  {Object}   msg     request message
- * @param  {Object}   session current session object
- * @param  {Function} next    next step callback
- * @return {Void}
+ * 接收参数: 无
+ * 返回结果: {
+                    player_platfrom: player_platfrom,
+                    player_value: player_value,
+                    player_bet: player_bet,
+                    player: player
+             }
+ * 功能说明: 玩家主动退出游戏
  */
 Handler.prototype.leave = function(msg, session, next) {
     //清除玩家端缓存

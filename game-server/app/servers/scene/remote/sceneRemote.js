@@ -80,9 +80,13 @@ exp.playerLeave = function(roomId, role, callback){
     }
 }
 
-exp.playerBet = function(roomId, callback){
-    // todo:
-	utils.invokeCallback(callback, null, {});
+exp.playerBet = function(roomId, token, bet, callback){
+    if(roomId == null || token == null || bet == null){
+        return utils.invokeCallback(callback, 'playerBet: missing params');
+    }
+    sceneService.playerBet(roomId, token, bet, function(err, transaction){
+        return utils.invokeCallback(callback, err, { transaction: transaction });
+    });
 }
 
 exp.playerFinish = function(args, callback){

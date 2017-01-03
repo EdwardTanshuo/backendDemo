@@ -24,6 +24,12 @@ function initRoleDeckCache() {
     global.roleDeckCollection = roleDeckCollection;
 }
 
+// 交易记录缓存
+function initTransactionCache() {
+    var dbmem = new loki('transaction.json');
+    global.transactionCollection = dbmem.addCollection('transactionCollection');
+}
+
 function initMongo(){
    mongoose.connect(config.mongo.uri);
         var db = mongoose.connection;
@@ -112,6 +118,7 @@ app.configure('production|development', 'gate', function(){
 app.configure('production|development', 'scene', function(){
   initMongo();
   initSceneCache();
+  initTransactionCache();
 });
 
 

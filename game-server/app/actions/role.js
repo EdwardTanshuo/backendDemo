@@ -4,14 +4,15 @@ module.exports = function RoleAction(session) {
 	this.session = session;
 
 
-	this.bet = function(callback) {
+	this.bet = function(bet, callback) {
         var self = this;
-        var broadcaster = self.session.get('currentBroadcaster');
         var roomId = self.session.get('room');
-		app.rpc.scene.sceneRemote.playerBet(self.session, roomId, broadcaster, function(err, result){
+
+		app.rpc.scene.sceneRemote.playerBet(self.session, roomId, this.session.get('token'), bet, function(err, result){
 			if(err == null && result == null){
 				return;
 			}
+            return callback(null, result.transaction);
 		});
 	};
 

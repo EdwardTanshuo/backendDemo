@@ -250,18 +250,19 @@ $(document).ready(function() {
                     log: true
                 }, function() {
                     pomelo.request("connector.entryHandler.entry", {
-                        username: username,
                         token: token,
-                        roomId: roomId
+                        room: roomId
                     }, function(data) {
+                        console.log(data);
                         if(data.error) {
-                            showError(DUPLICATE_ERROR);
+                            showError(data.error);
                             return;
                         }
+                        console.log(data.result);
+                        initGame(data.result);
                         setName();
                         setRoom();
-                        showChat();
-                        initUserList(data);
+                        showChat();;
                     });
                 });
             });

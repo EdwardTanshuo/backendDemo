@@ -1,4 +1,5 @@
 var Scene = require('../models/scene');
+var Transaction = require('../models/transaction');
 var game = require('../console/game');
 var utils = require('../util/utils');
 var channelService = app.get('channelService');
@@ -348,8 +349,8 @@ SceneService.prototype.removePlayer = function(roomId, role, callback){
 
 }
 
-SceneService.prototype.addBet = function(room_id, token, value, callback){
-    var scene = sceneCollection.findOne({'room': room_id});
+SceneService.prototype.playerBet = function(roomId, token, bet, callback){
+    var scene = sceneCollection.findOne({'room': roomId});
         
     if(!scene){
         return callback('no scene');
@@ -357,12 +358,27 @@ SceneService.prototype.addBet = function(room_id, token, value, callback){
     if(scene.players[token] == null){
         return callback('player is not inside');
     }
-    if(scene.status != 'init'){
-        return callback('game is not at init');
+    if(scene.status != 'betting'){
+        return callback('game is not at betting');
     }
 
-    return callback(null, {});
+    // 增加一条 Transaction
+    var newTransaction = new Transaction();
+    newTransaction.quantity = bet;
+    newTransaction.type = 'bet';
+    newTransaction.issuer = token;
+    newTransaction.foreignIssuerId = "";  // todo: 待确认
+    newTransaction.recipient = roomId;
+    newTransaction.broadId = roomId;   // todo: 待确认
+    transactionCollection.insert(newTransaction);
+
+    // 具体下注业务实现  todo: 1，是否要推送消息； 2，如何记录是否所有的玩家都已下注； 还要变更scene的状态么
+    scene.player_bets[role.token] = bet;
+    sceneCollection.update(scene);
+
+    return callback(null, newTransaction);
 }
+
 
 SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
 	try{
