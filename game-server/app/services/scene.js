@@ -112,7 +112,45 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	}
 }
 
-//主播通知开始下注
+//玩家加入游戏
+SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
+    try{
+        var self = this;
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback('no scene');
+        }
+
+        // 推送 玩家加入游戏消息
+        var channel = channelService.getChannel(roomId, false);
+        if(!channel) {
+            return callback('no channel', null);
+        }
+        channel.pushMessage('PlayerEnterEvent', role);
+
+        //TODO: 游戏人数不够的话
+
+        //如果玩家已加入游戏， 返回当前游戏状态
+        if(scene.players[role.token] != null){
+            return callback(null, scene);
+        }
+        //否则创建新的玩家状态
+        role.sid = serverId;
+        scene.players[role.token] = role;
+        scene.player_platfroms[role.token] = [];
+        scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
+        scene.player_bets[role.token] = 0;
+        sceneCollection.update(scene);
+
+        // 并把玩家加入channel
+        channel.add(role.token, serverId);
+        return callback(null, scene);
+    } catch(err){
+        return callback('memdb error when add player', null);
+    }
+}
+
+//主播通知开始下注，并开始下注倒计时， todo: 倒计时结束调用该干什么？
 SceneService.prototype.startBet = function(roomId, callback){
     try {
         var self = this;
@@ -156,7 +194,46 @@ SceneService.prototype.startBet = function(roomId, callback){
     }
 }
 
-//主播开始游戏
+//玩家下注
+SceneService.prototype.playerBet = function(roomId, role, bet, callback){
+    var scene = sceneCollection.findOne({'room': roomId});
+    console.log('----SceneService playerBet-------------');
+    if(!scene){
+        return callback('no scene');
+    }
+    if(scene.players[role.token] == null){
+        return callback('player is not inside');
+    }
+    if(scene.status != 'betting'){
+        return callback('game is not at betting');
+    }
+    if(scene.player_bets[role.token] > 0){
+        return callback('player already bet');
+    }
+    if(bet <= 0){
+        return callback('bet Can not be less than 0');
+    }
+
+    // 增加一条 Transaction
+    var newTransaction = new Transaction();
+    newTransaction.quantity = bet;
+    newTransaction.type = 'bet';
+    newTransaction.issuer = role.token;
+    newTransaction.recipient = roomId;
+    transactionCollection.insert(newTransaction);
+
+    // 更改scene 中该玩家的下注金额
+    scene.player_bets[role.token] = bet;
+    sceneCollection.update(scene);
+    pushMessages(roomId, {role: role, bet: bet}, 'PlayerBetEvent',function(err){
+        if(!!err){
+            return callback(err);
+        }
+        return callback(null, newTransaction, bet);
+    });
+}
+
+//主播开始游戏,并抽一张卡, 并开始玩家抽卡倒计时，倒计时结束调用 玩家抽卡结束
 SceneService.prototype.startGame = function(roomId, callback){
     try {
     	var self = this;
@@ -216,6 +293,42 @@ SceneService.prototype.startGame = function(roomId, callback){
     }
 }
 
+//玩家抽卡
+SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
+    try{
+        var scene = sceneCollection.findOne({'room': room_id});
+
+        if(!scene){
+            return callback('no scene');
+        }
+        if(scene.players[token] == null){
+            return callback('player is not inside');
+        }
+        if(scene.status != 'player_started'){
+            return callback('game is not at player turn');
+        }
+        if(scene.player_values[token].busted){
+            return callback('busted');
+        }
+
+        game.dealNextCard(deck, function(err, newDeck, card){
+            try{
+                scene.player_platfroms[token].push(card);
+                var newValue = game.calculateHandValue(scene.player_platfroms[token]);
+                scene.player_values[token] = newValue;
+                return callback(null, newDeck, card, newValue);
+            } catch(err){
+                return callback('playerDraw: can not add card onto the platform');
+            }
+
+        });
+    }
+    catch(err){
+        callback('playerDraw: memdb crashed');
+    }
+}
+
+//玩家抽卡结束, 并开始主播抽卡倒计时，时间到调用 主播结束回合
 SceneService.prototype.endPlayerTurn = function(roomId, callback){
     try {
     	var self = this;
@@ -252,178 +365,7 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
     }
 }
 
-SceneService.prototype.endGame = function(roomId, callback) {
-    try{
-        var scene = sceneCollection.findOne({'room': roomId});
-        if(!scene){
-            return callback('game not exist', scene);
-        } else {
-            sceneCollection.remove(scene);
-            return callback(null, scene);
-        }
-    } catch(err){
-        return callback(err);
-    }
-}
-
-SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
-    try{
-        var self = this;
-        var scene = sceneCollection.findOne({'room': roomId});
-        if(!scene){
-            return callback('no scene');
-        }
-
-        // 推送 玩家加入游戏消息
-        var channel = channelService.getChannel(roomId, false);
-        if(!channel) {
-            return callback('no channel', null);
-        }
-        channel.pushMessage('PlayerEnterEvent', role);
-
-        //TODO: 游戏人数不够的话
-        
-        //如果玩家已加入游戏， 返回当前游戏状态
-        if(scene.players[role.token] != null){
-            return callback(null, scene);
-        }
-        //否则创建新的玩家状态
-        role.sid = serverId;
-        scene.players[role.token] = role;
-        scene.player_platfroms[role.token] = [];
-        scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
-        scene.player_bets[role.token] = 0;
-        sceneCollection.update(scene);
-        // 并把玩家加入channel
-        channel.add(role.token, serverId);
-        return callback(null, scene);
-    } catch(err){
-        return callback('memdb error when add player', null);
-    }
-}
-
-SceneService.prototype.getNumberOfPlayers = function(room_id){
-	var scene = sceneCollection.findOne({'room': room_id});
-	if(!scene){
-		return 0;
-	}
-	return scene.players.length();
-}
-
-SceneService.prototype.removePlayer = function(roomId, role, callback){
-	try{
-        //更新scene
-		var scene = sceneCollection.findOne({'room': roomId});
-		if(!scene){
-			return callback('no scene', null);
-		}
-		if(scene.players[role.token] == null){
-			return callback('player is not inside', null);
-		}
-		
-		var player = scene.players[role.token];
-		scene.players[role.token] = undefined;
-
-		var player_platfrom = scene.player_platfroms[role.token];
-		scene.player_platfroms[role.token] = undefined;
-
-		var player_value = scene.player_values[role.token];
-		scene.player_values[role.token] = undefined;
-
-		var player_bet = scene.player_bets[role.token];
-		scene.player_bets[role.token] = undefined;
-
-		sceneCollection.update(scene);
-
-        //从channel中去除 player 并推送PlayerLeaveEvent消息
-        var channel = channelService.getChannel(roomId, true);
-        if(!channel) {
-            return callback('no channel', null);
-        }
-        channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
-
-		callback(null, player_platfrom, player_value, player_bet, player);
-
-	}
-	catch(err){
-		callback(err);
-	}
-
-}
-
-SceneService.prototype.playerBet = function(roomId, token, bet, callback){
-    var scene = sceneCollection.findOne({'room': roomId});
-        
-    if(!scene){
-        return callback('no scene');
-    }
-    if(scene.players[token] == null){
-        return callback('player is not inside');
-    }
-    if(scene.status != 'betting'){
-        return callback('game is not at betting');
-    }
-    if(scene.player_bets[role.token] > 0){
-        return callback('player already bet');
-    }
-    if(bet <= 0){
-        return callback('bet Can not be less than 0');
-    }
-
-    // 增加一条 Transaction
-    var newTransaction = new Transaction();
-    newTransaction.quantity = bet;
-    newTransaction.type = 'bet';
-    newTransaction.issuer = token;
-    newTransaction.recipient = roomId;
-    transactionCollection.insert(newTransaction);
-
-    // 更改scene 中该玩家的下注金额
-    scene.player_bets[role.token] = bet;
-    sceneCollection.update(scene);
-
-    return callback(null, newTransaction, bet);
-}
-
-
-SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
-	try{
-		var scene = sceneCollection.findOne({'room': room_id});
-        
-		if(!scene){
-			return callback('no scene');
-		}
-		if(scene.players[token] == null){
-			return callback('player is not inside');
-		}
-		if(scene.status != 'player_started'){
-			return callback('game is not at player turn');
-		}
-        if(scene.player_values[token].busted){
-            return callback('busted');
-        }
-        
-		game.dealNextCard(deck, function(err, newDeck, card){
-            try{
-                scene.player_platfroms[token].push(card); 
-                var newValue = game.calculateHandValue(scene.player_platfroms[token]);
-                scene.player_values[token] = newValue;
-                return callback(null, newDeck, card, newValue);
-            } catch(err){
-                return callback('playerDraw: can not add card onto the platform');
-            }
-			
-		});
-	}
-	catch(err){
-		callback('playerDraw: memdb crashed');
-	}
-}
-
-SceneService.prototype.playerFinish = function(room_id, token, callback){
-	
-}
-
+//主播抽卡
 SceneService.prototype.dealerDrawCard = function(roomId, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
@@ -445,7 +387,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
                 scene.dealer_value = newValue;
                 scene.dealer_deck = newDeck;
                 sceneCollection.update(scene);
-                
+
                 //推送DealerGetCardEvent 广播主播抽到的卡
                 pushMessages(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
                     if(!!err){
@@ -463,7 +405,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
     }
 }
 
-//主播结束回合
+//主播结束回合，生成下注排行榜，重置游戏，开始下一回合
 SceneService.prototype.dealerFinish = function(roomId, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
@@ -474,7 +416,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             return callback('game is not dealer turn yet');
         }
 
-        // 生成排行榜
+        // 生成下注排行榜
 
 
         // 重置游戏
@@ -486,11 +428,11 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 return callback(err);
             }
             try{
-                sceneCollection.update(newScene); 
+                sceneCollection.update(newScene);
             } catch(e){
                 return callback('dealerFinish: memdb crash');
             }
-            
+
             pushMessages(roomId, newScene, 'DealerFinishEvent', function(err){
                 if(!!err){
                     return callback(err);
@@ -528,6 +470,75 @@ SceneService.prototype.cancelGame = function(roomId, callback){
         return callback(err);
     }
 }
+
+//游戏结束
+SceneService.prototype.endGame = function(roomId, callback) {
+    try{
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback('game not exist', scene);
+        } else {
+            sceneCollection.remove(scene);
+            return callback(null, scene);
+        }
+    } catch(err){
+        return callback(err);
+    }
+}
+
+//获得当前玩家数量
+SceneService.prototype.getNumberOfPlayers = function(room_id){
+	var scene = sceneCollection.findOne({'room': room_id});
+	if(!scene){
+		return 0;
+	}
+	return scene.players.length();
+}
+
+//玩家离开游戏
+SceneService.prototype.removePlayer = function(roomId, role, callback){
+	try{
+        //更新scene
+		var scene = sceneCollection.findOne({'room': roomId});
+		if(!scene){
+			return callback('no scene', null);
+		}
+		if(scene.players[role.token] == null){
+			return callback('player is not inside', null);
+		}
+		
+		var player = scene.players[role.token];
+		scene.players[role.token] = undefined;
+
+		var player_platfrom = scene.player_platfroms[role.token];
+		scene.player_platfroms[role.token] = undefined;
+
+		var player_value = scene.player_values[role.token];
+		scene.player_values[role.token] = undefined;
+
+		var player_bet = scene.player_bets[role.token];
+		scene.player_bets[role.token] = undefined;
+
+		sceneCollection.update(scene);
+
+        //从channel中去除 player 并推送PlayerLeaveEvent消息
+        var channel = channelService.getChannel(roomId, true);
+        if(!channel) {
+            return callback('no channel', null);
+        }
+        channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
+		callback(null, player_platfrom, player_value, player_bet, player);
+
+	}
+	catch(err){
+		callback(err);
+	}
+}
+
+SceneService.prototype.playerFinish = function(room_id, token, callback){
+	
+}
+
 
 
 // TODO:主播端人脸识别 并推送 UpdateFaceDetectorCoorEvent

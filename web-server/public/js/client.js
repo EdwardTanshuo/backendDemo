@@ -191,15 +191,15 @@ $(document).ready(function() {
     showLogin();
     $('#token').val(Date.now().toString());
 
-    //wait message from the server.
+    //PlayerEnterEvent
     pomelo.on('PlayerEnterEvent', function(data) {
         console.log(data);
         var role = data;
         console.log('22222222222222');
         console.log(role);
         tip('online', role.name);
-        //addMessage(role.sid, role.token, role.name);
-        //$("#chatHistory").show();
+        addMessage('role.name', '*', '进入游戏');
+        $("#chatHistory").show();
         //if(data.from !== username)
         //    tip('message', data.from);
     });
@@ -224,11 +224,33 @@ $(document).ready(function() {
     });
     //update user list
     pomelo.on('onLeave', function(data) {
-        var user = data.scene.user;
+        var user = data.scene.dealer.name;
         tip('offline', user);
         removeUser(user);
     });
 
+    //BetStartEvent
+    pomelo.on('BetStartEvent', function(data) {
+        console.log('-----BetStartEvent')
+        console.log(data.dealer);
+        var user = data.dealer.name;
+        addMessage('aaa', '*', '触发BetStartEvent');
+        $("#chatHistory").show();
+        tip('offline', user);
+        removeUser(user);
+    });
+
+    //PlayerBetEvent
+    pomelo.on('PlayerBetEvent', function(data) {
+        console.log('-----PlayerBetEvent');
+        console.log(data.role);
+        console.log(data.bet);
+        var user = data.role.name;
+        addMessage('aaa', '*', user+'触发PlayerBetEvent'+data.bet);
+        $("#chatHistory").show();
+        tip('offline', user);
+        removeUser(user);
+    });
 
     //handle disconect message, occours when the client is disconnect with servers
     pomelo.on('disconnect', function(reason) {
@@ -306,11 +328,35 @@ $(document).ready(function() {
             roomId: roomId
         }, function(data) {
             console.log(data);
+            addMessage('aaa', '*', '游戏已创建');
+            $("#chatHistory").show();
             if(data.error) {
                 showError(data.error);
                 return;
             }
-            addMessage(curName, target, '游戏已创建');
+
+        })
+    });
+
+    $("#startBet").click(function() {
+        //roomId = $('#roomId').val();
+        token = 'd858bd235c7faf19f5da18a1118788e2';
+        roleType = $('#role').val();
+        if(roomId.length == 0) {
+            showError(LENGTH_ERROR);
+            return false;
+        }
+        pomelo.request("scene.sceneHandler.startBet", {
+            roomId: roomId
+        }, function(data) {
+            console.log(data);
+            addMessage('aaa', '*', '开始下注');
+            $("#chatHistory").show();
+            if(data.error) {
+                showError(data.error);
+                return;
+            }
+
         })
     });
 
@@ -326,11 +372,33 @@ $(document).ready(function() {
             roomId: roomId
         }, function(data) {
             console.log(data);
+            addMessage('aaa', '*', '游戏已开始');
+            $("#chatHistory").show();
             if(data.error) {
                 showError(data.error);
                 return;
             }
-            addMessage(curName, target, '游戏已开始');
+        })
+    });
+
+    $("#dealerDrawCard").click(function() {
+        //roomId = $('#roomId').val();
+        token = 'd858bd235c7faf19f5da18a1118788e2';
+        roleType = $('#role').val();
+        if(roomId.length == 0) {
+            showError(LENGTH_ERROR);
+            return false;
+        }
+        pomelo.request("scene.sceneHandler.dealerDrawCard", {
+            roomId: roomId
+        }, function(data) {
+            console.log(data);
+            if(data.error) {
+                showError(data.error);
+                return;
+            }
+            addMessage('aaa', '*', '主播抽卡');
+            $("#chatHistory").show();
         })
     });
 

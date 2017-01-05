@@ -30,7 +30,7 @@ Handler.prototype.bet = function(msg, session, next) {
     if(msg.bet == null ){
         return next(new Error('no bet'), {code: Code.FAIL, error: 'no bet'});
     }
-    var player = self.session.get('currentRole');
+    var player = session.get('currentRole');
     // 财富值不够
     if(player.wealth > msg.bet){
         return next(new Error('no enough wealth'), {code: Code.FAIL, error: 'no enough wealth'});
