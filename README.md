@@ -13,6 +13,15 @@ $ pomelo start
 4.根目录下关闭项目：
 $ cd game-server
 $ pomelo stop
+
+5.主播测试客户端web版本
+$ cd web-broadcaster-client
+$ node app.js
+
+5.玩家测试客户端web版本
+$ cd web-player-client
+$ node app.js
+
 ```
 
 
