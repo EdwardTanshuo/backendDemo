@@ -52,8 +52,8 @@ function scrollDown(base) {
 };
 
 // add message on board
-function addMessage(from, target, text, time) {
-    var name = (target == '*' ? 'all' : target);
+function addMessage(text, time) {
+    var name = 'all';
     if(text === null) return;
     if(time == null) {
         // if the time is null or undefined, use the current time.
@@ -69,10 +69,10 @@ function addMessage(from, target, text, time) {
     var messageElement = $(document.createElement("table"));
     messageElement.addClass("message");
     // sanitize
-    text = util.toStaticHTML(text);
+    //text = util.toStaticHTML(text);
     var content = '<tr>' +
         '  <td class="date">' + util.timeString(time) + '</td>' +
-        '  <td class="nick">' + util.toStaticHTML(from) + ' says to ' + name + ': ' + '</td>' +
+        '  <td class="nick"> 系统 ：</td>' +
         '  <td class="msg-text">' + text + '</td>' +
         '</tr>';
     messageElement.html(content);
@@ -83,23 +83,10 @@ function addMessage(from, target, text, time) {
 };
 
 // show tip
-function tip(type, name) {
-    var tip,title;
-    switch(type){
-        case 'online':
-            tip = name + ' is online now.';
-            title = 'Online Notify';
-            break;
-        case 'offline':
-            tip = name + ' is offline now.';
-            title = 'Offline Notify';
-            break;
-        case 'message':
-            tip = name + ' is saying now.'
-            title = 'Message Notify';
-            break;
-    }
-    var pop=new Pop(title, tip);
+function tip(msg) {
+    addMessage(msg);
+    $("#chatHistory").show();
+    var pop=new Pop('系统消息', msg);
 };
 
 // init user list
@@ -195,37 +182,45 @@ $(document).ready(function() {
     pomelo.on('PlayerEnterEvent', function(data) {
         console.log(data);
         var role = data
-        addMessage(role.sid, role.token, role.name);
-        $("#chatHistory").show();
-        if(data.from !== username)
-            tip('message', data.from);
+        var msg = '玩家：'+role.name+'进入了游戏！'
+        tip(msg);
     });
 
     //update user list
     pomelo.on('DealerEnterEvent', function(data) {
         console.log(data);
-        var dealer = data.dealer
-        var user = dealer.name;
-        tip('online', user);
-        addUser(user);
+        var role = data
+        var msg = '玩家：'+role.name+'离开了游戏！';
+        tip(msg);
     });
 
     pomelo.on('GameStartEvent', function(data) {
-        alert('gameStart');
         console.log(data);
-
-        var dealer = data.scene.dealer
-        var user = dealer.name;
-        tip('online', user);
-
+        tip('游戏开始，玩家抽牌阶段');
     });
+
+    pomelo.on('BetStartEvent', function(data) {
+        console.log('-----BetStartEvent')
+        console.log(data.dealer);
+        tip('开始下注，等待玩家下注');
+    });
+
+    pomelo.on('EndPlayerEvent', function(data) {
+        console.log(data);
+        tip('玩家抽牌结束，主播抽牌阶段');
+    });
+
+    pomelo.on('DealerFinishEvent', function(data) {
+        console.log(data);
+        tip('主播抽牌结束，开始计算游戏结果');
+    });
+
     //update user list
     pomelo.on('onLeave', function(data) {
-        var user = data.scene.user;
+        var user = data.result.user;
         tip('offline', user);
         removeUser(user);
     });
-
 
     //handle disconect message, occours when the client is disconnect with servers
     pomelo.on('disconnect', function(reason) {
@@ -263,35 +258,12 @@ $(document).ready(function() {
                         initGame(data.result);
                         setName();
                         setRoom();
-
                         showChat();
-                        addMessage('玩家', '*', '进入游戏');
+                        addMessage('玩家你好，欢迎进入游戏');
                         $("#chatHistory").show();
                     });
                 });
             });
-        }else{
-            // broadcaster entry
-            pomelo.init({
-                host: '127.0.0.1',
-                port: 3020,
-                log: true
-            }, function() {
-                pomelo.request("broadcaster.entryHandler.entry", {
-                    roomId: roomId
-                }, function(data) {
-                    console.log(data);
-                    if(data.error) {
-                        showError(data.error);
-                        return;
-                    }
-                    console.log(data.result);
-                    initGame(data.result);
-                    setName();
-                    setRoom();
-                    showChat();
-                })
-            })
         }
     });
 
@@ -312,7 +284,7 @@ $(document).ready(function() {
                 return;
             }
             bet = data.result.player_bet;
-            addMessage('cccc', '*', '玩家下注了'+bet);
+            addMessage('你下注了:'+bet);
             $("#chatHistory").show();
         })
     });
@@ -325,7 +297,7 @@ $(document).ready(function() {
             showError(LENGTH_ERROR);
             return false;
         }
-        pomelo.request("scene.sceneHandler.startGame", {
+        pomelo.request("connector.roleHandler.draw", {
             roomId: roomId
         }, function(data) {
             console.log(data);
@@ -333,31 +305,9 @@ $(document).ready(function() {
                 showError(data.error);
                 return;
             }
-            addMessage(curName, target, '游戏已开始');
+            addMessage('你抽到一张卡牌');
             $("#chatHistory").show();
         })
     });
 
-
-    //deal with chat mode.
-    $("#entry").keypress(function(e) {
-        var route = "chat.chatHandler.send";
-        var target = $("#usersList").val();
-        if(e.keyCode != 13 /* Return */ ) return;
-        var msg = $("#entry").attr("value").replace("\n", "");
-        if(!util.isBlank(msg)) {
-            pomelo.request(route, {
-                rid: rid,
-                content: msg,
-                from: curName,
-                target: target
-            }, function(data) {
-                $("#entry").attr("value", ""); // clear the entry field.
-                if(target != '*' && target != curName) {
-                    addMessage(curName, target, msg);
-                    $("#chatHistory").show();
-                }
-            });
-        }
-    });
 });

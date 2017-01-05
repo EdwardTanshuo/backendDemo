@@ -52,8 +52,8 @@ function scrollDown(base) {
 };
 
 // add message on board
-function addMessage(from, target, text, time) {
-    var name = (target == '*' ? 'all' : target);
+function addMessage(text, time) {
+    var name = 'all';
     if(text === null) return;
     if(time == null) {
         // if the time is null or undefined, use the current time.
@@ -69,10 +69,10 @@ function addMessage(from, target, text, time) {
     var messageElement = $(document.createElement("table"));
     messageElement.addClass("message");
     // sanitize
-    text = util.toStaticHTML(text);
+    //text = util.toStaticHTML(text);
     var content = '<tr>' +
         '  <td class="date">' + util.timeString(time) + '</td>' +
-        '  <td class="nick">' + util.toStaticHTML(from) + ' says to ' + name + ': ' + '</td>' +
+        '  <td class="nick"> 系统 ：</td>' +
         '  <td class="msg-text">' + text + '</td>' +
         '</tr>';
     messageElement.html(content);
@@ -83,23 +83,10 @@ function addMessage(from, target, text, time) {
 };
 
 // show tip
-function tip(type, name) {
-    var tip,title;
-    switch(type){
-        case 'online':
-            tip = name + ' is online now.';
-            title = 'Online Notify';
-            break;
-        case 'offline':
-            tip = name + ' is offline now.';
-            title = 'Offline Notify';
-            break;
-        case 'message':
-            tip = name + ' is saying now.'
-            title = 'Message Notify';
-            break;
-    }
-    var pop=new Pop(title, tip);
+function tip(msg) {
+    addMessage(msg);
+    $("#chatHistory").show();
+    var pop=new Pop('系统消息', msg);
 };
 
 // init user list
@@ -197,48 +184,41 @@ $(document).ready(function() {
         var role = data;
         console.log('22222222222222');
         console.log(role);
-        tip('online', role.name);
-        addMessage('role.name', '*', '进入游戏');
-        $("#chatHistory").show();
-        //if(data.from !== username)
-        //    tip('message', data.from);
+        var msg = '玩家 '+role.name + ' 进入游戏';
+        tip(msg);
+        addUser(role.name);
     });
 
     //update user list
-    pomelo.on('DealerEnterEvent', function(data) {
-        console.log(data);
-        var dealer = data.dealer
-        var user = dealer.name;
-        tip('online', user);
-        addUser(user);
-    });
+    //pomelo.on('DealerEnterEvent', function(data) {
+    //    console.log(data);
+    //    var dealer = data.dealer
+    //    var user = dealer.name;
+    //    addUser(user);
+    //});
 
     pomelo.on('GameStartEvent', function(data) {
         alert('gameStart');
         console.log(data);
 
-        var dealer = data.scene.dealer
+        var dealer = data.result.dealer
         var user = dealer.name;
-        tip('online', user);
+        tip('游戏开始，玩家抽牌阶段');
 
     });
     //update user list
     pomelo.on('onLeave', function(data) {
-        var user = data.scene.dealer.name;
+        var user = data.result.dealer.name;
         tip('offline', user);
         removeUser(user);
     });
 
     //BetStartEvent
-    pomelo.on('BetStartEvent', function(data) {
-        console.log('-----BetStartEvent')
-        console.log(data.dealer);
-        var user = data.dealer.name;
-        addMessage('aaa', '*', '触发BetStartEvent');
-        $("#chatHistory").show();
-        tip('offline', user);
-        removeUser(user);
-    });
+    //pomelo.on('BetStartEvent', function(data) {
+    //    console.log('-----BetStartEvent')
+    //    console.log(data.dealer);
+    //    tip('开始下注，等待玩家下注');
+    //});
 
     //PlayerBetEvent
     pomelo.on('PlayerBetEvent', function(data) {
@@ -246,10 +226,17 @@ $(document).ready(function() {
         console.log(data.role);
         console.log(data.bet);
         var user = data.role.name;
-        addMessage('aaa', '*', user+'触发PlayerBetEvent'+data.bet);
-        $("#chatHistory").show();
-        tip('offline', user);
-        removeUser(user);
+        tip(user+'下注了：'+data.bet);
+    });
+
+    pomelo.on('EndPlayerEvent', function(data) {
+        console.log(data);
+        tip('玩家抽牌结束，主播抽牌阶段');
+    });
+
+    pomelo.on('DealerFinishEvent', function(data) {
+        console.log(data);
+        tip('主播抽牌结束，开始计算游戏结果');
     });
 
     //handle disconect message, occours when the client is disconnect with servers
@@ -266,54 +253,30 @@ $(document).ready(function() {
             showError(LENGTH_ERROR);
             return false;
         }
-        if(roleType == 'player'){
-            //player entry of connection
-            queryEntry(token, function(host, port) {
-                pomelo.init({
-                    host: host,
-                    port: port,
-                    log: true
-                }, function() {
-                    pomelo.request("connector.entryHandler.entry", {
-                        token: token,
-                        room: roomId
-                    }, function(data) {
-                        console.log(data);
-                        if(data.error) {
-                            showError(data.error);
-                            return;
-                        }
-                        console.log(data.result);
-                        initGame(data.result);
-                        setName();
-                        setRoom();
-                        showChat();;
-                    });
-                });
-            });
-        }else{
-            // broadcaster entry
-            pomelo.init({
-                host: '127.0.0.1',
-                port: 3020,
-                log: true
-            }, function() {
-                pomelo.request("broadcaster.entryHandler.entry", {
-                    roomId: roomId
-                }, function(data) {
-                    console.log(data);
-                    if(data.error) {
-                        showError(data.error);
-                        return;
-                    }
-                    console.log(data.result);
-                    initGame(data.result);
-                    setName();
-                    setRoom();
-                    showChat();
-                })
+        // broadcaster entry
+        pomelo.init({
+            host: '127.0.0.1',
+            port: 3020,
+            log: true
+        }, function() {
+            pomelo.request("broadcaster.entryHandler.entry", {
+                roomId: roomId
+            }, function(data) {
+                console.log(data);
+                if(data.error) {
+                    showError(data.error);
+                    return;
+                }
+                console.log(data.result);
+                initGame(data.result);
+                setName();
+                setRoom();
+                showChat();
+                addMessage('主播你好，欢迎进入游戏');
+                $("#chatHistory").show();
             })
-        }
+        })
+
     });
 
     $("#createGame").click(function() {
@@ -328,13 +291,12 @@ $(document).ready(function() {
             roomId: roomId
         }, function(data) {
             console.log(data);
-            addMessage('aaa', '*', '游戏已创建');
-            $("#chatHistory").show();
             if(data.error) {
                 showError(data.error);
                 return;
             }
-
+            addMessage('游戏创建成功，等待玩家加入');
+            $("#chatHistory").show();
         })
     });
 
@@ -350,7 +312,7 @@ $(document).ready(function() {
             roomId: roomId
         }, function(data) {
             console.log(data);
-            addMessage('aaa', '*', '开始下注');
+            addMessage('您点击里了：开始下注，等待玩家下注');
             $("#chatHistory").show();
             if(data.error) {
                 showError(data.error);
@@ -372,7 +334,7 @@ $(document).ready(function() {
             roomId: roomId
         }, function(data) {
             console.log(data);
-            addMessage('aaa', '*', '游戏开始');
+            addMessage('您点击里了：开始游戏');
             $("#chatHistory").show();
             if(data.error) {
                 showError(data.error);
@@ -397,7 +359,7 @@ $(document).ready(function() {
                 showError(data.error);
                 return;
             }
-            addMessage('aaa', '*', '主播抽卡');
+            addMessage('您抽了一张卡牌');
             $("#chatHistory").show();
         })
     });
@@ -418,7 +380,8 @@ $(document).ready(function() {
                 showError(data.error);
                 return;
             }
-            addMessage(curName, target, '游戏已结束');
+            addMessage('您点击了结束游戏');
+            $("#chatHistory").show();
         })
     });
 
