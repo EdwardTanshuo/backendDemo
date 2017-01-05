@@ -194,11 +194,14 @@ $(document).ready(function() {
     //wait message from the server.
     pomelo.on('PlayerEnterEvent', function(data) {
         console.log(data);
-        var role = data.role
-        addMessage(role.sid, role.token, role.name);
-        $("#chatHistory").show();
-        if(data.from !== username)
-            tip('message', data.from);
+        var role = data;
+        console.log('22222222222222');
+        console.log(role);
+        tip('online', role.name);
+        //addMessage(role.sid, role.token, role.name);
+        //$("#chatHistory").show();
+        //if(data.from !== username)
+        //    tip('message', data.from);
     });
 
     //update user list

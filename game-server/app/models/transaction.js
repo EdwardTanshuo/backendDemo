@@ -15,9 +15,9 @@ var TransactionSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Broadcaster'
     },
-    broadId:{ //  senceID
+    scene:{ //  senceID
         type: mongoose.Schema.Types.ObjectId,
-        ref:'Broad'
+        ref:'Scene'
     },
     createdAt: { type: Date, default: Date.now, required: true}
 });

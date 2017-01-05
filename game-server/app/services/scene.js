@@ -274,6 +274,13 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
             return callback('no scene');
         }
 
+        // 推送 玩家加入游戏消息
+        var channel = channelService.getChannel(roomId, false);
+        if(!channel) {
+            return callback('no channel', null);
+        }
+        channel.pushMessage('PlayerEnterEvent', role);
+
         //TODO: 游戏人数不够的话
         
         //如果玩家已加入游戏， 返回当前游戏状态
@@ -287,12 +294,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
         scene.player_bets[role.token] = 0;
         sceneCollection.update(scene);
-        
-        var channel = channelService.getChannel(roomId, false);
-        if(!channel) {
-            return callback('no channel', null);
-        }
-        channel.pushMessage('PlayerEnterEvent', role);
+        // 并把玩家加入channel
         channel.add(role.token, serverId);
         return callback(null, scene);
     } catch(err){
@@ -361,22 +363,26 @@ SceneService.prototype.playerBet = function(roomId, token, bet, callback){
     if(scene.status != 'betting'){
         return callback('game is not at betting');
     }
+    if(scene.player_bets[role.token] > 0){
+        return callback('player already bet');
+    }
+    if(bet <= 0){
+        return callback('bet Can not be less than 0');
+    }
 
     // 增加一条 Transaction
     var newTransaction = new Transaction();
     newTransaction.quantity = bet;
     newTransaction.type = 'bet';
     newTransaction.issuer = token;
-    newTransaction.foreignIssuerId = "";  // todo: 待确认
     newTransaction.recipient = roomId;
-    newTransaction.broadId = roomId;   // todo: 待确认
     transactionCollection.insert(newTransaction);
 
-    // 具体下注业务实现  todo: 1，是否要推送消息； 2，如何记录是否所有的玩家都已下注； 还要变更scene的状态么
+    // 更改scene 中该玩家的下注金额
     scene.player_bets[role.token] = bet;
     sceneCollection.update(scene);
 
-    return callback(null, newTransaction);
+    return callback(null, newTransaction, bet);
 }
 
 
@@ -468,9 +474,13 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             return callback('game is not dealer turn yet');
         }
 
+        // 生成排行榜
+
+
+        // 重置游戏
+
+
         //更新游戏状态
-        scene.status = 'init';
-        
         resetScene(roomId, scene, function(err, newScene){
             if(err){
                 return callback(err);

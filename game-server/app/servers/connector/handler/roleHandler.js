@@ -19,7 +19,10 @@ var Handler = function(app) {
  * 玩家下注接口 connector.roleHandler.bet
  *
  * 接收参数: { bet: xx  }  玩家下注金额
- * 返回结果: { transaction: transaction } 交易记录
+ * 返回结果: {
+ *              transaction: transaction,  交易记录
+ *              player_bet : 30  下注金额，0-未下注
+ *           }
  * 功能说明: 玩家下注接口
  */
 Handler.prototype.bet = function(msg, session, next) {
@@ -33,11 +36,11 @@ Handler.prototype.bet = function(msg, session, next) {
         return next(new Error('no enough wealth'), {code: Code.FAIL, error: 'no enough wealth'});
     }
 	var roleAction = new RoleAction(session);
-    roleAction.bet(msg.bet, function(err, transaction){
+    roleAction.bet(msg.bet, function(err, transaction, playerBet){
         if(!!err){
             return next(new Error(err), {code: Code.FAIL, error: err});
         } else{
-            return next(null, {code: Code.OK, result: { transaction: transaction }});
+            return next(null, {code: Code.OK, result: { transaction: transaction, player_bet: playerBet }});
         }
     });
 }

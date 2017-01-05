@@ -53,7 +53,12 @@ module.exports = function HandValueCalculator() {
         totalValue += cardValue;
       }
     }
-    return {value: ((totalValue > this.BLACKJACK) ? this.BUSTED_VALUE : totalValue), busted: ((totalValue > this.BLACKJACK) ? true : false), numberOfHigh: numberOfHigh, numberOfTrans: numberOfHigh};
+    return {
+        value: ((totalValue > this.BLACKJACK) ? this.BUSTED_VALUE : totalValue),
+        busted: ((totalValue > this.BLACKJACK) ? true : false),
+        numberOfHigh: numberOfHigh,
+        numberOfTrans: numberOfHigh
+    };
   };
 
   
