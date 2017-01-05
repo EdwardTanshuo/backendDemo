@@ -6,7 +6,8 @@ game-server/logs/*
 *.log
 !.gitignore
 game-server/node_modules/*
-web-server/node_modules/*
+web-player-client/node_modules/*
+web-broadcaster-client/node_modules/*
 .settings/
 **/*.svn
 *.svn
