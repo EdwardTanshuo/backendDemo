@@ -242,9 +242,11 @@ SceneService.prototype.startGame = function(roomId, callback){
         if (!scene) {
             return callback('startGame: no scene created yet');
         }
-        if (scene.status != 'betting') {
-            return callback('game status is not at betting');
-        }
+
+        //if (scene.status != 'betting') {
+        //    return callback('game status is not at betting');
+        //}
+
         //更新缓存
         try{
             scene.status = 'player_started';
@@ -417,12 +419,10 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         }
 
         // 生成下注排行榜
+        // todo:
 
 
-        // 重置游戏
-
-
-        //更新游戏状态
+        //重置游戏 更新游戏状态
         resetScene(roomId, scene, function(err, newScene){
             if(err){
                 return callback(err);
