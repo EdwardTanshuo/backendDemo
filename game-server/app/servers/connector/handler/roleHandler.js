@@ -31,8 +31,12 @@ Handler.prototype.bet = function(msg, session, next) {
         return next(new Error('no bet'), {code: Code.FAIL, error: 'no bet'});
     }
     var player = session.get('currentRole');
+
+    // 测试 增加财富值
+    //player.wealth += 10000;
+
     // 财富值不够
-    if(player.wealth > msg.bet){
+    if(player.wealth < msg.bet){
         return next(new Error('no enough wealth'), {code: Code.FAIL, error: 'no enough wealth'});
     }
 	var roleAction = new RoleAction(session);

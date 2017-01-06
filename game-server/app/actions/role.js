@@ -13,7 +13,7 @@ module.exports = function RoleAction(session) {
             if(err){
                 return callback(err);
             }
-            return callback(null, result.transaction, result.bet);
+            return callback(null, result.transaction, result.player_bet);
 		});
 	};
 

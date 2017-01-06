@@ -84,8 +84,8 @@ exp.playerBet = function(roomId, role, bet, callback){
     if(roomId == null || role == null || bet == null){
         return utils.invokeCallback(callback, 'playerBet: missing params');
     }
-    sceneService.playerBet(roomId, role, bet, function(err, transaction, bet){
-        return utils.invokeCallback(callback, err, { transaction: transaction, bet: bet });
+    sceneService.playerBet(roomId, role, bet, function(err, transaction, player_bet){
+        return utils.invokeCallback(callback, err, { transaction: transaction, player_bet: player_bet });
     });
 }
 

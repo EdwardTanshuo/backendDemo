@@ -153,4 +153,49 @@ DataSyncService.prototype.syncBroadcasterFromRemote = function(room_id, callback
      });
 };
 
+DataSyncService.prototype.syncTransaction = function(broadcaster, callback) {
+    var transactionService = require('./transaction');
+    //todo
+};
+
+DataSyncService.prototype.syncTransactionToRemote = function(room_id, callback) {
+    if(!room_id){
+        return callback('missing room_id', null); // error response
+    }
+    var headers = {
+        'content-type': 'application/json',
+        'cache-control': 'no-cache'
+    };
+    headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
+
+    var options = {
+        method: 'GET',
+        url: config.remote.url + config.remote.api.broadcasterGet + '/' + room_id,
+        headers: headers
+    };
+
+    var syncBroadcaster = DataSyncService.prototype.syncBroadcaster;
+
+    request(options, function(err, response, body){
+        if (err) {
+            callback(err, null); // error response
+        } else {
+            try{
+                var json = JSON.parse(body);
+                if(json.result){
+                    json.result.room = room_id;
+                    return syncBroadcaster(json.result, callback);
+                }
+                else{
+                    return callback('broadcaster not exist', null);
+                }
+
+            }
+            catch(err){
+                callback(err, null); // successful response
+            }
+        }
+    });
+};
+
 module.exports = new DataSyncService();

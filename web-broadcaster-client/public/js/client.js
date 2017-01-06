@@ -198,10 +198,9 @@ $(document).ready(function() {
     //});
 
     pomelo.on('GameStartEvent', function(data) {
-        alert('gameStart');
         console.log(data);
 
-        var dealer = data.result.dealer
+        var dealer = data.dealer
         var user = dealer.name;
         tip('游戏开始，玩家抽牌阶段');
 
@@ -333,6 +332,7 @@ $(document).ready(function() {
         pomelo.request("scene.sceneHandler.startGame", {
             roomId: roomId
         }, function(data) {
+            console.log('----------开始游戏--------')
             console.log(data);
             addMessage('您点击里了：开始游戏');
             $("#chatHistory").show();

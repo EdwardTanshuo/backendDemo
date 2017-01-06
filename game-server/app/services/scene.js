@@ -150,7 +150,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     }
 }
 
-//主播通知开始下注，并开始下注倒计时， todo: 倒计时结束调用该干什么？
+//主播通知开始下注，并开始下注倒计时，
 SceneService.prototype.startBet = function(roomId, callback){
     try {
         var self = this;
@@ -207,9 +207,11 @@ SceneService.prototype.playerBet = function(roomId, role, bet, callback){
     if(scene.status != 'betting'){
         return callback('game is not at betting');
     }
+
     if(scene.player_bets[role.token] > 0){
         return callback('player already bet');
     }
+
     if(bet <= 0){
         return callback('bet Can not be less than 0');
     }
@@ -222,7 +224,8 @@ SceneService.prototype.playerBet = function(roomId, role, bet, callback){
     newTransaction.recipient = roomId;
     transactionCollection.insert(newTransaction);
 
-    // 更改scene 中该玩家的下注金额
+    //  bet_amount-下注金额，bet_result-下注结果（win,lose,tie）
+    //var player_bet = { token:role.token, bet_amount: bet, bet_result: ''};
     scene.player_bets[role.token] = bet;
     sceneCollection.update(scene);
     pushMessages(roomId, {role: role, bet: bet}, 'PlayerBetEvent',function(err){
@@ -242,10 +245,6 @@ SceneService.prototype.startGame = function(roomId, callback){
         if (!scene) {
             return callback('startGame: no scene created yet');
         }
-
-        //if (scene.status != 'betting') {
-        //    return callback('game status is not at betting');
-        //}
 
         //更新缓存
         try{
@@ -418,12 +417,91 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             return callback('game is not dealer turn yet');
         }
 
-        // 生成下注排行榜
-        // todo:
+          //增加测试假数据
+        //var token1 = '1e123d23123e23e2wed23';
+        //var token2 = '2e123d23123e23e2wed23';
+        //var token3 = '3e123d23123e23e2wed23';
+        //var token4 = '4e123d23123e23e2wed23';
+        //var token5 = '5e123d23123e23e2wed23';
+        //scene.player_bets[token1] = 45;
+        //scene.player_bets[token2] = 69;
+        //scene.player_bets[token3] = 57;
+        //scene.player_bets[token4] = 40;
+        //scene.player_bets[token5] = 78;
+        //scene.players[token1] = {
+        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
+        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test1", "_id":"584ba72f14be927319de49b1"
+        //};
+        //scene.players[token2] = {
+        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
+        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test2", "_id":"584ba72f14be927319de49b1"
+        //};
+        //scene.players[token3] = {
+        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
+        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test3", "_id":"584ba72f14be927319de49b1"
+        //};
+        //scene.players[token4] = {
+        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
+        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test4", "_id":"584ba72f14be927319de49b1"
+        //};
+        //scene.players[token5] = {
+        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
+        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test5", "_id":"584ba72f14be927319de49b1"
+        //};
+        //scene.player_values[token1] = { value: 5, busted: false, numberOfHigh: 34 };
+        //scene.player_values[token2] = { value: 14, busted: false, numberOfHigh: 25 };
+        //scene.player_values[token3] = { value: 9, busted: false, numberOfHigh: 57 };
+        //scene.player_values[token4] = { value: 25, busted: false, numberOfHigh: 86 };
+        //scene.player_values[token5] = { value: 18, busted: false, numberOfHigh: 35 };
 
+
+        var player_bets = scene.player_bets;
+        console.log('-----player_bets -----------');
+        console.log(player_bets);
+
+        var rankingList = [];
+
+        for (var k in player_bets) {
+            console.log('-----single player_bet -----------');
+            console.log(k);
+            var bet = player_bets[k];
+            console.log(bet);
+
+            // 计算玩家输赢
+            var bunko = game.determinePlayerWin(scene.dealer_value, scene.player_values[k]);
+            console.log(bunko);
+            var player = scene.players[k];
+            console.log(player);
+
+            // 如果玩家是赢了， 就生成Reward类型Transaction。
+            if(bunko == 'win'){
+                var newTransaction = new Transaction();
+                newTransaction.quantity = bet*2;
+                newTransaction.type = 'Reward';
+                newTransaction.issuer = roomId;
+                newTransaction.recipient = player.token;
+                transactionCollection.insert(newTransaction);
+            }
+
+            // 添加到排行榜中
+            rankingList.push({
+                bunko: bunko,
+                quantity: bet,
+                play_value: playValue,
+                player: player
+            })
+        }
+
+        // todo: 同步Transaction数据到mysql
+
+        // todo: 同步scene到mysql
 
         //重置游戏 更新游戏状态
         resetScene(roomId, scene, function(err, newScene){
+
+            //console.log('-----after reset scene -----------');
+            //console.log(scene);
+
             if(err){
                 return callback(err);
             }
@@ -433,11 +511,11 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 return callback('dealerFinish: memdb crash');
             }
 
-            pushMessages(roomId, newScene, 'DealerFinishEvent', function(err){
+            pushMessages(roomId, {scene: newScene, ranking_list: rankingList }, 'DealerFinishEvent', function(err){
                 if(!!err){
                     return callback(err);
                 }
-                return callback(null, newScene);
+                return callback(null, newScene, rankingList);
             });
         });
     } catch(err){
@@ -538,7 +616,6 @@ SceneService.prototype.removePlayer = function(roomId, role, callback){
 SceneService.prototype.playerFinish = function(room_id, token, callback){
 	
 }
-
 
 
 // TODO:主播端人脸识别 并推送 UpdateFaceDetectorCoorEvent
