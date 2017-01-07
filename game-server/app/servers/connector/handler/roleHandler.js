@@ -33,7 +33,7 @@ Handler.prototype.bet = function(msg, session, next) {
     var player = session.get('currentRole');
 
     // 测试 增加财富值
-    //player.wealth += 10000;
+    player.wealth += 10000;
 
     // 财富值不够
     if(player.wealth < msg.bet){

@@ -153,43 +153,88 @@ DataSyncService.prototype.syncBroadcasterFromRemote = function(room_id, callback
      });
 };
 
-DataSyncService.prototype.syncTransaction = function(broadcaster, callback) {
-    var transactionService = require('./transaction');
-    //todo
-};
-
-DataSyncService.prototype.syncTransactionToRemote = function(room_id, callback) {
-    if(!room_id){
-        return callback('missing room_id', null); // error response
+DataSyncService.prototype.syncSceneToRemote = function(scene, callback) {
+    if(!scene){
+        return callback('syncSceneToRemote missing params', null); // error response
     }
     var headers = {
-        'content-type': 'application/json',
+        'Content-Type': 'application/json',
         'cache-control': 'no-cache'
     };
-    headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
+
+    //headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
+    headers['X_MCV_TOKEN'] = 'd858bd235c7faf19f5da18a1118788e2';
+
+    console.log('---------- start sync scene ...');
+    console.log(scene);
 
     var options = {
-        method: 'GET',
-        url: config.remote.url + config.remote.api.broadcasterGet + '/' + room_id,
-        headers: headers
+        method: 'POST',
+        //url: config.remote.url + config.remote.api.scenePost ,
+        url: 'http://localhost:8080' + config.remote.api.scenePost ,
+        headers: headers,
+        json: true,
+        body: scene
     };
 
-    var syncBroadcaster = DataSyncService.prototype.syncBroadcaster;
-
-    request(options, function(err, response, body){
+    request(options,  function(err, response, body){
         if (err) {
             callback(err, null); // error response
         } else {
             try{
-                var json = JSON.parse(body);
-                if(json.result){
-                    json.result.room = room_id;
-                    return syncBroadcaster(json.result, callback);
+                if(body.result){
+                    console.log('------syncSceneToRemote success resulte');
+                    console.log(body.result);
+                    return callback(null, body.result);
                 }
                 else{
-                    return callback('broadcaster not exist', null);
+                    return callback('syncSceneToRemote error', null);
                 }
+            }
+            catch(err){
+                callback(err, null); // successful response
+            }
+        }
+    });
+};
 
+DataSyncService.prototype.syncTransactionToRemote = function(transactions, callback) {
+    if(!transactions){
+        return callback('syncTransactionToRemote missing params', null); // error response
+    }
+    var headers = {
+        'Content-Type': 'application/json',
+        'cache-control': 'no-cache'
+    };
+
+    //headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
+    headers['X_MCV_TOKEN'] = 'd858bd235c7faf19f5da18a1118788e2';
+
+    console.log('---------- start sync transaction ...');
+    console.log(transactions);
+
+    var options = {
+        method: 'POST',
+        //url: config.remote.url + config.remote.api.scenePost ,
+        url: 'http://localhost:8080' + config.remote.api.transactionPost ,
+        headers: headers,
+        json: true,
+        body: transactions
+    };
+
+    request(options,  function(err, response, body){
+        if (err) {
+            callback(err, null); // error response
+        } else {
+            try{
+                if(body.result){
+                    console.log('------syncTransactionToRemote success resulte');
+                    console.log(body.result);
+                    return callback(null, body.result);
+                }
+                else{
+                    return callback('syncTransactionToRemote error', null);
+                }
             }
             catch(err){
                 callback(err, null); // successful response

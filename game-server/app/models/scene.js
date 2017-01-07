@@ -18,6 +18,6 @@ var SceneSchema = mongoose.Schema({
     durationDealerTurn: {type: Number, required: false}
 });
 
-var Scene = mongoose.model('SceneSchema', SceneSchema);
+var Scene = mongoose.model('Scene', SceneSchema);
 
 module.exports = Scene;

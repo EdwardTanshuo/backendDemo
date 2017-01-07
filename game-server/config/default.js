@@ -15,7 +15,9 @@ module.exports = {
 	    },
 	    "api": {
 	    	"userGet": "/api/account",
-	    	"broadcasterGet": "/api/broadcasters"
+	    	"broadcasterGet": "/api/broadcasters",
+            'scenePost': "/api/scenes",
+            'transactionPost': "/api/transactions"
 	    }
   },
 }

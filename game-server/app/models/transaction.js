@@ -10,7 +10,7 @@ var TransactionSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    foreignIssuerId: {type: Number, required: true},  // mysql 中的外键
+    foreignIssuerId: {type: Number},  // mysql 中的外键
     recipient: {  //收款人
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Broadcaster'
@@ -24,14 +24,14 @@ var TransactionSchema = mongoose.Schema({
 
 
 
-TransactionSchema.pre('save', function(next) {
-    console.log("pre!!!!!!!!!!!!!!!!!!!!!!!")
-    this.quantity = Math.abs(this.quantity);
-    if (this.type !== 'Refill' && this.type !== 'Coupon' && this.type !== 'Reward'){
-        this.quantity *= -1;
-    }
-    next();
-});
+//TransactionSchema.pre('save', function(next) {
+//    console.log("pre!!!!!!!!!!!!!!!!!!!!!!!")
+//    this.quantity = Math.abs(this.quantity);
+//    if (this.type !== 'Refill' && this.type !== 'Coupon' && this.type !== 'Reward'){
+//        this.quantity *= -1;
+//    }
+//    next();
+//});
 
 var Transaction = mongoose.model('Transaction', TransactionSchema);
 

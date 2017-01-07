@@ -4,6 +4,7 @@ var game = require('../console/game');
 var utils = require('../util/utils');
 var channelService = app.get('channelService');
 var sceneConfig = require('../../config/scene');
+var dataSyncService = require('./dataSync');
 
 function pushMessages(roomId, msg, route, callback){
 	var channel = channelService.getChannel(roomId, true);
@@ -220,7 +221,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, callback){
     // 增加一条 Transaction
     var newTransaction = new Transaction();
     newTransaction.quantity = bet;
-    newTransaction.type = 'bet';
+    newTransaction.type = 'Bet';
     newTransaction.issuer = role.token;
     newTransaction.recipient = roomId;
     transactionCollection.insert(newTransaction);
@@ -417,43 +418,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             return callback('game is not dealer turn yet');
         }
 
-          //增加测试假数据
-        //var token1 = '1e123d23123e23e2wed23';
-        //var token2 = '2e123d23123e23e2wed23';
-        //var token3 = '3e123d23123e23e2wed23';
-        //var token4 = '4e123d23123e23e2wed23';
-        //var token5 = '5e123d23123e23e2wed23';
-        //scene.player_bets[token1] = 45;
-        //scene.player_bets[token2] = 69;
-        //scene.player_bets[token3] = 57;
-        //scene.player_bets[token4] = 40;
-        //scene.player_bets[token5] = 78;
-        //scene.players[token1] = {
-        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
-        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test1", "_id":"584ba72f14be927319de49b1"
-        //};
-        //scene.players[token2] = {
-        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
-        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test2", "_id":"584ba72f14be927319de49b1"
-        //};
-        //scene.players[token3] = {
-        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
-        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test3", "_id":"584ba72f14be927319de49b1"
-        //};
-        //scene.players[token4] = {
-        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
-        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test4", "_id":"584ba72f14be927319de49b1"
-        //};
-        //scene.players[token5] = {
-        //    "sid":"connector-server-1", "exp":0, "level":0, "deckId":"default", "__v":0, "avatar":"", "foreignId":40,
-        //    "token":"d858bd235c7faf19f5da18a1118788e2", "wealth":0, "name":"test5", "_id":"584ba72f14be927319de49b1"
-        //};
-        //scene.player_values[token1] = { value: 5, busted: false, numberOfHigh: 34 };
-        //scene.player_values[token2] = { value: 14, busted: false, numberOfHigh: 25 };
-        //scene.player_values[token3] = { value: 9, busted: false, numberOfHigh: 57 };
-        //scene.player_values[token4] = { value: 25, busted: false, numberOfHigh: 86 };
-        //scene.player_values[token5] = { value: 18, busted: false, numberOfHigh: 35 };
-
+        //增加测试假数据
 
         var player_bets = scene.player_bets;
         console.log('-----player_bets -----------');
@@ -495,14 +460,45 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             })
         }
 
-        // todo: 同步scene到mysql
-        console.log('-----sync scene -----------');
-        console.log(scene);
+        //var newTransaction = new Transaction();
+        //newTransaction.quantity = 12;
+        //newTransaction.type = 'Reward';
+        //newTransaction.issuer = roomId;
+        //newTransaction.recipient = 'afedwedasd';
+        //transactionCollection.insert(newTransaction);
 
+        //console.log('-----sync scene -----------');
+        //
+        //// 保存 scene 到mongodb
+        //scene.save();
+        //// 同步scene 到mysql
+        //dataSyncService.syncSceneToRemote({ id: scene._id, room: scene.room, turns: scene.turns }, function(err, result){
+        //    if(!!err){
+        //        console.log(err);
+        //    }
+        //});
+        //
+        //console.log('-----sync Transaction -----------');
+        //// 保存 transaction 到mongodb
+        //
+        //console.log(transactionCollection.find());
+        ////Transaction.create(transactionCollection.find());
+        //Transaction.insertMany(transactionCollection.find(), function(err,result){
+        //    if(err){
+        //        console.log('---批量插入错误----')
+        //        console.log(err);
+        //    }else{
+        //        console.log('---批量插入成功----')
+        //
+        //    }
+        //});
 
-        // todo: 同步Transaction数据到mysql
-        console.log('-----sync Transaction -----------');
-
+        // 同步 transaction 到mysql
+        //dataSyncService.syncSceneToRemote( function(err, result){
+        //    if(!!err){
+        //        console.log(err);
+        //    }
+        //});
 
 
         //重置游戏 更新游戏状态
@@ -517,11 +513,11 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 return callback('dealerFinish: memdb crash');
             }
 
-            pushMessages(roomId, {scene: newScene, ranking_list: rankingList }, 'DealerFinishEvent', function(err){
+            pushMessages(roomId, {scene: newScene, rankingList: rankingList }, 'DealerFinishEvent', function(err){
                 if(!!err){
                     return callback(err);
                 }
-                return callback(null, newScene);
+                return callback(null, newScene, rankingList);
             });
         });
     } catch(err){

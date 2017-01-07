@@ -135,11 +135,11 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
  */
 Handler.prototype.dealerFinish = function(msg, session, next) {
     var self = this;
-    sceneService.dealerFinish(session.get('room'), function(err, scene){
+    sceneService.dealerFinish(session.get('room'), function(err, scene, rankingList){
         if(err){
             return self.errResult(err, next)
         }
-        next(null, {code: Code.OK, result: scene});
+        next(null, {code: Code.OK, result: { scene: scene, rankingList: rankingList}});
     });
 };
 
