@@ -364,6 +364,27 @@ $(document).ready(function() {
         })
     });
 
+    $("#dealerFinish").click(function() {
+        //roomId = $('#roomId').val();
+        token = 'd858bd235c7faf19f5da18a1118788e2';
+        roleType = $('#role').val();
+        if(roomId.length == 0) {
+            showError(LENGTH_ERROR);
+            return false;
+        }
+        pomelo.request("scene.sceneHandler.dealerFinish", {
+            roomId: roomId
+        }, function(data) {
+            console.log(data);
+            if(data.error) {
+                showError(data.error);
+                return;
+            }
+            addMessage('主播抽卡结束');
+            $("#chatHistory").show();
+        })
+    });
+
     $("#endGame").click(function() {
         //roomId = $('#roomId').val();
         token = 'd858bd235c7faf19f5da18a1118788e2';
