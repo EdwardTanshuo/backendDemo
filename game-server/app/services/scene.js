@@ -56,7 +56,8 @@ function initScene(roomId, dealer, callback){
 }
 
 //重置游戏信息
-function resetScene(roomId, scene, callback){
+function resetScene(scene, callback){
+    console.log('-----reset Scene -----------');
     //回合加一
     scene.turns = scene.turns + 1;
     scene.status = 'init';
@@ -352,10 +353,9 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
                     if(!scene || scene.status != 'dealer_turn'){
                         return;
                     }
-                    self.dealerFinish(roomId, function(err, result){
+                    console.log('################ room: ' + roomId + ', will end dealer turn, into dealerFinish ');
+                    self.dealerFinish(roomId, function(err, result){});
 
-                    });
-                    console.log('################ room: ' + roomId + ', will end dealer turn');
                 }, sceneConfig.durationDealerTurn, roomId);
                 return callback(null, scene);
             }
@@ -466,17 +466,19 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             console.log(k);
             var bet = player_bets[k];
             console.log(bet);
-
+            var dealerValue = scene.dealer_value;
+            var playValue = scene.player_values[k];
+            console.log(dealerValue);
+            console.log(playValue);
             // 计算玩家输赢
-            var bunko = game.determinePlayerWin(scene.dealer_value, scene.player_values[k]);
+            var bunko = game.determinePlayerWin(dealerValue, playValue);
             console.log(bunko);
             var player = scene.players[k];
-            console.log(player);
 
             // 如果玩家是赢了， 就生成Reward类型Transaction。
             if(bunko == 'win'){
                 var newTransaction = new Transaction();
-                newTransaction.quantity = bet*2;
+                newTransaction.quantity = bet * sceneConfig.durationDealerTurn;
                 newTransaction.type = 'Reward';
                 newTransaction.issuer = roomId;
                 newTransaction.recipient = player.token;
@@ -488,23 +490,27 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 bunko: bunko,
                 quantity: bet,
                 play_value: playValue,
+                dealer_value: dealerValue,
                 player: player
             })
         }
 
-        // todo: 同步Transaction数据到mysql
-
         // todo: 同步scene到mysql
+        console.log('-----sync scene -----------');
+        console.log(scene);
+
+
+        // todo: 同步Transaction数据到mysql
+        console.log('-----sync Transaction -----------');
+
+
 
         //重置游戏 更新游戏状态
-        resetScene(roomId, scene, function(err, newScene){
-
-            //console.log('-----after reset scene -----------');
-            //console.log(scene);
-
+        resetScene(scene, function(err, newScene){
             if(err){
                 return callback(err);
             }
+
             try{
                 sceneCollection.update(newScene);
             } catch(e){
@@ -515,7 +521,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 if(!!err){
                     return callback(err);
                 }
-                return callback(null, newScene, rankingList);
+                return callback(null, newScene);
             });
         });
     } catch(err){

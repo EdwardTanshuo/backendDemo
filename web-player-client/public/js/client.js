@@ -210,6 +210,11 @@ $(document).ready(function() {
         tip('玩家抽牌结束，主播抽牌阶段');
     });
 
+    pomelo.on('DealerGetCardEvent', function(data) {
+        console.log(data);
+        tip('主播抽了1张卡牌');
+    });
+
     pomelo.on('DealerFinishEvent', function(data) {
         console.log(data);
         tip('主播抽牌结束，开始计算游戏结果');
