@@ -215,6 +215,11 @@ $(document).ready(function() {
         tip('主播抽了1张卡牌');
     });
 
+    pomelo.on('GameResultEvent', function(data) {
+        console.log(data);
+        tip('该回合结束，返回当前玩家的结果');
+    });
+
     pomelo.on('DealerFinishEvent', function(data) {
         console.log(data);
         tip('主播抽牌结束，开始计算游戏结果');
@@ -282,6 +287,28 @@ $(document).ready(function() {
         }
         pomelo.request("connector.roleHandler.bet", {
             bet: 50
+        }, function(data) {
+            console.log(data);
+            if(data.error) {
+                showError(data.error);
+                return;
+            }
+            bet = data.result.player_bet;
+            addMessage('你下注了:'+bet);
+            $("#chatHistory").show();
+        })
+    });
+
+    $("#playerBet2").click(function() {
+        //roomId = $('#roomId').val();
+        token = 'd858bd235c7faf19f5da18a1118788e2';
+        roleType = $('#role').val();
+        if(roomId.length == 0) {
+            showError(LENGTH_ERROR);
+            return false;
+        }
+        pomelo.request("connector.roleHandler.bet", {
+            bet: 0
         }, function(data) {
             console.log(data);
             if(data.error) {

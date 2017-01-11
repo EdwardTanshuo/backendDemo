@@ -14,6 +14,16 @@ function pushMessages(roomId, msg, route, callback){
     channel.pushMessage(route, msg, callback);
 }
 
+function pushMessageToOne(roomId, uid, msg, route, callback){
+    var channel = channelService.getChannel(roomId, true);
+    if (!channel) {
+        return callback('no channel');
+    }
+    var sid = channel.getMember(uid)['sid'];
+    console.log('------pushMessageToOne---------------');
+    channelService.pushMessageByUids(route, msg, [{ uid: uid, sid: sid }], callback);
+}
+
 //初始化游戏信息
 function initScene(roomId, dealer, callback){
     var self = this;
@@ -417,9 +427,6 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         if(scene.status != 'dealer_turn'){
             return callback('game is not dealer turn yet');
         }
-
-        //增加测试假数据
-
         var player_bets = scene.player_bets;
         console.log('-----player_bets -----------');
         console.log(player_bets);
@@ -449,15 +456,29 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 newTransaction.recipient = player.token;
                 transactionCollection.insert(newTransaction);
             }
-
-            // 添加到排行榜中
-            rankingList.push({
+            // 玩家的结果
+            var playResult = {
                 bunko: bunko,
                 quantity: bet,
                 play_value: playValue,
                 dealer_value: dealerValue,
                 player: player
-            })
+            }
+
+
+            // 推送每个玩家自己的胜负情况
+            pushMessageToOne(roomId, player.token, playResult, 'GameResultEvent', function(err){
+                if(!!err){
+                    return callback(err);
+                }
+
+            });
+
+            // 添加到排行榜中
+            rankingList.push(playResult);
+
+
+
         }
 
         //var newTransaction = new Transaction();
@@ -467,10 +488,10 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         //newTransaction.recipient = 'afedwedasd';
         //transactionCollection.insert(newTransaction);
 
-        //console.log('-----sync scene -----------');
-        //
-        //// 保存 scene 到mongodb
-        //scene.save();
+        console.log('-----sync scene -----------');
+
+        // 保存 scene 到mongodb
+        scene.save();
         //// 同步scene 到mysql
         //dataSyncService.syncSceneToRemote({ id: scene._id, room: scene.room, turns: scene.turns }, function(err, result){
         //    if(!!err){
@@ -479,19 +500,18 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         //});
         //
         //console.log('-----sync Transaction -----------');
-        //// 保存 transaction 到mongodb
-        //
+        // 保存 transaction 到mongodb
+
         //console.log(transactionCollection.find());
-        ////Transaction.create(transactionCollection.find());
-        //Transaction.insertMany(transactionCollection.find(), function(err,result){
-        //    if(err){
-        //        console.log('---批量插入错误----')
-        //        console.log(err);
-        //    }else{
-        //        console.log('---批量插入成功----')
-        //
-        //    }
-        //});
+        Transaction.insertMany(transactionCollection.find(), function(err,result){
+            if(err){
+                console.log('---批量插入错误----')
+                console.log(err);
+            }else{
+                console.log('---批量插入成功----')
+
+            }
+        });
 
         // 同步 transaction 到mysql
         //dataSyncService.syncSceneToRemote( function(err, result){
