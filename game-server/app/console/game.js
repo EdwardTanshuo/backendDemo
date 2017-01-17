@@ -16,6 +16,21 @@ function Blackjack() {
     return this.deck.drawCard(deck_array, callback);
   };
 
+  this.dealDefaultCard = function(deck_array, callback) {
+      var self = this;
+      self.deck.drawCard(deck_array, function(err1, deck, card1){
+          if(!!err1){
+                return callback(err1);
+          }
+          self.deck.drawCard(deck, function(err2, newDeck, card2){
+            if(!!err2){
+                return callback(err2);
+            }
+            return callback(null, newDeck, card1, card2);
+          })
+    });
+  };
+
   this.calculateHandValue = function(platform) {
     return this.calculator.calculateHandValue(platform);
   };

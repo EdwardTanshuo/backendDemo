@@ -9,11 +9,25 @@ module.exports = function RoleAction(session) {
         var roomId = self.session.get('room');
         var role = self.session.get('currentRole');
 
-		app.rpc.scene.sceneRemote.playerBet(self.session, roomId, role, bet, function(err, result){
+        try{
+            var result = roleDeckCollection.findOne({token: this.session.get('token')});
+            if(!result){
+                return callback('playerBet: can not find deck');
+            }
+            deck = result.deck;
+            if(!deck){
+                return callback('playerBet: crash when query memdb');
+            }
+        }
+        catch(e){
+            return callback('playerBet: crash when query memdb');
+        }
+
+		app.rpc.scene.sceneRemote.playerBet(self.session, roomId, role, bet, deck, function(err, result){
             if(err){
                 return callback(err);
             }
-            return callback(null, result.transaction, result.player_bet);
+            return callback(null, result);
 		});
 	};
 

@@ -20,9 +20,11 @@ var Handler = function(app) {
  *
  * 接收参数: { bet: xx  }  玩家下注金额
  * 返回结果: {
- *              transaction: transaction,  交易记录
- *              player_bet : 30  下注金额，0-未下注
- *           }
+ *              isBet: isBet,  //是否下注 true | false
+ *              quantity: quantity,   //下注金额
+ *              defaultCards: [card1,card2],   //卡组信息
+ *              value: {value: 18, busted: false, numberOfHigh: 35 numberOfTrans: 0}  // 玩家当前卡点数
+ *            }
  * 功能说明: 玩家下注接口
  */
 Handler.prototype.bet = function(msg, session, next) {
@@ -32,19 +34,19 @@ Handler.prototype.bet = function(msg, session, next) {
     }
     var player = session.get('currentRole');
 
-    // 测试 增加财富值
-    //player.wealth += 10000;
+    // 测试 增加财富值 todo: remove
+    player.wealth += 10000;
 
     // 财富值不够
     if(player.wealth < msg.bet){
         return next(new Error('no enough wealth'), {code: Code.FAIL, error: 'no enough wealth'});
     }
 	var roleAction = new RoleAction(session);
-    roleAction.bet(msg.bet, function(err, transaction, playerBet){
+    roleAction.bet(msg.bet, function(err,  result){
         if(!!err){
             return next(new Error(err), {code: Code.FAIL, error: err});
         } else{
-            return next(null, {code: Code.OK, result: { transaction: transaction, player_bet: playerBet }});
+            return next(null, { code: Code.OK, result: result });
         }
     });
 }

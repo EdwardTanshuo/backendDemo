@@ -315,7 +315,7 @@ $(document).ready(function() {
                 showError(data.error);
                 return;
             }
-            bet = data.result.player_bet;
+            bet = data.result.quantity;
             addMessage('你下注了:'+bet);
             $("#chatHistory").show();
         })

@@ -5,6 +5,7 @@ var utils = require('../util/utils');
 var channelService = app.get('channelService');
 var sceneConfig = require('../../config/scene');
 var dataSyncService = require('./dataSync');
+var async = require('async');
 
 function pushMessages(roomId, msg, route, callback){
 	var channel = channelService.getChannel(roomId, true);
@@ -42,7 +43,7 @@ function initScene(roomId, dealer, callback){
     //初始化主播信息
 	newScene.dealer = dealer;
 	newScene.dealer_platfrom = [];
-	newScene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
+	newScene.dealer_value = {value: 0, busted: false, numberOfHigh: 0};
 	newScene.dealer_bets = 0;
 	newScene.dealer_deck = [];
 	newScene.turns = 0;
@@ -207,7 +208,7 @@ SceneService.prototype.startBet = function(roomId, callback){
 }
 
 //玩家下注
-SceneService.prototype.playerBet = function(roomId, role, bet, callback){
+SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     var scene = sceneCollection.findOne({'room': roomId});
     console.log('----SceneService playerBet-------------');
     if(!scene){
@@ -228,24 +229,57 @@ SceneService.prototype.playerBet = function(roomId, role, bet, callback){
         return callback('bet Can not be less than 0');
     }
 
-    // 增加一条 Transaction
-    var newTransaction = new Transaction();
-    newTransaction.quantity = bet;
-    newTransaction.type = 'Bet';
-    newTransaction.issuer = role.token;
-    newTransaction.recipient = roomId;
-    transactionCollection.insert(newTransaction);
+    try{
+        // 增加一条 Transaction
+        var newTransaction = new Transaction();
+        newTransaction.quantity = bet;
+        newTransaction.type = 'Bet';
+        newTransaction.issuer = role.token;
+        newTransaction.recipient = roomId;
+        transactionCollection.insert(newTransaction);
+        scene.player_bets[role.token] = bet;
 
-    //  bet_amount-下注金额，bet_result-下注结果（win,lose,tie）
-    //var player_bet = { token:role.token, bet_amount: bet, bet_result: ''};
-    scene.player_bets[role.token] = bet;
-    sceneCollection.update(scene);
-    pushMessages(roomId, {role: role, bet: bet}, 'PlayerBetEvent',function(err){
-        if(!!err){
-            return callback(err);
-        }
-        return callback(null, newTransaction, bet);
-    });
+        //console.log('-------111111111111------------------------');
+        //console.log(role.token)
+        //console.log(roleDeckCollection.all);
+        //var result = roleDeckCollection.findOne({'token': role.token});
+        //
+
+
+        // 下足成功后 为玩家发两张卡牌
+        game.dealDefaultCard(deck, function(err, newDeck, card1, card2){
+            console.log('-------3333333333333333------------------------');
+            scene.player_platfroms[role.token].push(card1);
+            scene.player_platfroms[role.token].push(card2);
+            var newValue = game.calculateHandValue(scene.player_platfroms[role.token]);
+            scene.player_values[role.token] = newValue;
+            console.log('-------444444444444444------------------------');
+            sceneCollection.update(scene);
+
+
+            var defaultCards = scene.player_platfroms[role.token];
+
+            var msg= {
+                isBet: true,
+                quantity: bet,
+                platfroms: defaultCards,
+                values: newValue
+            }
+
+            console.log('-------before PlayerBetEvent------------------------');
+            console.log(msg);
+
+            pushMessages(roomId, {role: role, bet: bet}, 'PlayerBetEvent',function(err){
+                if(!!err){
+                    return callback(err);
+                }
+                return callback(null, true, bet, defaultCards, newValue);
+            });
+        });
+    }catch(err){
+        return callback('playerBet:  error ' + err);
+    }
+
 }
 
 //主播开始游戏,并抽一张卡, 并开始玩家抽卡倒计时，倒计时结束调用 玩家抽卡结束
@@ -253,10 +287,15 @@ SceneService.prototype.startGame = function(roomId, callback){
     try {
     	var self = this;
         var scene = sceneCollection.findOne({'room': roomId});
-
+        var betPlayers = Object.keys(scene.player_bets);
         if (!scene) {
             return callback('startGame: no scene created yet');
         }
+
+        //判断已下注玩家数 是否满足游戏开始条件
+        //if (betPlayers.length < sceneConfig.minPlayerCount){
+        //    return callback('startGame: no enough player bet');
+        //}
 
         //更新缓存
         try{
@@ -476,9 +515,6 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
             // 添加到排行榜中
             rankingList.push(playResult);
-
-
-
         }
 
         //var newTransaction = new Transaction();
@@ -635,10 +671,10 @@ SceneService.prototype.removePlayer = function(roomId, role, callback){
 	}
 }
 
+
 SceneService.prototype.playerFinish = function(room_id, token, callback){
 	
 }
-
 
 // TODO:主播端人脸识别 并推送 UpdateFaceDetectorCoorEvent
 SceneService.prototype.updateFaceDetectorCoor = function(roomId, params, callback){
