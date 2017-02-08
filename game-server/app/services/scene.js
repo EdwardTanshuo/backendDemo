@@ -21,9 +21,13 @@ function pushMessageToOne(roomId, uid, msg, route, callback){
         return callback('no channel');
     }
     var sid = channel.getMember(uid)['sid'];
-    console.log('------pushMessageToOne---------------');
     channelService.pushMessageByUids(route, msg, [{ uid: uid, sid: sid }], callback);
 }
+
+function getDateTime(){
+    var date = new Date();
+    return date.format("yyyy-MM-dd hh:mm:ss");
+};
 
 //初始化游戏信息
 function initScene(roomId, dealer, callback){
@@ -33,7 +37,7 @@ function initScene(roomId, dealer, callback){
 	var newScene = new Scene();
 	newScene.room = roomId;
 	newScene.status = 'init';
-
+    newScene.started_at = getDateTime(); //游戏创建时间
     //初始化玩家列表
 	newScene.players = {};
 	newScene.player_platfroms = {};
@@ -44,7 +48,7 @@ function initScene(roomId, dealer, callback){
 	newScene.dealer = dealer;
 	newScene.dealer_platfrom = [];
 	newScene.dealer_value = {value: 0, busted: false, numberOfHigh: 0};
-	newScene.dealer_bets = 0;
+	newScene.dealer_bets = 0; // 主播冻结金额，等于 玩家下注总金额
 	newScene.dealer_deck = [];
 	newScene.turns = 0;
 
@@ -73,6 +77,7 @@ function resetScene(scene, callback){
     //回合加一
     scene.turns = scene.turns + 1;
     scene.status = 'init';
+    scene.bet_amount = 0;  //玩家下注总金额
     //重置玩家列表
     var tokens = Object.keys(scene.players);
     var i = 0;
@@ -237,25 +242,18 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         newTransaction.issuer = role.token;
         newTransaction.recipient = roomId;
         transactionCollection.insert(newTransaction);
+
         scene.player_bets[role.token] = bet;
-
-        //console.log('-------111111111111------------------------');
-        //console.log(role.token)
-        //console.log(roleDeckCollection.all);
-        //var result = roleDeckCollection.findOne({'token': role.token});
-        //
-
+        scene.dealer_bets += bet;
 
         // 下足成功后 为玩家发两张卡牌
         game.dealDefaultCard(deck, function(err, newDeck, card1, card2){
-            console.log('-------3333333333333333------------------------');
             scene.player_platfroms[role.token].push(card1);
             scene.player_platfroms[role.token].push(card2);
             var newValue = game.calculateHandValue(scene.player_platfroms[role.token]);
             scene.player_values[role.token] = newValue;
-            console.log('-------444444444444444------------------------');
-            sceneCollection.update(scene);
 
+            sceneCollection.update(scene);
 
             var defaultCards = scene.player_platfroms[role.token];
 
@@ -293,9 +291,9 @@ SceneService.prototype.startGame = function(roomId, callback){
         }
 
         //判断已下注玩家数 是否满足游戏开始条件
-        //if (betPlayers.length < sceneConfig.minPlayerCount){
-        //    return callback('startGame: no enough player bet');
-        //}
+        if (betPlayers.length < sceneConfig.minPlayerCount){
+            return callback('startGame: no enough player bet');
+        }
 
         //更新缓存
         try{
@@ -475,15 +473,22 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         for (var k in player_bets) {
             console.log('-----single player_bet -----------');
             console.log(k);
+
             var bet = player_bets[k];
+
             console.log(bet);
+
             var dealerValue = scene.dealer_value;
             var playValue = scene.player_values[k];
+
             console.log(dealerValue);
             console.log(playValue);
+
             // 计算玩家输赢
             var bunko = game.determinePlayerWin(dealerValue, playValue);
+
             console.log(bunko);
+
             var player = scene.players[k];
 
             // 如果玩家是赢了， 就生成Reward类型Transaction。
@@ -495,6 +500,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 newTransaction.recipient = player.token;
                 transactionCollection.insert(newTransaction);
             }
+
             // 玩家的结果
             var playResult = {
                 bunko: bunko,
@@ -504,13 +510,11 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 player: player
             }
 
-
             // 推送每个玩家自己的胜负情况
             pushMessageToOne(roomId, player.token, playResult, 'GameResultEvent', function(err){
                 if(!!err){
                     return callback(err);
                 }
-
             });
 
             // 添加到排行榜中
@@ -528,13 +532,25 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         // 保存 scene 到mongodb
         scene.save();
-        //// 同步scene 到mysql
-        //dataSyncService.syncSceneToRemote({ id: scene._id, room: scene.room, turns: scene.turns }, function(err, result){
-        //    if(!!err){
-        //        console.log(err);
-        //    }
-        //});
-        //
+        // 同步scene 到mysql
+
+        var nScene = {
+            room: scene.room,
+            turns: scene.turns,
+            player_count: Object.keys(scene.player_bets).length, // 玩家人数
+            bet_amount: scene.dealer_bets,  // 玩家下注总额
+            payment: scene.dealer_bets,   // 主播赔付总额
+            started_at: scene.started_at,   // 回合开始时间
+            finished_at: getDateTime() // 回合结束时间
+        }
+        console.log(nScene);
+
+        dataSyncService.syncSceneToRemote(nScene, function(err, result){
+            if(!!err){
+                console.log(err);
+            }
+        });
+
         //console.log('-----sync Transaction -----------');
         // 保存 transaction 到mongodb
 

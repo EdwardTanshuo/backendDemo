@@ -5,6 +5,7 @@ module.exports = {
   	"remote": {
 	    "isSyncEnabled": true,
 	    "url": "http://115.159.65.197",
+        //"url": "http://127.0.0.1:8080",
 	    "localToken": {
 	      "name": "X_BS_TOKEN",
 	      "value": "309281479082839178042"

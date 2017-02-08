@@ -29,6 +29,7 @@ BroadcasterService.prototype.create = function(data, callback) {
 
 
 BroadcasterService.prototype.hasOne = function(broadcaster, callback) {
+    console.log(broadcaster);
 	console.log('finding broadcaster from server cache...');
 	Broadcaster.findOne({room: broadcaster.room, isDeleted: false}, callback);
 };
@@ -45,7 +46,6 @@ BroadcasterService.prototype.save = function(broadcaster, callback) {
 	catch(err){
 		callback(err, null);
 	}
-	
 };
 
 BroadcasterService.prototype.initFromRemote = function(data, callback) {

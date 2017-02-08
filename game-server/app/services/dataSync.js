@@ -162,16 +162,14 @@ DataSyncService.prototype.syncSceneToRemote = function(scene, callback) {
         'cache-control': 'no-cache'
     };
 
-    //headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
-    headers['X_MCV_TOKEN'] = 'd858bd235c7faf19f5da18a1118788e2';
+    headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
 
     console.log('---------- start sync scene ...');
     console.log(scene);
 
     var options = {
         method: 'POST',
-        //url: config.remote.url + config.remote.api.scenePost ,
-        url: 'http://localhost:8080' + config.remote.api.scenePost ,
+        url: config.remote.url + config.remote.api.scenePost ,
         headers: headers,
         json: true,
         body: scene
@@ -186,8 +184,7 @@ DataSyncService.prototype.syncSceneToRemote = function(scene, callback) {
                     console.log('------syncSceneToRemote success resulte');
                     console.log(body.result);
                     return callback(null, body.result);
-                }
-                else{
+                } else{
                     return callback('syncSceneToRemote error', null);
                 }
             }
