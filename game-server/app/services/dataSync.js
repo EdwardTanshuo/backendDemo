@@ -26,6 +26,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
             record.avatar = role.avatar;
             record.wealth = role.wealth;
             console.log('updating user in server cache...');
+            console.log(record);
             return record.save(callback);
         }
     });
@@ -56,6 +57,9 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
                 try{
                     var json = JSON.parse(body);
                     if(json.result){
+                        console.log('===ppppppppppppppp========')
+                        console.log(json);
+                        console.log(json.result);
                        json.result.token = token;
                        return syncRole(json.result, callback); 
                     }
@@ -73,24 +77,26 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
 
 DataSyncService.prototype.syncBroadcaster = function(broadcaster, callback) {
     var broadcasterService = require('./broadcaster');
+
+
     broadcasterService.hasOne(broadcaster, function(err, record){
         if(err){
             return callback(err, null);
-        } 
-        else if(!record){
+        } else if(!record){
             var obj = {
                 name: broadcaster.name,
                 room: broadcaster.room,
                 avatar: broadcaster.avatar,
+                wealth: broadcaster.wealth,
                 location: broadcaster.location
             };
             
             return broadcasterService.create(obj, callback);
-        }
-        else{
-            ///todo
+        } else{
+
             record.name = broadcaster.name;
             record.avatar = broadcaster.avatar;
+            record.wealth = broadcaster.wealth;
             record.location = broadcaster.location;
             if(broadcaster.deleted){
                 console.log('deleting broadcaster in server cache...');
@@ -98,14 +104,14 @@ DataSyncService.prototype.syncBroadcaster = function(broadcaster, callback) {
                 record.save(function(err, result){
                     if(err){
                         callback('err', null);
-                    }
-                    else{
+                    } else{
                         callback('has been deleted', null);
                     }
                 });
                 return;
-            }
-            else{
+            } else{
+                console.log('=====bbbbbbbbbbbbb===========')
+                console.log(record);
                 console.log('updating broadcaster in server cache...');
                 return record.save(callback);
             }

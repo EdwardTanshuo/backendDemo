@@ -1,3 +1,4 @@
+var Code = require('../../../shared/code');
 var Scene = require('../models/scene');
 var Transaction = require('../models/transaction');
 var game = require('../console/game');
@@ -217,21 +218,25 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     var scene = sceneCollection.findOne({'room': roomId});
     console.log('----SceneService playerBet-------------');
     if(!scene){
-        return callback('no scene');
+        return callback({code: Code.SCENE.NO_SCENE, msg: 'playerBet: no scene' });
     }
     if(scene.players[role.token] == null){
-        return callback('player is not inside');
+        return callback( {code: Code.PLAYER.NO_PLAYER, msg: 'playerBet: player is not inside' });
     }
     if(scene.status != 'betting'){
-        return callback('game is not at betting');
+        return callback( {code: Code.SCENE.NOT_BETTING, msg: 'playerBet: game is not at betting' });
     }
 
     if(scene.player_bets[role.token] > 0){
-        return callback('player already bet');
+        return callback( {code: Code.PLAYER.EXIST_BET, msg: 'playerBet: player already bet' });
     }
 
     if(bet <= 0){
-        return callback('bet Can not be less than 0');
+        return callback( {code: Code.PLAYER.NO_BET, msg: 'playerBet: bet can not be less than 0' });
+    }
+
+    if(scene.dealer.wealth < bet){
+        return callback( {code: Code.SCENE.NO_WEALTH, msg: 'playerBet: broadcaster no enough wealth' });
     }
 
     try{
@@ -245,6 +250,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
 
         scene.player_bets[role.token] = bet;
         scene.dealer_bets += bet;
+        scene.dealer.wealth -= bet;
 
         // 下足成功后 为玩家发两张卡牌
         game.dealDefaultCard(deck, function(err, newDeck, card1, card2){
@@ -262,12 +268,12 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
                 quantity: bet,
                 platfroms: defaultCards,
                 values: newValue
-            }
+            };
 
             console.log('-------before PlayerBetEvent------------------------');
             console.log(msg);
 
-            pushMessages(roomId, {role: role, bet: bet}, 'PlayerBetEvent',function(err){
+            pushMessages(roomId, {role: role, bet: bet, dealer_wealth: scene.dealer.wealth}, 'PlayerBetEvent',function(err){
                 if(!!err){
                     return callback(err);
                 }
@@ -275,7 +281,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
             });
         });
     }catch(err){
-        return callback('playerBet:  error ' + err);
+        return callback( {code: Code.FAIL, msg: 'playerBet:  error ' + err });
     }
 
 }

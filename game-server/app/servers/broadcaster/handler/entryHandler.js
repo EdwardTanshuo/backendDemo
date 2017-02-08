@@ -31,6 +31,8 @@ Handler.prototype.entry = function(msg, session, next) {
                 } else{
                     session.bind(msg.roomId, function(bindErr){
                         if(!bindErr){
+                            console.log('-------currentBroadcaster Entry------------------------------')
+                            console.log(result);
                             session.set('room', msg.roomId);
                             session.set('currentBroadcaster', result);
                             session.pushAll(function(pushErr){

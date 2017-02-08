@@ -27,13 +27,11 @@ Handler.prototype.entry = function(msg, session, next) {
 	  roleService.auth(msg.token, function(err, result){
 	  		if(err){
 	  			return next(new Error(err), {code: Code.FAIL, error: err});
-	  		}
-	  		else{
+	  		} else{
 	  			self_app.get('sessionService').kick(msg.token, function(err){
 	  				if(err){
 	  					return next(new Error(err), {code: Code.FAIL, error: err});
-	  				}
-	  				else{
+	  				} else{
 	  					session.bind(msg.token, function(err){
 			  				if(!err){
 			  					session.set('token', msg.token);
@@ -49,15 +47,13 @@ Handler.prototype.entry = function(msg, session, next) {
 										}
 					  					if(err){
 						  					return next(new Error(err), {code: Code.FAIL, error: err});
-						  				}
-						  				else{
+						  				} else{
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session));
 						  					return next(null, {code: Code.OK, result: scene});
 						  				}
 						  			});
 								});
-			  				}
-			  				else{
+			  				} else{
 			  					return next(new Error(err), {code: Code.FAIL, error: err});
 			  				}
 			  			});
@@ -105,13 +101,11 @@ var roleEnter = function (app, session, callback) {
 		if(find_result != null){
 			find_result.deck = new_model.deck;
 			roleDeckCollection.update(find_result);
-		}
-		else{
+		} else{
 			console.log('------ create deck.. ----------');
 			roleDeckCollection.insert(new_model);
 		}
-	}
-	catch(e){
+	} catch(e){
 		console.log('------ memdb ----------');
 		return callback(e);
 	}

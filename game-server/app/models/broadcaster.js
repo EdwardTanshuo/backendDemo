@@ -4,6 +4,7 @@ var BroadcasterSchema = mongoose.Schema({
     room: {type: String, required: true, unique: true},
     avatar: {type: String, required: false},
     name: {type: String, required: true},
+    wealth: {type: Number, required: true},
     bio: {type: String, required: false},
     location: {type: String, required: false},
     isDeleted: {type: Boolean, required: true,default: false}
