@@ -22,15 +22,15 @@ var Handler = function(app) {
 Handler.prototype.entry = function(msg, session, next) {
 	  var self_app = this.app;
 	  if(msg.token == null || msg.room == null){
-	  	return next(new Error('missing params'), {code: Code.FAIL, error: 'missing params'});
+          return next(null, { code: Code.COMMON.LESS_PARAM, result: 'PlayerEnter: missing params' });
 	  }
 	  roleService.auth(msg.token, function(err, result){
 	  		if(err){
-	  			return next(new Error(err), {code: Code.FAIL, error: err});
+                return next(null, { code: err.code, result: err.msg });
 	  		} else{
 	  			self_app.get('sessionService').kick(msg.token, function(err){
 	  				if(err){
-	  					return next(new Error(err), {code: Code.FAIL, error: err});
+	  					return next(new Error(err), {code: Code.FAIL, result: 'PlayerEnter:' + err });
 	  				} else{
 	  					session.bind(msg.token, function(err){
 			  				if(!err){
@@ -39,22 +39,19 @@ Handler.prototype.entry = function(msg, session, next) {
 								session.set('currentRole', result);
 								session.pushAll(function(err){
 									if(err){
-										return next(new Error(err), {code: Code.FAIL, error: err});
+										return next(new Error(err), {code: Code.FAIL, result: 'PlayerEnter.session.bind:' + err});
 									}
 									roleEnter(self_app, session, function(err, scene){
-										if(err == null && scene == null){
-											return;
-										}
 					  					if(err){
-						  					return next(new Error(err), {code: Code.FAIL, error: err});
+                                            return next(null, { code: err.code, result: err.msg });
 						  				} else{
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session));
-						  					return next(null, {code: Code.OK, result: scene});
+						  					return next(null, { code: Code.OK, result: scene});
 						  				}
 						  			});
 								});
 			  				} else{
-			  					return next(new Error(err), {code: Code.FAIL, error: err});
+			  					return next(null, {code: Code.FAIL, result: 'PlayerEnter.session.bind:' + err});
 			  				}
 			  			});
 	  				}
@@ -78,7 +75,10 @@ var onRoleLeave = function (app, session) {
         logger.error('Role leave error! %j', 'no channel');
     }
     channel.leave(currentRole.token, serverId);
-    channel.pushMessage({route: 'PlayerLeaveEvent', role: session.get('currentRole')});
+
+    // 推送玩家离开消息给主播
+    var sid = channel.getMember(roomId)['sid'];
+    channelService.pushMessageByUids('PlayerLeaveEvent', { role: session.get('currentRole') }, [{ uid: roomId, sid: sid }]);
 };
 
 var roleEnter = function (app, session, callback) {
@@ -89,7 +89,7 @@ var roleEnter = function (app, session, callback) {
 	console.log('------create deck for: ' + session.get('currentRole').name + ' with deckId: ' + deckId + ' ----------');
 	var deck = utils.createDeck(deckId);
 	if(deck == null){
-		return callback('no such deck');
+        return next(null, { code: Code.PLAYER.NO_DECK, result: 'PlayerEnter: no such deck' });
 	}
 	var new_model = {};
 	new_model.deck = deck;
@@ -105,9 +105,8 @@ var roleEnter = function (app, session, callback) {
 			console.log('------ create deck.. ----------');
 			roleDeckCollection.insert(new_model);
 		}
-	} catch(e){
-		console.log('------ memdb ----------');
-		return callback(e);
+	} catch(err){
+        return next(null, { code: Code.FAIL, result: 'PlayerEnter:' + err });
 	}
 
 	//加入游戏scene

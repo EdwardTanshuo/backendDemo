@@ -1,12 +1,13 @@
 var Role = require('../models/role');
 var dataSyncService = require('./dataSync');
+var Code = require('../../../shared/code');
 
 function RoleService() {
 }
 
 RoleService.prototype.auth = function(token, callback) {
 	if(token == null){
-		return callback('missing token', null);
+		return callback({code: Code.COMMON.LESS_PARAM, msg: 'addPlayer: missing token' });
 	}
 	this.syncFromRemote(token, callback);
 };

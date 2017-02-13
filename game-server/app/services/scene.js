@@ -134,16 +134,15 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 //玩家加入游戏
 SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     try{
-        var self = this;
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){
-            return callback('no scene');
+            return callback({code: Code.SCENE.NO_SCENE, msg: 'addPlayer: no scene' });
         }
 
-        // 推送 玩家加入游戏消息
+        // 推送玩家加入游戏消息 (todo:是否有必要推送给所有玩家)
         var channel = channelService.getChannel(roomId, false);
         if(!channel) {
-            return callback('no channel', null);
+            return callback({code: Code.SCENE.NO_CHANNEL, msg: 'addPlayer: no channel' });
         }
         channel.pushMessage('PlayerEnterEvent', role);
 
@@ -152,6 +151,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         //如果玩家已加入游戏， 返回当前游戏状态
         if(scene.players[role.token] != null){
             return callback(null, scene);
+            return callback({code: Code.OK, msg: 'addPlayer: no channel' });
         }
         //否则创建新的玩家状态
         role.sid = serverId;
@@ -165,7 +165,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         channel.add(role.token, serverId);
         return callback(null, scene);
     } catch(err){
-        return callback('memdb error when add player', null);
+        return callback({code: Code.FAIL, msg: 'addPlayer:  error ' + err });
     }
 }
 
@@ -659,22 +659,22 @@ SceneService.prototype.removePlayer = function(roomId, role, callback){
         //更新scene
 		var scene = sceneCollection.findOne({'room': roomId});
 		if(!scene){
-			return callback('no scene', null);
+            return callback({code: Code.SCENE.NO_SCENE, msg: 'removePlayer: no scene' });
 		}
 		if(scene.players[role.token] == null){
-			return callback('player is not inside', null);
+            return callback({code: Code.PLAYER.NO_PLAYER, msg: 'removePlayer: player is not inside' });
 		}
 		
-		var player = scene.players[role.token];
+		//var player = scene.players[role.token];
 		scene.players[role.token] = undefined;
 
-		var player_platfrom = scene.player_platfroms[role.token];
+		//var player_platfrom = scene.player_platfroms[role.token];
 		scene.player_platfroms[role.token] = undefined;
 
-		var player_value = scene.player_values[role.token];
+		//var player_value = scene.player_values[role.token];
 		scene.player_values[role.token] = undefined;
 
-		var player_bet = scene.player_bets[role.token];
+		//var player_bet = scene.player_bets[role.token];
 		scene.player_bets[role.token] = undefined;
 
 		sceneCollection.update(scene);
@@ -685,11 +685,10 @@ SceneService.prototype.removePlayer = function(roomId, role, callback){
             return callback('no channel', null);
         }
         channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
-		callback(null, player_platfrom, player_value, player_bet, player);
-
+        return callback(null, 'cleared');
 	}
 	catch(err){
-		callback(err);
+        return callback({code: Code.FAIL, msg: 'removePlayer:  error ' + err });
 	}
 }
 

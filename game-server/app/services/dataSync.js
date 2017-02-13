@@ -1,4 +1,5 @@
 var request = require("request");
+var Code = require('../../../shared/code');
 
 function DataSyncService() {
 }
@@ -7,9 +8,8 @@ DataSyncService.prototype.syncRole = function(role, callback) {
     var roleService = require('./role');
     roleService.hasOne(role, function(err, record){
         if(err){
-            return callback(err, null);
-        } 
-        else if(!record){
+            return callback({code: Code.FAIL, msg: 'syncRole: '+err });
+        } else if(!record){
             var obj = {
                 name: role.username,
                 foreignId: role.id,
@@ -17,11 +17,8 @@ DataSyncService.prototype.syncRole = function(role, callback) {
                 wealth: role.wealth,
                 token: role.token
             };
-            
             return roleService.create(obj, callback);
-        }
-        else{
-            ///todo
+        } else{
             record.name = role.username;
             record.avatar = role.avatar;
             record.wealth = role.wealth;
@@ -34,7 +31,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
 
 DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
      if(token == null){
-        return callback('misiing token', null); // error response 
+         return callback({code: Code.COMMON.LESS_PARAM, msg: 'syncRoleFromRemote: misiing token' });
      }
      var headers = {
         'content-type': 'application/json',
@@ -52,25 +49,19 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
 
      request(options, function(err, response, body){
          if (err) {
-             callback(err, null); // error response
+             return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: '+err });
          } else {
-                try{
-                    var json = JSON.parse(body);
-                    if(json.result){
-                        console.log('===ppppppppppppppp========')
-                        console.log(json);
-                        console.log(json.result);
-                       json.result.token = token;
-                       return syncRole(json.result, callback); 
-                    }
-                    else{
-                        return callback('user not exist', null); 
-                    }
-                    
+            try{
+                var json = JSON.parse(body);
+                if(json.result){
+                   json.result.token = token;
+                   return syncRole(json.result, callback);
+                } else{
+                    return callback({code: Code.PLAYER.NO_PLAYER, msg: 'syncRoleFromRemote: user not exist' });
                 }
-                catch(err){
-                    callback(err, null); // successful response
-                }
+            } catch(error){
+                return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: '+err });
+            }
         }
      });
 };

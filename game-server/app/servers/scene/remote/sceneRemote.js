@@ -53,30 +53,24 @@ exp.playerEnter = function(roomId, role, serverId, callback){
                 tempScene.dealer_platfrom = scene.dealer_platfrom;
                 tempScene.dealer_value = scene.dealer_value;
                 tempScene.status = scene.status;
-
-                return utils.invokeCallback(callback, null, tempScene);
+                // todo: 玩家加入游戏返回内容，待确定，直接返回scene不合理
+                return callback(null, tempScene);
             }
-            return utils.invokeCallback(callback, err, tempScene);
+            return callback(err);
         });
     } catch(err){
-        return utils.invokeCallback(callback, 'playerEnter: can not add player');
+        return callback({code: Code.FAIL, msg: 'playerEnter:  error ' + err });
     }
 }
 
 exp.playerLeave = function(roomId, role, callback){
     console.log('----' + role.name + 'leave game' + '---------');
     try{
-        sceneService.removePlayer(roomId, role, function(err, player_platfrom, player_value, player_bet, player){
-            return utils.invokeCallback(callback, err, {
-                    player_platfrom: player_platfrom,
-                    player_value: player_value,
-                    player_bet: player_bet,
-                    player: player
-                });
+        sceneService.removePlayer(roomId, role, function(err, result){
+            return callback(err, result);
         });
-        callback(null);
     } catch(err){
-        return callback(err);
+        return callback({code: Code.FAIL, msg: 'playerLeave:  error ' + err });
     }
 }
 
