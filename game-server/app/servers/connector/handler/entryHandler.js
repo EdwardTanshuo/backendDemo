@@ -1,7 +1,6 @@
 var roleService = require('../../../services/role');
 var utils = require('../../../util/utils');
 var channelService = app.get('channelService');
-var Code = require('../../../../../shared/code');
 
 module.exports = function(app) {
   return new Handler(app);
@@ -82,27 +81,27 @@ var onRoleLeave = function (app, session) {
 };
 
 var roleEnter = function (app, session, callback) {
-    var serverId = app.get('serverId');
+    var serverId = app.get('serverId'),
+        currentRole = session.get('currentRole'),
+        token = session.get('token');
 	
 	//本地创建卡组model
-	var deckId = (session.get('currentRole').deckId != null) ? session.get('currentRole').deckId : 'default';
-	console.log('------create deck for: ' + session.get('currentRole').name + ' with deckId: ' + deckId + ' ----------');
+	var deckId = (currentRole.deckId != null) ? currentRole.deckId : 'default';
 	var deck = utils.createDeck(deckId);
 	if(deck == null){
         return next(null, { code: Code.PLAYER.NO_DECK, result: 'PlayerEnter: no such deck' });
 	}
 	var new_model = {};
 	new_model.deck = deck;
-	new_model.token = session.get('token');
+	new_model.token = token;
 
     //新用户的卡组加入用户缓存
 	try{
-		var find_result = roleDeckCollection.findOne({'token': session.get('token')});
+		var find_result = roleDeckCollection.findOne({'token': token});
 		if(find_result != null){
 			find_result.deck = new_model.deck;
 			roleDeckCollection.update(find_result);
 		} else{
-			console.log('------ create deck.. ----------');
 			roleDeckCollection.insert(new_model);
 		}
 	} catch(err){
@@ -110,5 +109,5 @@ var roleEnter = function (app, session, callback) {
 	}
 
 	//加入游戏scene
-	app.rpc.scene.sceneRemote.playerEnter(session, session.get('room'), session.get('currentRole'), serverId, callback);
+	app.rpc.scene.sceneRemote.playerEnter(session, session.get('room'), currentRole, serverId, callback);
 };

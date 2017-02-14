@@ -1,8 +1,5 @@
-var Code = require('../../../../../shared/code');
 var logger = require('pomelo-logger').getLogger(__filename);
 var async = require('async');
-var roleService = require('../../../services/role');
-var RoleAction = require('../../../actions/role');
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -38,22 +35,22 @@ Handler.prototype.bet = function(msg, session, next) {
 
     // 没有赌注
     if(msg.bet == null ){
-        return next(null, {code: Code.SCENE.NO_BET, result: 'playerBet: no bet'});
+        return next(null, {code: Code.PLAYER.NO_BET, result: 'playerBet: no bet'});
     }
 
     // 用户财富值是否足够
     if(currentRole.wealth < msg.bet){
-        return next(null, {code: Code.SCENE.PLAYER_NO_WEALTH, result: 'playerBet: player no enough wealth'});
+        return next(null, {code: Code.PLAYER.NO_WEALTH, result: 'playerBet: player no enough wealth'});
     }
 
     try{
         var result = roleDeckCollection.findOne({token: token});
         if(!result){
-            return next(null, {code: Code.SCENE.NO_DECK, result: 'playerBet: can not find deck'});
+            return next(null, {code: Code.PLAYER.NO_DECK, result: 'playerBet: can not find deck'});
         }
         var deck = result.deck;
         if(!deck){
-            return next(null, {code: Code.SCENE.NO_DECK, result: 'playerBet: crash when query memdb'});
+            return next(null, {code: Code.PLAYER.NO_DECK, result: 'playerBet: crash when query memdb'});
         }
         app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, msg.bet, deck, function(err, result){
             if(err){
@@ -62,7 +59,7 @@ Handler.prototype.bet = function(msg, session, next) {
             return next(null, { code: Code.OK, result: result });
         });
     } catch(err){
-        return next(new Error(err), {code: Code.FAIL, error: err});
+        return next(new Error(err), {code: Code.FAIL, result: err});
     }
 }
 
@@ -77,7 +74,6 @@ Handler.prototype.bet = function(msg, session, next) {
  * 功能说明: 玩家主动退出游戏
  */
 Handler.prototype.leave = function(msg, session, next) {
-
     var currentRole = session.get('currentRole'),
         roomId = session.get('room'),
         token = session.get('token');
@@ -94,7 +90,7 @@ Handler.prototype.leave = function(msg, session, next) {
             return next(null, { code: Code.OK, result: result });
         });
     } catch(err){
-        return next(new Error(err), {code: Code.FAIL, error: err});
+        return next(new Error(err), {code: Code.FAIL, result: err});
     }
 
 }
@@ -120,19 +116,32 @@ Handler.prototype.finish = function(msg, session, next) {
  * @return {Void}
  */
 Handler.prototype.draw = function(msg, session, next) {
-	var roleAction = new RoleAction(session);
-	roleAction.draw(session.get('room'), function(err, newDeck, card, value){
-		if(!!err){
-			return next(new Error(err), {code: Code.FAIL, error: err});
-		}
-		else{
-			var remain = 0;
-			if(!newDeck){
-				remain = 0;
-			} else{
-				remain = newDeck.length;
-			}
-			return next(null, {code: Code.OK, result: {card: card, value: value, remain: remain}});
-		}
-	});
+    var currentRole = session.get('currentRole'),
+        roomId = session.get('room'),
+        token = session.get('token');
+
+    var roleDeck = roleDeckCollection.findOne({token: token});
+    if(!roleDeck){
+        return next(null, {code: Code.PLAYER.NO_DECK, result: 'playerDraw: can not find roleDeck'});
+    }
+    var deck = roleDeck.deck;
+    if(!deck){
+        return next(null, {code: Code.PLAYER.NO_DECK, result: 'playerDraw: can not find Deck'});
+    }
+
+    app.rpc.scene.sceneRemote.playerDraw(session, roomId, token, deck, function(err, result){
+        if(err){
+            return next(null, { code: err.code, result: err.msg });
+        }else{
+            if(!result.newDeck){
+                return next(null, { code: Code.PLAYER.NO_DECK, result: 'playerDraw: deck is null' });
+            }
+            roleDeck.deck = result.newDeck;
+            roleDeckCollection.update(roleDeck);
+            var remain = roleDeck.deck.length;
+
+            return next(null, {code: Code.OK, result: {card: result.card, value: result.value, remain: remain}});
+        }
+    });
+
 }

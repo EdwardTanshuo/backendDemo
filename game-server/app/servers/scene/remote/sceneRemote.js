@@ -87,14 +87,13 @@ exp.playerFinish = function(args, callback){
 	utils.invokeCallback(callback, null, {});
 }
 
-exp.playerDraw = function(args, callback){
-    if(args.roomId == null || args.deck == null || args.token == null){
-        return utils.invokeCallback(callback, 'playerDraw: missing params');
+exp.playerDraw = function(roomId, token, deck, callback){
+    if(roomId == null || deck == null || token == null){
+        return callback({ code: Code.COMMON.LESS_PARAM, result: 'playerDraw: missing params' });
     }
-	sceneService.playerDraw(args.roomId, args.token, args.deck, function(err, newDeck, card, value){
-		return utils.invokeCallback(callback, err, {newDeck: newDeck, card: card, value: value});
+	sceneService.playerDraw(roomId, token, deck, function(err, result){
+		return callback( err, result);
 	});
-	
 }
 
 exp.getNumberOfPlayers = function(args, callback){

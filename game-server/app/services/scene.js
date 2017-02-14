@@ -1,4 +1,3 @@
-var Code = require('../../../shared/code');
 var Scene = require('../models/scene');
 var Transaction = require('../models/transaction');
 var game = require('../console/game');
@@ -215,31 +214,30 @@ SceneService.prototype.startBet = function(roomId, callback){
 
 //玩家下注
 SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
-    var scene = sceneCollection.findOne({'room': roomId});
-    console.log('----SceneService playerBet-------------');
-    if(!scene){
-        return callback({code: Code.SCENE.NO_SCENE, msg: 'playerBet: no scene' });
-    }
-    if(scene.players[role.token] == null){
-        return callback( {code: Code.PLAYER.NO_PLAYER, msg: 'playerBet: player is not inside' });
-    }
-    if(scene.status != 'betting'){
-        return callback( {code: Code.SCENE.NOT_BETTING, msg: 'playerBet: game is not at betting' });
-    }
-
-    if(scene.player_bets[role.token] > 0){
-        return callback( {code: Code.PLAYER.EXIST_BET, msg: 'playerBet: player already bet' });
-    }
-
-    if(bet <= 0){
-        return callback( {code: Code.PLAYER.NO_BET, msg: 'playerBet: bet can not be less than 0' });
-    }
-
-    if(scene.dealer.wealth < bet){
-        return callback( {code: Code.SCENE.NO_WEALTH, msg: 'playerBet: broadcaster no enough wealth' });
-    }
-
     try{
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback({code: Code.SCENE.NO_SCENE, msg: 'playerBet: no scene' });
+        }
+        if(scene.players[role.token] == null){
+            return callback( {code: Code.PLAYER.NO_PLAYER, msg: 'playerBet: player is not inside' });
+        }
+        if(scene.status != 'betting'){
+            return callback( {code: Code.SCENE.NOT_BETTING, msg: 'playerBet: game is not at betting' });
+        }
+
+        if(scene.player_bets[role.token] > 0){
+            return callback( {code: Code.PLAYER.EXIST_BET, msg: 'playerBet: player already bet' });
+        }
+
+        if(bet <= 0){
+            return callback( {code: Code.PLAYER.NO_BET, msg: 'playerBet: bet can not be less than 0' });
+        }
+
+        if(scene.dealer.wealth < bet){
+            return callback( {code: Code.SCENE.NO_WEALTH, msg: 'playerBet: broadcaster no enough wealth' });
+        }
+
         // 增加一条 Transaction
         var newTransaction = new Transaction();
         newTransaction.quantity = bet;
@@ -283,7 +281,6 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     }catch(err){
         return callback( {code: Code.FAIL, msg: 'playerBet:  error ' + err });
     }
-
 }
 
 //主播开始游戏,并抽一张卡, 并开始玩家抽卡倒计时，倒计时结束调用 玩家抽卡结束
@@ -355,32 +352,32 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
         var scene = sceneCollection.findOne({'room': room_id});
 
         if(!scene){
-            return callback('no scene');
+            return callback({code: Code.SCENE.NO_SCENE, msg: 'playerDraw: no scene' });
         }
         if(scene.players[token] == null){
-            return callback('player is not inside');
+            return callback( {code: Code.PLAYER.NO_PLAYER, msg: 'playerDraw: player is not inside' });
         }
         if(scene.status != 'player_started'){
-            return callback('game is not at player turn');
+            return callback({code: Code.SCENE.NOT_PLAYER_TURN, msg: 'playerDraw: game is not at player turn' });
         }
         if(scene.player_values[token].busted){
-            return callback('busted');
+            return callback({code: Code.COMMON.BUSTED, msg: 'playerDraw: busted' });
         }
-
         game.dealNextCard(deck, function(err, newDeck, card){
+            if(err){
+                return callback(err);
+            }
             try{
                 scene.player_platfroms[token].push(card);
                 var newValue = game.calculateHandValue(scene.player_platfroms[token]);
                 scene.player_values[token] = newValue;
-                return callback(null, newDeck, card, newValue);
-            } catch(err){
-                return callback('playerDraw: can not add card onto the platform');
+                return callback(null, {newDeck: newDeck, card: card, value: newValue});
+            }catch(error){
+                return callback( {code: Code.FAIL, msg: 'playerDraw:  error ' + error });
             }
-
         });
-    }
-    catch(err){
-        callback('playerDraw: memdb crashed');
+    }catch(err){
+        return callback( {code: Code.FAIL, msg: 'playerDraw:  error ' + err });
     }
 }
 

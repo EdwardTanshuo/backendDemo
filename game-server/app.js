@@ -9,6 +9,7 @@ var routeUtil = require('./app/util/routeUtil');
  * Init app for client.
  */
 global.config = require('./config/default');
+global.Code = require('../shared/code');
 
 function initSceneCache() {
     var dbmem = new loki('game.json');

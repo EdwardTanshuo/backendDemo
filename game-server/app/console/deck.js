@@ -14,9 +14,8 @@ function DeckOperation() {
  */
 DeckOperation.prototype.drawCard = function(deck, callback){
   if(!deck.length){
-    return callback('no card', deck, null);
-  }
-  else{
+    return callback({code: Code.COMMON.NO_CARD, msg: 'drawCard: no card' });
+  } else{
     var total_weight = 0;
     var index_table = [];
     for(var i = 0; i < deck.length; i ++){
@@ -26,11 +25,10 @@ DeckOperation.prototype.drawCard = function(deck, callback){
     }
     var rd = Math.random() * total_weight;
     var index = 0;
-    for(index = 0; index < deck.length; index ++){
+    for(index; index < deck.length; index ++){
       if(rd > index_table[index]){
         continue;
-      }
-      else{
+      } else{
         break;
       }
     }
