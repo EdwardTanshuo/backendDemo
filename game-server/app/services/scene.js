@@ -115,7 +115,8 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	var scene = sceneCollection.findOne({'room': roomId});
     //主播 非主观意图断开游戏，重新加入
 	if(scene){
-        return callback('createGame: game has been created', scene);
+        //游戏已经创建，直接返回
+        return callback(null, scene);
 	} else{
         //初始化游戏场景
 		initScene(roomId, dealer, function(err, newScene){
@@ -141,7 +142,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         // 推送玩家加入游戏消息 (todo:是否有必要推送给所有玩家)
         var channel = channelService.getChannel(roomId, false);
         if(!channel) {
-            return callback({code: Code.SCENE.NO_CHANNEL, msg: 'addPlayer: no channel' });
+            return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
         }
         channel.pushMessage('PlayerEnterEvent', role);
 
@@ -178,7 +179,7 @@ SceneService.prototype.startBet = function(roomId, callback){
             return callback('startBet: no scene created yet');
         }
         if (scene.status != 'init') {
-            return callback('game is not at init');
+            return callback('startBet: game is not at init');
         }
         //更新缓存
         try{
@@ -190,7 +191,7 @@ SceneService.prototype.startBet = function(roomId, callback){
 
         pushMessages(roomId, scene, 'BetStartEvent', function(err){
             if(!!err){
-                return callback(err);
+                return callback({code: Code.COMMON.MSG_FAIL, msg: 'BetStartEvent:  ' + err });
             }
             else{
                  //开启计时器
@@ -273,13 +274,13 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
 
             pushMessages(roomId, {role: role, bet: bet, dealer_wealth: scene.dealer.wealth}, 'PlayerBetEvent',function(err){
                 if(!!err){
-                    return callback(err);
+                    return callback({code: Code.COMMON.MSG_FAIL, msg: 'PlayerBetEvent: ' + err });
                 }
-                return callback(null, true, bet, defaultCards, newValue);
+                return callback(null, { isBet: true, quantity: bet, defaultCards: defaultCards, value: newValue });
             });
         });
     }catch(err){
-        return callback( {code: Code.FAIL, msg: 'playerBet:  error ' + err });
+        return callback({code: Code.FAIL, msg: 'playerBet:  error ' + err });
     }
 }
 
@@ -323,7 +324,7 @@ SceneService.prototype.startGame = function(roomId, callback){
             }
             pushMessages(roomId, scene, 'GameStartEvent', function(err){
                 if(!!err){
-                    callback(err);
+                    return callback({code: Code.COMMON.MSG_FAIL, msg: 'GameStartEvent:  ' + err });
                 }
                 else{
                      //开启计时器
@@ -396,7 +397,7 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
         sceneCollection.update(scene);
         pushMessages(roomId, scene, 'EndPlayerEvent', function(err){
             if(!!err){
-                return callback(err);
+                return callback({code: Code.COMMON.MSG_FAIL, msg: 'EndPlayerEvent:  ' + err });
             } else{
                  //开启计时器
                 setTimeout(function(roomId) {
@@ -443,7 +444,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
                 //推送DealerGetCardEvent 广播主播抽到的卡
                 pushMessages(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
                     if(!!err){
-                        return callback(err);
+                        return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerGetCardEvent:  ' + err });
                     }
                     return callback(err, newDeck, card, newValue);
                 });
@@ -516,7 +517,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             // 推送每个玩家自己的胜负情况
             pushMessageToOne(roomId, player.token, playResult, 'GameResultEvent', function(err){
                 if(!!err){
-                    return callback(err);
+                    return callback({code: Code.COMMON.MSG_FAIL, msg: 'GameResultEvent:  ' + err });
                 }
             });
 
@@ -590,7 +591,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
             pushMessages(roomId, {scene: newScene, rankingList: rankingList }, 'DealerFinishEvent', function(err){
                 if(!!err){
-                    return callback(err);
+                    return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
                 }
                 return callback(null, newScene, rankingList);
             });
@@ -617,7 +618,7 @@ SceneService.prototype.cancelGame = function(roomId, callback){
 
         pushMessages(roomId, scene, 'CancelGameEvent', function(err){
             if(!!err){
-                return callback(err);
+                return callback({code: Code.COMMON.MSG_FAIL, msg: 'CancelGameEvent:  ' + err });
             }
             return callback(null, scene);
         });
@@ -699,12 +700,12 @@ SceneService.prototype.updateFaceDetectorCoor = function(roomId, params, callbac
     try{
         pushMessages(roomId, params, 'UpdateFaceDetectorCoorEvent', function(err){
             if(!!err){
-                return callback(err);
+                return callback({code: Code.COMMON.MSG_FAIL, msg: 'UpdateFaceDetectorCoorEvent:  ' + err });
             }
             return callback(null, scene);
         });
     } catch(err){
-        return callback(err);
+        callback({code: Code.FAIL, msg: 'updateFaceDetectorCoor:  ' + err });
     }
 }
 

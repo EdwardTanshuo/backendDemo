@@ -110,9 +110,9 @@ DataSyncService.prototype.syncBroadcaster = function(broadcaster, callback) {
     });
 };
 
-DataSyncService.prototype.syncBroadcasterFromRemote = function(room_id, callback) {
-     if(!room_id){
-        return callback('missing room_id', null); // error response
+DataSyncService.prototype.syncBroadcasterFromRemote = function(roomId, callback) {
+     if(!roomId){
+         return callback('syncRoleFromRemote: misiing room_id');
      }
      var headers = {
         'content-type': 'application/json',
@@ -122,7 +122,7 @@ DataSyncService.prototype.syncBroadcasterFromRemote = function(room_id, callback
 
      var options = {
          method: 'GET',
-         url: config.remote.url + config.remote.api.broadcasterGet + '/' + room_id,
+         url: config.remote.url + config.remote.api.broadcasterGet + '/' + roomId,
          headers: headers
      };
 
@@ -136,12 +136,12 @@ DataSyncService.prototype.syncBroadcasterFromRemote = function(room_id, callback
                     var json = JSON.parse(body);
                     if(json.result){
                        json.result.room = room_id;
-                       return syncBroadcaster(json.result, callback); 
+                       return syncBroadcaster(json.result, callback);
                     }
                     else{
-                        return callback('broadcaster not exist', null); 
+                        return callback('broadcaster not exist', null);
                     }
-                    
+
                 }
                 catch(err){
                     callback(err, null); // successful response

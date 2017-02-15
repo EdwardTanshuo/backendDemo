@@ -32,13 +32,13 @@ Handler.prototype.createGame = function(msg, session, next) {
     console.log('----createGame---------')
     var broadcaster = session.get('currentBroadcaster');
 	if(broadcaster == null){
-		return next(new Error('need entry'), {code: Code.FAIL, error: 'need entry'});
+		return next(null, {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, result: 'createGame: broadcaster need entry'});
 	}
     sceneService.createGame(broadcaster, session.get('room'), function(err, scene){
         if(scene){
             next(null, {code: Code.OK, result: scene});
         } else{
-            next(new Error(err), {code: Code.FAIL, error: err});
+            next(null, {code: Code.FAIL, result: err});
         }
     });
 };
@@ -55,13 +55,13 @@ Handler.prototype.startBet = function(msg, session, next) {
     
     var broadcaster = session.get('currentBroadcaster');
     if(broadcaster == null){
-        return next(new Error('need entry'), {code: Code.FAIL, error: 'need entry'});
+        return next(null, {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, result: 'startBet: broadcaster need entry'});
     }
     sceneService.startBet(session.get('room'), function(err, scene){
         if(scene){
             next(null, {code: Code.OK, result: scene});
         } else{
-            next(new Error(err), {code: Code.FAIL, error: err});
+            next(null, {code: Code.FAIL, result: err});
         }
     });
 };
@@ -147,7 +147,7 @@ Handler.prototype.dealerFinish = function(msg, session, next) {
 /**
  * 主播端人脸识别 scene.sceneHandler.updateFaceDetectorCoor
  *
- * 接收参数： TODO: 接收参数待确认
+ * 接收参数：
  * 返回结果： {Object} scene
  *
  * 功能说明：

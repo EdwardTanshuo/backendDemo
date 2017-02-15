@@ -7,7 +7,7 @@ function BroadcasterService() {
 
 BroadcasterService.prototype.auth = function(room, callback) {
 	if(room == null){
-		return callback('missing room', null);
+        return callback('addPlayer: missing token');
 	}
 	this.syncFromRemote(room, callback);
 };
