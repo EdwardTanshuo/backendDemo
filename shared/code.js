@@ -17,11 +17,14 @@ module.exports = {
 
         NO_SCENE:               3001,  // 场景不存在
         NO_WEALTH:              3002,  // 主播财富值不够
+        NOT_INIT:               3003,  // 游戏不是init状态
         NOT_BETTING:            3003,  // 不是下注状态
         NOT_PLAYER_TURN:        3004,  // 不是玩家回合
         NOT_DEALER_TURN:        3005,  // 不是玩家回合
         NO_DECK:                3006,  // 找不到卡组
-        NO_DEALER:              3007  // 找不到主播
+        NO_DEALER:              3007,  // 找不到主播
+        CREATE_ERR:             3008,  // 创建游戏出错
+        NO_ENOUGH_PLAYER:       3009  // 下注玩家不够
 
     },
 
@@ -40,7 +43,8 @@ module.exports = {
         BUSTED:                 5003,  // 查卡抽爆掉了
         NO_CARD:                5004,  // 无卡可抽
         NO_CHANNEL:             5005,  // 找不到channel
-        MSG_FAIL:               5006  // 发送消息失败
+        MSG_FAIL:               5006,  // 发送消息失败
+        GET_CARD_ERR:           5007  //抽卡报错
     }
 
 

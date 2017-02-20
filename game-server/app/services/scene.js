@@ -120,13 +120,16 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	} else{
         //初始化游戏场景
 		initScene(roomId, dealer, function(err, newScene){
-			 //更新缓存
-			try{
-				sceneCollection.insert(newScene);
-	            return callback(null, newScene);
-			} catch(err){
-				return callback('createGame: memdb error');
-			}
+            try {
+                if (err) {
+                    return callback({code: Code.SCENE.CREATE_ERR, msg: 'createGame: ' + err});
+                }
+                //更新缓存
+                sceneCollection.insert(newScene);
+                return callback(null, newScene);
+            } catch(err2){
+                return callback({code: Code.FAIL, msg: 'createGame:  error ' + err2 });
+            }
 		});
 	}
 }
@@ -181,13 +184,11 @@ SceneService.prototype.startBet = function(roomId, callback){
         if (scene.status != 'init') {
             return callback('startBet: game is not at init');
         }
+
         //更新缓存
-        try{
-            scene.status = 'betting';
-            sceneCollection.update(scene);
-        }catch(err){
-            return callback('startBet: memdb error');
-        }
+        scene.status = 'betting';
+        sceneCollection.update(scene);
+
 
         pushMessages(roomId, scene, 'BetStartEvent', function(err){
             if(!!err){
@@ -291,27 +292,23 @@ SceneService.prototype.startGame = function(roomId, callback){
         var scene = sceneCollection.findOne({'room': roomId});
         var betPlayers = Object.keys(scene.player_bets);
         if (!scene) {
-            return callback('startGame: no scene created yet');
+            return callback({code: Code.SCENE.NO_SCENE, msg: 'startGame: no scene created yet' });
         }
 
         //判断已下注玩家数 是否满足游戏开始条件
         if (betPlayers.length < sceneConfig.minPlayerCount){
-            return callback('startGame: no enough player bet');
+            return callback({code: Code.SCENE.NO_ENOUGH_PLAYER, msg: 'startGame: no enough player bet' });
         }
 
         //更新缓存
-        try{
-            scene.status = 'player_started';
-            sceneCollection.update(scene);
-        }catch(err){
-            return callback('startGame: memdb error');
-        }
+        scene.status = 'player_started';
+        sceneCollection.update(scene);
 
         //加入随机的卡
         game.dealNextCard(scene.dealer_deck, function(err, newDeck, card){
             if(err){
                 return callback(err);
-            } 
+            }
             try{
                 scene.dealer_platfrom.push(card);
                 var newValue = game.calculateHandValue(scene.dealer_platfrom);
@@ -320,7 +317,7 @@ SceneService.prototype.startGame = function(roomId, callback){
                 sceneCollection.update(scene);
             }
             catch(e){
-                return callback('startGame： 主播无法抽卡');
+                return callback({code: Code.COMMON.GET_CARD_ERR, msg: 'startGame: get_card_error' });
             }
             pushMessages(roomId, scene, 'GameStartEvent', function(err){
                 if(!!err){
@@ -423,16 +420,18 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){
-            return callback('no scene');
+            return callback({code: Code.SCENE.NO_SCENE, msg: 'dealerDrawCard: no scene' });
         }
         if(scene.status != 'dealer_turn'){
-            return callback('game is not dealer turn yet');
+            return callback({code: Code.SCENE.NOT_DEALER_TURN, msg: 'dealerDrawCard: game is not dealer turn yet' });
         }
         if(scene.dealer_value.busted){
-            return callback('busted');
+            return callback({code: Code.COMMON.BUSTED, msg: 'busted' });
         }
-
         game.dealNextCard(scene.dealer_deck, function(err, newDeck, card){
+            if(err){
+                return callback(err);
+            }
             //更新卡组
             try{
                 scene.dealer_platfrom.push(card);
@@ -446,15 +445,14 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
                     if(!!err){
                         return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerGetCardEvent:  ' + err });
                     }
-                    return callback(err, newDeck, card, newValue);
+                    return callback(null, newDeck, card, newValue);
                 });
-            } catch(err){
-                return callback('can not update dealer deck');
+            } catch(error){
+                return callback({code: Code.FAIL, msg: 'dealNextCard: can not update dealer deck error ' + error });
             }
-
         });
     } catch(err){
-        return callback('dealerDrawCard: memdb crash', null);
+        return callback({code: Code.FAIL, msg: 'dealNextCard: dealerDrawCard: memdb crash ' + err });
     }
 }
 
@@ -463,23 +461,59 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
     try{
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){
-            return callback('no scene');
+            return callback({code: Code.SCENE.NO_SCENE, msg: 'dealerFinish: no scene' });
         }
         if(scene.status != 'dealer_turn'){
-            return callback('game is not dealer turn yet');
+            return callback({code: Code.SCENE.NOT_DEALER_TURN, msg: 'dealerFinish: game is not dealer turn yet' });
         }
         var player_bets = scene.player_bets;
-        console.log('-----player_bets -----------');
-        console.log(player_bets);
-
         var rankingList = [];
 
+        rankingList =[
+            {
+                bunko: 'win',
+                quantity: 100,
+                play_value: 'aa',
+                dealer_value: 'bb',
+                player: 'dd'
+            },
+            {
+                bunko: 'win',
+                quantity: 20,
+                play_value: 'aa',
+                dealer_value: 'bb',
+                player: 'dd'
+            },
+            {
+                bunko: 'win',
+                quantity: 52,
+                play_value: 'aa',
+                dealer_value: 'bb',
+                player: 'dd'
+            },
+            {
+                bunko: 'win',
+                quantity: 49,
+                play_value: 'aa',
+                dealer_value: 'bb',
+                player: 'dd'
+            },
+            {
+                bunko: 'win',
+                quantity: 42,
+                play_value: 'aa',
+                dealer_value: 'bb',
+                player: 'dd'
+            }]
+
+
+        console.log(rankingList);
+
+        console.log('=======dealerFinish=begin==================')
+
         for (var k in player_bets) {
-            console.log('-----single player_bet -----------');
-            console.log(k);
-
             var bet = player_bets[k];
-
+            var rank = bet;
             console.log(bet);
 
             var dealerValue = scene.dealer_value;
@@ -493,26 +527,39 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
             console.log(bunko);
 
+
+            console.log(scene.player_platfroms[k]);
+
+            // 如果玩家的 抽了4张以上直接胜利
+            if(scene.player_platfroms[k].length > 4){
+                bunko = 'win'
+            }
+
             var player = scene.players[k];
 
             // 如果玩家是赢了， 就生成Reward类型Transaction。
             if(bunko == 'win'){
+                rank = bet * sceneConfig.ratio;
                 var newTransaction = new Transaction();
-                newTransaction.quantity = bet * sceneConfig.durationDealerTurn;
+                newTransaction.quantity = rank;
                 newTransaction.type = 'Reward';
                 newTransaction.issuer = roomId;
                 newTransaction.recipient = player.token;
                 transactionCollection.insert(newTransaction);
+            }else if(bunko = 'lose'){
+                rank = -bet;
             }
 
             // 玩家的结果
             var playResult = {
                 bunko: bunko,
-                quantity: bet,
+                quantity: rank,
                 play_value: playValue,
                 dealer_value: dealerValue,
                 player: player
             }
+
+            console.log(playResult);
 
             // 推送每个玩家自己的胜负情况
             pushMessageToOne(roomId, player.token, playResult, 'GameResultEvent', function(err){
@@ -523,6 +570,23 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
             // 添加到排行榜中
             rankingList.push(playResult);
+        }
+
+        for(var j=1,jl=rankingList.length; j < jl; j++){
+            console.log('-----   each  -----------');
+            console.log(rankingList[j])
+
+            var temp = rankingList[j];
+            console.log('----- aaaaaaaaaaa -----------');
+            console.log(temp["quantity"])
+            console.log('----- bbbbbbbbbbb -----------');
+             var val  = temp["quantity"],
+                i    = j-1;
+            while(i >=0 && rankingList[i]["quantity"]>val){
+                rankingList[i+1] = rankingList[i];
+                i = i-1;
+            }
+            rankingList[i+1] = temp;
         }
 
         //var newTransaction = new Transaction();
@@ -559,15 +623,15 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         // 保存 transaction 到mongodb
 
         //console.log(transactionCollection.find());
-        Transaction.insertMany(transactionCollection.find(), function(err,result){
-            if(err){
-                console.log('---批量插入错误----')
-                console.log(err);
-            }else{
-                console.log('---批量插入成功----')
-
-            }
-        });
+        //Transaction.insertMany(transactionCollection.find(), function(err,result){
+        //    if(err){
+        //        console.log('---批量插入错误----')
+        //        console.log(err);
+        //    }else{
+        //        console.log('---批量插入成功----')
+        //
+        //    }
+        //});
 
         // 同步 transaction 到mysql
         //dataSyncService.syncSceneToRemote( function(err, result){
@@ -575,7 +639,6 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         //        console.log(err);
         //    }
         //});
-
 
         //重置游戏 更新游戏状态
         resetScene(scene, function(err, newScene){
@@ -589,7 +652,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 return callback('dealerFinish: memdb crash');
             }
 
-            pushMessages(roomId, {scene: newScene, rankingList: rankingList }, 'DealerFinishEvent', function(err){
+            pushMessages(roomId, {scene: newScene, rankingList: rankingList.slice(0,3) }, 'DealerFinishEvent', function(err){
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
                 }

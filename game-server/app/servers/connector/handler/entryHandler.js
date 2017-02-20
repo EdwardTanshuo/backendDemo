@@ -76,8 +76,8 @@ var onRoleLeave = function (app, session) {
     channel.leave(currentRole.token, serverId);
 
     // 推送玩家离开消息给主播
-    var sid = channel.getMember(roomId)['sid'];
-    channelService.pushMessageByUids('PlayerLeaveEvent', { role: session.get('currentRole') }, [{ uid: roomId, sid: sid }]);
+    //var sid = channel.getMember(roomId)['sid'];
+    //channelService.pushMessageByUids('PlayerLeaveEvent', { role: session.get('currentRole') }, [{ uid: roomId, sid: sid }]);
 };
 
 var roleEnter = function (app, session, callback) {

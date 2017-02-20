@@ -22,9 +22,9 @@ Handler.prototype.entry = function(msg, session, next) {
     var self_app = this.app;
     broadcasterService.auth(msg.roomId, function(err, result){
         if(err){
-            return next(null, {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, error: err});
-        }
-        else{
+            //return next(null, {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, error: err});
+            console.error(err);
+        } else{
             self_app.get('sessionService').kick(msg.roomId, function(err){
                 if(err){
                     return next(new Error(err), {code: Code.FAIL, result: err});
@@ -64,6 +64,7 @@ var onBroadcasterLeave = function (app, session) {
 	app.rpc.scene.sceneRemote.dealerLeave(session, roomId, broadcaster, serverId, function(err){
 		if(!!err){
 			logger.error('Broadcaster leave error! %j', err);
+            next(null, {code: err.code, result: err.msg});
 		}
 	});
 };
@@ -77,7 +78,7 @@ var onBroadcasterEnter = function (app, session, next) {
 
     app.rpc.scene.sceneRemote.dealerEnter(session, roomId, broadcaster, serverId, function(err, dealer){
         if(err){
-            next(new Error(err), {code: Code.FAIL, result: err});
+            next(null, {code: err.code, result: err.msg});
         } else{
             next(null, {code: Code.OK, result: dealer});
         }

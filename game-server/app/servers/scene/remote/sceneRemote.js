@@ -12,13 +12,13 @@ exp.dealerEnter = function(roomId, dealer, serverId, callback){
     try{
         var channel = channelService.getChannel(roomId, true);
         if(!channel) {
-            return callback('no channel', null);
+            return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerEnter: no channel' });
         }
         channel.add(roomId, serverId);
         channel.pushMessage({ route: 'DealerEnterEvent', dealer: dealer });
         callback(null, dealer);
     } catch(err){
-        return callback(err, null);
+        return callback({code: Code.FAIL, msg: 'dealerEnter:  error ' + err });
     }
 }
 
@@ -27,13 +27,13 @@ exp.dealerLeave = function(roomId, dealer, serverId, callback){
     try{
         var channel = channelService.getChannel(roomId, true);
         if(!channel) {
-            return callback('no channel', null);
+            return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerLeave: no channel' });
         }
         channel.leave(roomId, serverId);
         channel.pushMessage({route: 'DealerLeaverEvent', dealer: dealer});
         callback(null);
     } catch(err){
-        return callback(err);
+        return callback({code: Code.FAIL, msg: 'dealerLeave:  error ' + err });
     }
 }
 

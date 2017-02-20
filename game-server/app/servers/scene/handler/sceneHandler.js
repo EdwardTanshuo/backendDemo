@@ -13,10 +13,6 @@ module.exports = function(app) {
 var Handler = function(app) {
 	this.app = app;
 
-    this.errResult = function(errMsg, next){
-        next(new Error(errMsg), {code: Code.FAIL, error: errMsg});
-    };
-
 	if(!this.app)
 		logger.error(app);
 };
@@ -35,10 +31,10 @@ Handler.prototype.createGame = function(msg, session, next) {
 		return next(null, {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, result: 'createGame: broadcaster need entry'});
 	}
     sceneService.createGame(broadcaster, session.get('room'), function(err, scene){
-        if(scene){
-            next(null, {code: Code.OK, result: scene});
+        if(err){
+            next(null, {code: err.code, result: err.msg});
         } else{
-            next(null, {code: Code.FAIL, result: err});
+            next(null, {code: Code.OK, result: scene});
         }
     });
 };
@@ -52,16 +48,15 @@ Handler.prototype.createGame = function(msg, session, next) {
  */
 Handler.prototype.startBet = function(msg, session, next) {
     console.log('----startBet---------')
-    
     var broadcaster = session.get('currentBroadcaster');
     if(broadcaster == null){
         return next(null, {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, result: 'startBet: broadcaster need entry'});
     }
     sceneService.startBet(session.get('room'), function(err, scene){
-        if(scene){
-            next(null, {code: Code.OK, result: scene});
+        if(err){
+            return next(new Error(err), {code: Code.FAIL, error: err});
         } else{
-            next(null, {code: Code.FAIL, result: err});
+            next(null, {code: Code.OK, result: 'game start Bet'});
         }
     });
 };
@@ -78,9 +73,9 @@ Handler.prototype.startGame = function(msg, session, next) {
 
     sceneService.startGame(session.get('room'), function(err, scene){
         if(err){
-            return next(new Error(err), {code: Code.FAIL, error: err});
+            return next(null, {code: err.code, result: err.msg});
         }
-        next(null, {code: Code.OK, result: scene});
+        next(null, {code: Code.OK, result: 'game started'});
     });
 };
 
@@ -113,13 +108,9 @@ Handler.prototype.endGame = function(msg, session, next) {
  * 功能说明：
  */
 Handler.prototype.dealerDrawCard = function(msg, session, next) {
-    var self = this;
     sceneService.dealerDrawCard(session.get('room'), function(err, newDeck, newCard, newValue){
         if(err){
-            return self.errResult(err, next)
-        }
-        if(!newDeck){
-            return self.errResult('dealerDrawCard: deck is null', next)
+            return next(null, {code: err.code, error: err.msg});
         }
         next(null, {code: Code.OK,  result: { newCard: newCard, newValue: newValue }});
     });
@@ -134,10 +125,9 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
  * 功能说明：
  */
 Handler.prototype.dealerFinish = function(msg, session, next) {
-    var self = this;
     sceneService.dealerFinish(session.get('room'), function(err, scene, rankingList){
         if(err){
-            return self.errResult(err, next)
+            return next(null, {code: err.code, error: err.msg});
         }
         next(null, {code: Code.OK, result: { scene: scene, rankingList: rankingList}});
     });
@@ -153,11 +143,9 @@ Handler.prototype.dealerFinish = function(msg, session, next) {
  * 功能说明：
  */
 Handler.prototype.updateFaceDetectorCoor = function(msg, session, next) {
-    var self = this;
-
     sceneService.updateFaceDetectorCoor(session.get('room'), msg, function(err, scene){
         if(err){
-            return self.errResult(err, next)
+            return next(new Error(err), {code: Code.FAIL, error: err});
         }
         next(null, {code: Code.OK});
     });

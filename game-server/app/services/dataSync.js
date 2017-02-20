@@ -135,7 +135,7 @@ DataSyncService.prototype.syncBroadcasterFromRemote = function(roomId, callback)
                 try{
                     var json = JSON.parse(body);
                     if(json.result){
-                       json.result.room = room_id;
+                       json.result.room = roomId;
                        return syncBroadcaster(json.result, callback);
                     }
                     else{
