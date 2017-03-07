@@ -201,16 +201,14 @@ DataSyncService.prototype.syncTransactionToRemote = function(transactions, callb
         'cache-control': 'no-cache'
     };
 
-    //headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
-    headers['X_MCV_TOKEN'] = 'd858bd235c7faf19f5da18a1118788e2';
+    headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
 
     console.log('---------- start sync transaction ...');
     console.log(transactions);
 
     var options = {
         method: 'POST',
-        //url: config.remote.url + config.remote.api.scenePost ,
-        url: 'http://localhost:8080' + config.remote.api.transactionPost ,
+        url: config.remote.url + config.remote.api.transactionPost ,
         headers: headers,
         json: true,
         body: transactions

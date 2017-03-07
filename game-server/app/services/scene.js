@@ -242,15 +242,18 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
 
         // 增加一条 Transaction
         var newTransaction = new Transaction();
+        newTransaction.userId = role.token;
         newTransaction.quantity = bet;
         newTransaction.type = 'Bet';
-        newTransaction.issuer = role.token;
-        newTransaction.recipient = roomId;
+        newTransaction.roomId = roomId;
+        newTransaction.save();
         transactionCollection.insert(newTransaction);
 
+        scene.players[role.token] = role;
         scene.player_bets[role.token] = bet;
         scene.dealer_bets += bet;
         scene.dealer.wealth -= bet;
+
 
         // 下足成功后 为玩家发两张卡牌
         game.dealDefaultCard(deck, function(err, newDeck, card1, card2){
@@ -273,11 +276,11 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
             console.log('-------before PlayerBetEvent------------------------');
             console.log(msg);
 
-            pushMessages(roomId, {role: role, bet: bet, dealer_wealth: scene.dealer.wealth}, 'PlayerBetEvent',function(err){
+            pushMessages(roomId, {role: role, bet: bet, dealerWealth: scene.dealer.wealth}, 'PlayerBetEvent',function(err){
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'PlayerBetEvent: ' + err });
                 }
-                return callback(null, { isBet: true, quantity: bet, defaultCards: defaultCards, value: newValue });
+                return callback(null, { isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
             });
         });
     }catch(err){
@@ -505,8 +508,6 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 dealer_value: 'bb',
                 player: 'dd'
             }]
-
-
         console.log(rankingList);
 
         console.log('=======dealerFinish=begin==================')
@@ -608,6 +609,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             player_count: Object.keys(scene.player_bets).length, // 玩家人数
             bet_amount: scene.dealer_bets,  // 玩家下注总额
             payment: scene.dealer_bets,   // 主播赔付总额
+            profit: scene.dealer_bets-scene.dealer_bets, //主播赢的总额
             started_at: scene.started_at,   // 回合开始时间
             finished_at: getDateTime() // 回合结束时间
         }
@@ -633,7 +635,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         //    }
         //});
 
-        // 同步 transaction 到mysql
+         //同步 transaction 到mysql
         //dataSyncService.syncSceneToRemote( function(err, result){
         //    if(!!err){
         //        console.log(err);
@@ -758,7 +760,7 @@ SceneService.prototype.playerFinish = function(room_id, token, callback){
 	
 }
 
-// TODO:主播端人脸识别 并推送 UpdateFaceDetectorCoorEvent
+// 主播端人脸识别 并推送 UpdateFaceDetectorCoorEvent
 SceneService.prototype.updateFaceDetectorCoor = function(roomId, params, callback){
     try{
         pushMessages(roomId, params, 'UpdateFaceDetectorCoorEvent', function(err){

@@ -1,6 +1,6 @@
 module.exports = {
-	OK:    200,
-	FAIL:  500,
+	OK:    200,   // 成功得到结果
+	FAIL:  500,    // 其他错误
 
 	ENTRY: {
 		FA_TOKEN_INVALID: 	    1001,
@@ -30,7 +30,7 @@ module.exports = {
 
     PLAYER: {  // 玩家的异常状态
         NO_PLAYER:              4001,  // 游戏中不存在当前玩家
-        NO_BET:                 4002,  // 玩家下赌注或者赌注为零
+        NO_BET:                 4002,  // 玩家未下赌注或者赌注为零
         EXIST_BET:              4003,  // 玩家已经下过注了
         NO_WEALTH:              4004,  // 玩家财富值不够
         NO_DECK:                4005  // 玩家找不到卡组
@@ -46,7 +46,5 @@ module.exports = {
         MSG_FAIL:               5006,  // 发送消息失败
         GET_CARD_ERR:           5007  //抽卡报错
     }
-
-
 } 
 

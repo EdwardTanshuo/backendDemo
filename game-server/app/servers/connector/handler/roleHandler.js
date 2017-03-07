@@ -15,31 +15,35 @@ var Handler = function(app) {
 /**
  * 玩家下注接口 connector.roleHandler.bet
  *
- * 接收参数: { bet: xx  }  玩家下注金额
- * 返回结果:  code: 200 //正常
- *                 3001 // 玩家财富值不够
- *                 3002 // 主播财富值不够
- *            {
- *              isBet: isBet,  //是否下注 true | false
- *              quantity: quantity,   //下注金额
- *              defaultCards: [card1,card2],   //卡组信息
- *              value: {value: 18, busted: false, numberOfHigh: 35 numberOfTrans: 0}  // 玩家当前卡点数
- *           }
+ * 接收参数: { bet: 50  }  玩家下注金额，要求：bet > 0
+ * 返回结果: // 接口调用成功，
+ *          { code: 200 ,
+ *            result:  { isBet: isBet,  //是否下注 true | false
+ *                       quantity: quantity,   //下注金额
+ *                       roleWealth: 350,  // 玩家余额
+ *                       dealerWealth: 98234, //  主播余额
+ *                       defaultCards: [card1,card2],   //卡组信息
+ *                       value: {value: 18, busted: false, numberOfHigh: 35 numberOfTrans: 0}  // 玩家当前卡点数 } }
+ *
+ *           // 接口调用失败，
+ *           {  code: 4002,  // error code
+ *              result: 'playerBet: no bet'  //error message }
  * 功能说明: 玩家下注接口
  */
 Handler.prototype.bet = function(msg, session, next) {
 
     var currentRole = session.get('currentRole'),
         roomId = session.get('room'),
-        token = session.get('token');
+        token = session.get('token'),
+        bet = Number(msg.bet);
 
     // 没有赌注
-    if(msg.bet == null ){
+    if(bet == null ){
         return next(null, {code: Code.PLAYER.NO_BET, result: 'playerBet: no bet'});
     }
 
     // 用户财富值是否足够
-    if(currentRole.wealth < msg.bet){
+    if(currentRole.wealth < bet){
         return next(null, {code: Code.PLAYER.NO_WEALTH, result: 'playerBet: player no enough wealth'});
     }
 
@@ -52,11 +56,19 @@ Handler.prototype.bet = function(msg, session, next) {
         if(!deck){
             return next(null, {code: Code.PLAYER.NO_DECK, result: 'playerBet: crash when query memdb'});
         }
-        app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, msg.bet, deck, function(err, result){
+        currentRole -= bet;  //扣除玩家下注金额
+        app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, bet, deck, function(err, result){
             if(err){
                 return next(null, { code: err.code, result: err.msg });
             }
-            return next(null, { code: Code.OK, result: result });
+
+            session.set('currentRole', currentRole);
+            session.push('currentRole', function(err) {
+                if (err) {
+                    return next(new Error(err), {code: Code.FAIL, result: 'PlayerBet: update CurrentRole error :' + err});
+                }
+                return next(null, { code: Code.OK, result: result });
+            })
         });
     } catch(err){
         return next(new Error(err), {code: Code.FAIL, result: err});
@@ -68,9 +80,13 @@ Handler.prototype.bet = function(msg, session, next) {
  * 玩家退出游戏接口 connector.roleHandler.leave
  *
  * 接收参数: 无
- * 返回结果: { code : 200
- *             result: 'cleared'
-             }
+ * 返回结果:  // 接口调用成功
+ *          {  code : 200
+ *             result: 'cleared' }
+ *
+ *           // 接口调用失败
+ *           {  code: code,  // error code
+ *              result: 'xxxxx'  //error message }
  * 功能说明: 玩家主动退出游戏
  */
 Handler.prototype.leave = function(msg, session, next) {

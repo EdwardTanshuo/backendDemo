@@ -2,22 +2,17 @@ var mongoose = require('mongoose');
 
 var TransactionSchema = mongoose.Schema({
     quantity: Number,
-    type: {  // 交易类型
+    type: {  // 交易类型 下注， 获得奖励
         type: String,
-        'enum': ['Gift', 'Bet', 'Refill', 'Ticket', 'Coupon', 'Reward']
+        'enum': ['Bet', 'Reward']
     },
-    issuer: {   //交易发起人
+    userd: {   //交易发起人
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    foreignIssuerId: {type: Number},  // mysql 中的外键
-    recipient: {  //收款人
+    roomId: {  //收款人
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Broadcaster'
-    },
-    scene:{ //  senceID
-        type: mongoose.Schema.Types.ObjectId,
-        ref:'Scene'
     },
     createdAt: { type: Date, default: Date.now, required: true}
 });
