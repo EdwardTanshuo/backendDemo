@@ -25,6 +25,9 @@ $ node app.js
 ```
 
 # errorCode 说明
+
+```
+
  200,   // 成功得到结果
  500,   // 其他错误
  1001,  // token 不存在
@@ -54,7 +57,8 @@ $ node app.js
  5005,  // 找不到channel
  5006,  // 发送消息失败
  5007,  //抽卡报错
-
+ 
+```
 
 # 状态机说明
 ```
@@ -335,23 +339,50 @@ Event:  BetStartEvent
   url: host + '/api/broadcaster/' + roomId,
   headers: headers["X_MCV_TOKEN"] = "d858bd235c7faf19f5da18a1118788e2";
     
-  result: { broadcaster object}
+  result: { role object}
   
 ```
 
-"userGet": "/api/account",
-	    	"broadcasterGet": "/api/broadcasters",
-            'scenePost': "/api/scenes",
-            'transactionPost': "/api/transactions"
+## 回合结束时，提交游戏回合数据
 
-room: scene.room,
-            turns: scene.turns,
-            player_count: Object.keys(scene.player_bets).length, // 玩家人数
-            bet_amount: scene.dealer_bets,  // 玩家下注总额
-            payment: scene.dealer_bets,   // 主播赔付总额
-            profit: scene.dealer_bets-scene.dealer_bets, //主播赢的总额
-            started_at: scene.started_at,   // 回合开始时间
-            finished_at: getDateTime() // 回合结束时间
+`` 
+  method: 'POST',
+  url: host + '/api/scenes/',
+  headers: headers["X_MCV_TOKEN"] = "d858bd235c7faf19f5da18a1118788e2";
+  body: {
+            room: xxxxxxxx,
+            turns: 1,
+            player_count: 23, // 玩家人数
+            bet_amount: 1500,  // 玩家下注总额
+            payment: 700,   // 主播赔付总额
+            profit: 800, //主播赢的总额
+            started_at: DateTime,   // 回合开始时间
+            finished_at: DateTime // 回合结束时间
+        }
+  
+```
+
+## 回合结束时，提交回合中产生的交易记录(以数组格式提交)
+
+```  
+    method: 'POST',
+    url: host + '/api/scenes/',
+    headers: headers["X_MCV_TOKEN"] = "d858bd235c7faf19f5da18a1118788e2";
+    body: [{ userId: xxxxxxx(用户的token),
+             quantity: 50,
+             type: 'Bet', 
+             roomId: xxxxxxx },
+           { userId: xxxxxxx(用户的token),
+             quantity: 50,
+             type: 'Bet', 
+             roomId: xxxxxxx }, 
+            ...
+          ]
+  
+```
+
+
+
 
   
 
