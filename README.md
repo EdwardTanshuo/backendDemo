@@ -345,7 +345,7 @@ Event:  BetStartEvent
 
 ## 回合结束时，提交游戏回合数据
 
-`` 
+``` 
   method: 'POST',
   url: host + '/api/scenes/',
   headers: headers["X_MCV_TOKEN"] = "d858bd235c7faf19f5da18a1118788e2";
