@@ -247,7 +247,6 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         newTransaction.type = 'Bet';
         newTransaction.roomId = roomId;
         newTransaction.save();
-        transactionCollection.insert(newTransaction);
 
         scene.players[role.token] = role;
         scene.player_bets[role.token] = bet;
@@ -472,64 +471,15 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         var player_bets = scene.player_bets;
         var rankingList = [];
 
-        rankingList =[
-            {
-                bunko: 'win',
-                quantity: 100,
-                play_value: 'aa',
-                dealer_value: 'bb',
-                player: 'dd'
-            },
-            {
-                bunko: 'win',
-                quantity: 20,
-                play_value: 'aa',
-                dealer_value: 'bb',
-                player: 'dd'
-            },
-            {
-                bunko: 'win',
-                quantity: 52,
-                play_value: 'aa',
-                dealer_value: 'bb',
-                player: 'dd'
-            },
-            {
-                bunko: 'win',
-                quantity: 49,
-                play_value: 'aa',
-                dealer_value: 'bb',
-                player: 'dd'
-            },
-            {
-                bunko: 'win',
-                quantity: 42,
-                play_value: 'aa',
-                dealer_value: 'bb',
-                player: 'dd'
-            }]
-        console.log(rankingList);
-
         console.log('=======dealerFinish=begin==================')
 
         for (var k in player_bets) {
             var bet = player_bets[k];
             var rank = bet;
-            console.log(bet);
-
             var dealerValue = scene.dealer_value;
             var playValue = scene.player_values[k];
-
-            console.log(dealerValue);
-            console.log(playValue);
-
             // 计算玩家输赢
             var bunko = game.determinePlayerWin(dealerValue, playValue);
-
-            console.log(bunko);
-
-
-            console.log(scene.player_platfroms[k]);
 
             // 如果玩家的 抽了4张以上直接胜利
             if(scene.player_platfroms[k].length > 4){
@@ -541,14 +491,18 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             // 如果玩家是赢了， 就生成Reward类型Transaction。
             if(bunko == 'win'){
                 rank = bet * sceneConfig.ratio;
+            }else if(bunko = 'tie'){
+                rank = bet;
+            }else if(bunko = 'lose'){
+                rank = -bet;
+            }
+            if(rank > 0){
                 var newTransaction = new Transaction();
                 newTransaction.quantity = rank;
                 newTransaction.type = 'Reward';
-                newTransaction.issuer = roomId;
-                newTransaction.recipient = player.token;
-                transactionCollection.insert(newTransaction);
-            }else if(bunko = 'lose'){
-                rank = -bet;
+                newTransaction.roomId = roomId;
+                newTransaction.userId = player.token;
+                newTransaction.save();
             }
 
             // 玩家的结果
@@ -558,7 +512,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 play_value: playValue,
                 dealer_value: dealerValue,
                 player: player
-            }
+            };
 
             console.log(playResult);
 
@@ -574,15 +528,10 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         }
 
         for(var j=1,jl=rankingList.length; j < jl; j++){
-            console.log('-----   each  -----------');
-            console.log(rankingList[j])
-
             var temp = rankingList[j];
-            console.log('----- aaaaaaaaaaa -----------');
-            console.log(temp["quantity"])
-            console.log('----- bbbbbbbbbbb -----------');
+
              var val  = temp["quantity"],
-                i    = j-1;
+                 i    = j-1;
             while(i >=0 && rankingList[i]["quantity"]>val){
                 rankingList[i+1] = rankingList[i];
                 i = i-1;
@@ -590,18 +539,10 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             rankingList[i+1] = temp;
         }
 
-        //var newTransaction = new Transaction();
-        //newTransaction.quantity = 12;
-        //newTransaction.type = 'Reward';
-        //newTransaction.issuer = roomId;
-        //newTransaction.recipient = 'afedwedasd';
-        //transactionCollection.insert(newTransaction);
-
         console.log('-----sync scene -----------');
 
         // 保存 scene 到mongodb
         scene.save();
-        // 同步scene 到mysql
 
         var nScene = {
             room: scene.room,
@@ -612,35 +553,15 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             profit: scene.dealer_bets-scene.dealer_bets, //主播赢的总额
             started_at: scene.started_at,   // 回合开始时间
             finished_at: getDateTime() // 回合结束时间
-        }
-        console.log(nScene);
+        };
 
+        console.log(nScene);
+        // 同步scene 到mysql
         dataSyncService.syncSceneToRemote(nScene, function(err, result){
             if(!!err){
                 console.log(err);
             }
         });
-
-        //console.log('-----sync Transaction -----------');
-        // 保存 transaction 到mongodb
-
-        //console.log(transactionCollection.find());
-        //Transaction.insertMany(transactionCollection.find(), function(err,result){
-        //    if(err){
-        //        console.log('---批量插入错误----')
-        //        console.log(err);
-        //    }else{
-        //        console.log('---批量插入成功----')
-        //
-        //    }
-        //});
-
-         //同步 transaction 到mysql
-        //dataSyncService.syncSceneToRemote( function(err, result){
-        //    if(!!err){
-        //        console.log(err);
-        //    }
-        //});
 
         //重置游戏 更新游戏状态
         resetScene(scene, function(err, newScene){

@@ -360,25 +360,24 @@ Event:  BetStartEvent
             finished_at: DateTime // 回合结束时间
         }
   
+  说明： 接口方需要生成一条 scene记录，并根据主播最后赢的魔法石，变更主播魔法石余额
+ 
 ```
 
-## 回合结束时，提交回合中产生的交易记录(以数组格式提交)
+## 用户下注或者 获得奖励时生成交易记录接口
 
 ```  
     method: 'POST',
     url: host + '/api/transactions/',
     headers: headers["X_MCV_TOKEN"] = "d858bd235c7faf19f5da18a1118788e2";
-    body: [{ userId: xxxxxxx(用户的token),
-             quantity: 50,
-             type: 'Bet', 
-             roomId: xxxxxxx },
-           { userId: xxxxxxx(用户的token),
-             quantity: 50,
-             type: 'Bet', 
-             roomId: xxxxxxx }, 
-            ...
-          ]
+    body: { userId: xxxxxxx(用户的token),
+            quantity: 50,
+            type: 'Bet',  
+            roomId: xxxxxxx,
+            createdAt: createdAt }
   
+    说明： 接口方需要生成一条 transactions记录，并变更玩家魔法石余额
+        type字段：Bet-表示用户下注，接口放扣除用户魔法石，Reward-表示奖励，接口方增加用户魔法石
 ```
 
 
