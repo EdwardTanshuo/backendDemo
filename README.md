@@ -366,7 +366,7 @@ Event:  BetStartEvent
 
 ```  
     method: 'POST',
-    url: host + '/api/scenes/',
+    url: host + '/api/transactions/',
     headers: headers["X_MCV_TOKEN"] = "d858bd235c7faf19f5da18a1118788e2";
     body: [{ userId: xxxxxxx(用户的token),
              quantity: 50,
