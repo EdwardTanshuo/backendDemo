@@ -1,12 +1,12 @@
 var mongoose = require('mongoose');
 
-var dataSyncService = require('./services/dataSync');
+var dataSyncService = require('../services/dataSync');
 
 var TransactionSchema = mongoose.Schema({
     quantity: Number,
-    type: {  // 交易类型 下注， 获得奖励
+    type: {  // 交易类型 Bet-下注，Reward-获得奖励, Tie-平局退还下注金额
         type: String,
-        'enum': ['Bet', 'Reward']
+        'enum': ['Bet', 'Reward', 'Tie']
     },
     userd: {   //交易发起人
         type: mongoose.Schema.Types.ObjectId,
@@ -23,14 +23,13 @@ var TransactionSchema = mongoose.Schema({
 
 TransactionSchema.post('save', function() {
     console.log("post save!!!!!!!!!!!!!!!!!!!!!!!")
-    this.quantity = Math.abs(this.quantity);
     var transaction = {
         userId: this.userId,
-        quantity: this.bet,
+        quantity: this.quantity,
         type: this.type,
         roomId: this.roomId,
         createdAt: this.createdAt
-    }
+    };
     dataSyncService.syncTransactionToRemote(transaction, function(err){
         if(!!err){
             console.log('syncTransactionToRemote when transaction post save :'+ err);

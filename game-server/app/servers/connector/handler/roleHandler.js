@@ -56,7 +56,7 @@ Handler.prototype.bet = function(msg, session, next) {
         if(!deck){
             return next(null, {code: Code.PLAYER.NO_DECK, result: 'playerBet: crash when query memdb'});
         }
-        currentRole -= bet;  //扣除玩家下注金额
+        currentRole.wealth -= bet;  //扣除玩家下注金额
         app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, bet, deck, function(err, result){
             if(err){
                 return next(null, { code: err.code, result: err.msg });

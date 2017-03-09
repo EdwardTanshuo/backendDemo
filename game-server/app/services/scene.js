@@ -469,6 +469,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             return callback({code: Code.SCENE.NOT_DEALER_TURN, msg: 'dealerFinish: game is not dealer turn yet' });
         }
         var player_bets = scene.player_bets;
+        var payment = 0;
         var rankingList = [];
 
         console.log('=======dealerFinish=begin==================')
@@ -491,18 +492,24 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             // 如果玩家是赢了， 就生成Reward类型Transaction。
             if(bunko == 'win'){
                 rank = bet * sceneConfig.ratio;
-            }else if(bunko = 'tie'){
-                rank = bet;
-            }else if(bunko = 'lose'){
-                rank = -bet;
-            }
-            if(rank > 0){
+                payment += rank;
                 var newTransaction = new Transaction();
                 newTransaction.quantity = rank;
                 newTransaction.type = 'Reward';
                 newTransaction.roomId = roomId;
                 newTransaction.userId = player.token;
                 newTransaction.save();
+            }else if(bunko == 'tie'){
+                rank = bet;
+                payment += rank;
+                var newTransaction = new Transaction();
+                newTransaction.quantity = rank;
+                newTransaction.type = 'Tie';
+                newTransaction.roomId = roomId;
+                newTransaction.userId = player.token;
+                newTransaction.save();
+            }else if(bunko == 'lose'){
+                rank = -bet;
             }
 
             // 玩家的结果
@@ -549,7 +556,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             turns: scene.turns,
             player_count: Object.keys(scene.player_bets).length, // 玩家人数
             bet_amount: scene.dealer_bets,  // 玩家下注总额
-            payment: scene.dealer_bets,   // 主播赔付总额
+            payment: payment,   // 主播赔付总额
             profit: scene.dealer_bets-scene.dealer_bets, //主播赢的总额
             started_at: scene.started_at,   // 回合开始时间
             finished_at: getDateTime() // 回合结束时间

@@ -377,7 +377,7 @@ Event:  BetStartEvent
             createdAt: createdAt }
   
     说明： 接口方需要生成一条 transactions记录，并变更玩家魔法石余额
-        type字段：Bet-表示用户下注，接口放扣除用户魔法石，Reward-表示奖励，接口方增加用户魔法石
+        type字段：Bet-表示用户下注，接口放扣除用户魔法石，Reward-表示奖励，接口方增加用户魔法石,Tie-表示平局退还下注金额
 ```
 
 
