@@ -28,11 +28,12 @@ Handler.prototype.createGame = function(msg, session, next) {
     console.log('----createGame---------')
     var broadcaster = session.get('currentBroadcaster');
 	if(broadcaster == null){
-		return next(null, {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, result: 'createGame: broadcaster need entry'});
+        var error = 'createGame: broadcaster need entry';
+		return next(new Error(error), {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, error: error});
 	}
     sceneService.createGame(broadcaster, session.get('room'), function(err, scene){
         if(err){
-            next(null, {code: err.code, result: err.msg});
+            next(new Error(err.msg), {code: err.code, error: err.msg});
         } else{
             next(null, {code: Code.OK, result: scene});
         }
@@ -50,13 +51,14 @@ Handler.prototype.startBet = function(msg, session, next) {
     console.log('----startBet---------')
     var broadcaster = session.get('currentBroadcaster');
     if(broadcaster == null){
-        return next(null, {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, result: 'startBet: broadcaster need entry'});
+        var error = 'startBet: broadcaster need entry';
+        return next(new Error(error), {code: Code.ENTRY.BROADCASTER_AUTH_FAIL, error: error});
     }
     sceneService.startBet(session.get('room'), function(err, scene){
         if(err){
             return next(new Error(err), {code: Code.FAIL, error: err});
         } else{
-            next(null, {code: Code.OK, result: 'game start Bet'});
+            next(null, {code: Code.OK, result: scene});
         }
     });
 };
@@ -73,9 +75,9 @@ Handler.prototype.startGame = function(msg, session, next) {
 
     sceneService.startGame(session.get('room'), function(err, scene){
         if(err){
-            return next(null, {code: err.code, result: err.msg});
+            return next(new Error(err.msg), {code: err.code, error: err.msg});
         }
-        next(null, {code: Code.OK, result: 'game started'});
+        next(null, {code: Code.OK, result: scene});
     });
 };
 
@@ -110,7 +112,7 @@ Handler.prototype.endGame = function(msg, session, next) {
 Handler.prototype.dealerDrawCard = function(msg, session, next) {
     sceneService.dealerDrawCard(session.get('room'), function(err, newDeck, newCard, newValue){
         if(err){
-            return next(null, {code: err.code, error: err.msg});
+            return next(new Error(err.msg), {code: err.code, error: err.msg});
         }
         next(null, {code: Code.OK,  result: { newCard: newCard, newValue: newValue }});
     });
@@ -127,7 +129,7 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
 Handler.prototype.dealerFinish = function(msg, session, next) {
     sceneService.dealerFinish(session.get('room'), function(err, scene, rankingList){
         if(err){
-            return next(null, {code: err.code, error: err.msg});
+            return next(new Error(err.msg), {code: err.code, error: err.msg});
         }
         next(null, {code: Code.OK, result: { scene: scene, rankingList: rankingList}});
     });

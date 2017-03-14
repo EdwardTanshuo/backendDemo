@@ -31,7 +31,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
 
 DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
      if(token == null){
-         return callback({code: Code.COMMON.LESS_PARAM, msg: 'syncRoleFromRemote: misiing token' });
+         return callback({code: Code.COMMON.LESS_PARAM, msg: 'syncRoleFromRemote: missing token' });
      }
      var headers = {
         'content-type': 'application/json',
