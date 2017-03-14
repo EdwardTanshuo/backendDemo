@@ -232,7 +232,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
             return callback( {code: Code.PLAYER.EXIST_BET, msg: 'playerBet: player already bet' });
         }
 
-        if(bet <= 0){
+        if(bet < 0){
             return callback( {code: Code.PLAYER.NO_BET, msg: 'playerBet: bet can not be less than 0' });
         }
 
