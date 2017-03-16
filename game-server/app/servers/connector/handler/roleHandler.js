@@ -154,7 +154,7 @@ Handler.prototype.draw = function(msg, session, next) {
             return next(new Error(err.msg), { code: err.code, error: err.msg });
         }else{
             if(!result.newDeck){
-                return next(new Error('playerDraw: deck is null'), { code: Code.PLAYER.NO_DECK, result: 'playerDraw: deck is null' });
+                return next(new Error('playerDraw: deck is null'), { code: Code.PLAYER.NO_DECK, error: 'playerDraw: deck is null' });
             }
             roleDeck.deck = result.newDeck;
             roleDeckCollection.update(roleDeck);

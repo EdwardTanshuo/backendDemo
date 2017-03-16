@@ -25,11 +25,11 @@ Handler.prototype.entry = function(msg, session, next) {
 	  }
 	  roleService.auth(msg.token, function(err, result){
 	  		if(err){
-                return next(null, { code: err.code, result: err.msg });
+                return next(null, { code: err.code, error: err.msg });
 	  		} else{
 	  			self_app.get('sessionService').kick(msg.token, function(err){
 	  				if(err){
-	  					return next(new Error(err), {code: Code.FAIL, result: 'PlayerEnter:' + err });
+	  					return next(new Error(err), {code: Code.FAIL, error: 'PlayerEnter:' + err });
 	  				} else{
 	  					session.bind(msg.token, function(err){
 			  				if(!err){
@@ -38,11 +38,11 @@ Handler.prototype.entry = function(msg, session, next) {
 								session.set('currentRole', result);
 								session.pushAll(function(err){
 									if(err){
-										return next(new Error(err), {code: Code.FAIL, result: 'PlayerEnter.session.bind:' + err});
+										return next(new Error(err), {code: Code.FAIL, error: 'PlayerEnter.session.bind:' + err});
 									}
 									roleEnter(self_app, session, function(err, scene){
 					  					if(err){
-                                            return next(null, { code: err.code, result: err.msg });
+                                            return next(Error(err.msg), { code: err.code, result: err.msg });
 						  				} else{
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session));
 						  					return next(null, { code: Code.OK, result: scene});
