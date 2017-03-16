@@ -89,7 +89,7 @@ var roleEnter = function (app, session, callback) {
 	var deckId = (currentRole.deckId != null) ? currentRole.deckId : 'default';
 	var deck = utils.createDeck(deckId);
 	if(deck == null){
-        return next(null, { code: Code.PLAYER.NO_DECK, result: 'PlayerEnter: no such deck' });
+		return callback('PlayerEnter: no such deck');
 	}
 	var new_model = {};
 	new_model.deck = deck;
@@ -99,13 +99,13 @@ var roleEnter = function (app, session, callback) {
 	try{
 		var find_result = roleDeckCollection.findOne({'token': token});
 		if(find_result != null){
-			find_result.deck = new_model.deck;
-			roleDeckCollection.update(find_result);
+			//find_result.deck = new_model.deck;
+			//roleDeckCollection.update(find_result);
 		} else{
 			roleDeckCollection.insert(new_model);
 		}
 	} catch(err){
-        return next(null, { code: Code.FAIL, result: 'PlayerEnter:' + err });
+        return callback('PlayerEnter: ' + err);
 	}
 
 	//加入游戏scene

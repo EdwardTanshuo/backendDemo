@@ -154,7 +154,6 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         //如果玩家已加入游戏， 返回当前游戏状态
         if(scene.players[role.token] != null){
             return callback(null, scene);
-            return callback({code: Code.OK, msg: 'addPlayer: no channel' });
         }
         //否则创建新的玩家状态
         role.sid = serverId;
@@ -695,7 +694,7 @@ SceneService.prototype.updateFaceDetectorCoor = function(roomId, params, callbac
             if(!!err){
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'UpdateFaceDetectorCoorEvent:  ' + err });
             }
-            return callback(null, scene);
+            return callback(null);
         });
     } catch(err){
         callback({code: Code.FAIL, msg: 'updateFaceDetectorCoor:  ' + err });
