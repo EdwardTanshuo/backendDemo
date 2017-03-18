@@ -70,6 +70,7 @@ app.configure('production|development', function() {
   app.route('connector', routeUtil.connector);
   app.route('broadcaster', routeUtil.broadcaster);
   app.route('scene', routeUtil.scene);
+  app.route('danmu', routeUtil.danmu);
   app.filter(pomelo.filters.timeout());
 
 });
@@ -120,6 +121,10 @@ app.configure('production|development', 'scene', function(){
   initMongo();
   initSceneCache();
   initTransactionCache();
+});
+
+app.configure('production|development', 'danmu', function(){
+    
 });
 
 

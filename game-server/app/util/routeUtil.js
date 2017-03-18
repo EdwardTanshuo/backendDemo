@@ -12,6 +12,18 @@ exp.scene = function(session, msg, context, cb) {
   	cb(null, id);
 };
 
+exp.danmu = function(session, msg, context, cb) {
+    if(!session.get('room')) {
+        return cb(new Error('missing room'));
+    }
+	var danmuServers = app.getServersByType('danmu');
+	var hash = session.get('room');
+	var lastChar = hash[hash.length -1];
+	var code = lastChar.charCodeAt(0);
+ 	var id = danmuServers[code % danmuServers.length].id;
+  	cb(null, id);
+};
+
 // todo: 可能要废弃
 exp.channel = function(roomId) {
 	var sceneServers = app.getServersByType('scene');

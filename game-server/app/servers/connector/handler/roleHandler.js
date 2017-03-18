@@ -61,6 +61,7 @@ Handler.prototype.bet = function(msg, session, next) {
             return next(new Error(error), {code: Code.PLAYER.NO_DECK, error: error});
         }
         currentRole.wealth -= bet;  //扣除玩家下注金额
+
         app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, bet, deck, function(err, result){
             if(err){
                 return next(new Error(err.msg), { code: err.code, error: err.msg });
@@ -72,7 +73,7 @@ Handler.prototype.bet = function(msg, session, next) {
                     return next(new Error(err), {code: Code.FAIL, error: 'PlayerBet: update CurrentRole error :' + err});
                 }
                 return next(null, { code: Code.OK, result: result });
-            })
+            });
         });
     } catch(err){
         return next(new Error(err), {code: Code.FAIL, error: err});

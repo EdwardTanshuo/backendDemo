@@ -245,6 +245,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         newTransaction.quantity = bet;
         newTransaction.type = 'Bet';
         newTransaction.roomId = roomId;
+        newTransaction.sceneId = scene._id.toString();
         newTransaction.save();
 
         scene.players[role.token] = role;
@@ -496,6 +497,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 newTransaction.quantity = rank;
                 newTransaction.type = 'Reward';
                 newTransaction.roomId = roomId;
+                newTransaction.sceneId = scene._id.toString();
                 newTransaction.userId = player.token;
                 newTransaction.save();
             }else if(bunko == 'tie'){
@@ -505,6 +507,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 newTransaction.quantity = rank;
                 newTransaction.type = 'Tie';
                 newTransaction.roomId = roomId;
+                newTransaction.sceneId = scene._id.toString();
                 newTransaction.userId = player.token;
                 newTransaction.save();
             }else if(bunko == 'lose'){

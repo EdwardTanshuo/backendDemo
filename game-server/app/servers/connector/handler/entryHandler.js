@@ -75,6 +75,12 @@ var onRoleLeave = function (app, session) {
     }
     channel.leave(currentRole.token, serverId);
 
+    var danmu = channelService.getChannel(roomId + '_danmu', true);
+    if(!danmu) {
+        logger.error('Role leave error! %j', 'no danmu_channel');
+    }
+    danmu.leave(currentRole.token, serverId);
+
     // 推送玩家离开消息给主播
     //var sid = channel.getMember(roomId)['sid'];
     //channelService.pushMessageByUids('PlayerLeaveEvent', { role: session.get('currentRole') }, [{ uid: roomId, sid: sid }]);

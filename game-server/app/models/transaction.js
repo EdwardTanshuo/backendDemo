@@ -5,16 +5,17 @@ var dataSyncService = require('../services/dataSync');
 var TransactionSchema = mongoose.Schema({
     quantity: Number,
     type: {  // 交易类型 Bet-下注，Reward-获得奖励, Tie-平局退还下注金额
-        type: String,
-        'enum': ['Bet', 'Reward', 'Tie']
+        type: String
     },
-    userd: {   //交易发起人
-        type: mongoose.Schema.Types.ObjectId,
+    userId: {   //交易发起人
+        type: String,
         ref: 'User'
     },
     roomId: {  //收款人
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Broadcaster'
+        type: String
+    },
+    sceneId: {
+        type: String
     },
     createdAt: { type: Date, default: Date.now, required: true}
 });
