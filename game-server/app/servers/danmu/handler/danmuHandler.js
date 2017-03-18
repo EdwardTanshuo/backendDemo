@@ -25,9 +25,11 @@ var Handler = function(app) {
 Handler.prototype.sendMessage = function(msg, session, next) {
     var channel = channelService.getChannel(session.get('room') + '_danmu', true);
     if (!channel) {
-        return callback('no channel');
+        return next('no channel');
     }
+    msg.user = session.get('currentRole');
     channel.pushMessage('danmuEvent', msg, callback);
+    return next(null, {code: Code.OK});
 };
 
 
