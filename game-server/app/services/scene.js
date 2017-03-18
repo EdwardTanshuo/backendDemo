@@ -690,17 +690,17 @@ SceneService.prototype.playerFinish = function(room_id, token, callback){
 	
 }
 
-// 主播端人脸识别 并推送 UpdateFaceDetectorCoorEvent
-SceneService.prototype.updateFaceDetectorCoor = function(roomId, params, callback){
+// 发送弹幕 并推送 DanmuEvent
+SceneService.prototype.sendDanmu = function(roomId, params, callback){
     try{
-        pushMessages(roomId, params, 'UpdateFaceDetectorCoorEvent', function(err){
+        pushMessages(roomId, params, 'DanmuEvent', function(err){
             if(!!err){
-                return callback({code: Code.COMMON.MSG_FAIL, msg: 'UpdateFaceDetectorCoorEvent:  ' + err });
+                return callback({code: Code.COMMON.MSG_FAIL, msg: 'DanmuEvent:  ' + err });
             }
             return callback(null);
         });
     } catch(err){
-        callback({code: Code.FAIL, msg: 'updateFaceDetectorCoor:  ' + err });
+        callback({code: Code.FAIL, msg: 'DanmuEvent:  ' + err });
     }
 }
 

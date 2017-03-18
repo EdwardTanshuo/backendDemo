@@ -67,7 +67,7 @@ $ node app.js
 # 弹幕接口说明
 ## 1. 发送弹幕
 ```
-route:  danmu.danmuHandler.sendMessage
+route:  connector.roleHandler.sendDanmu
 
 参数:  { msg: XXXXXX }
 
@@ -82,7 +82,7 @@ route:  danmu.danmuHandler.sendMessage
 ## 1. 接受弹幕
 
 ```
-Event:  danmuEvent
+Event:  DanmuEvent
 
 推送数据: { msg: XXXXXX user: {user object}}
 

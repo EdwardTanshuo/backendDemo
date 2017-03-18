@@ -136,23 +136,4 @@ Handler.prototype.dealerFinish = function(msg, session, next) {
 };
 
 
-/**
- * 主播端人脸识别 scene.sceneHandler.updateFaceDetectorCoor
- *
- * 接收参数：
- * 返回结果： {Object} scene
- *
- * 功能说明：
- */
-Handler.prototype.updateFaceDetectorCoor = function(msg, session, next) {
-    sceneService.updateFaceDetectorCoor(session.get('room'), msg, function(err, scene){
-        if(err){
-            return next(new Error(err), {code: Code.FAIL, error: err});
-        }
-        next(null, {code: Code.OK});
-    });
-};
-
-
-
 

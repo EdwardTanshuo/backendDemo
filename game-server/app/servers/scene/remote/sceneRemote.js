@@ -100,3 +100,13 @@ exp.getNumberOfPlayers = function(args, callback){
 	var num = sceneService.getNumberOfPlayers(args.room_id);
 	utils.invokeCallback(callback, null, num);
 }
+
+
+exp.sendDanmu = function(roomId, msg, callback) {
+    sceneService.sendDanmu(roomId, msg, function(err, scene){
+        if(err){
+            return callback(err);
+        }
+        return callback();
+    });
+};
