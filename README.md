@@ -64,6 +64,18 @@ $ node app.js
 ```
  init--->(BetStartEvent)--->betting--->(GameStartEvent)--->player_started--->(EndPlayerEvent)--->dealer_turn--->(DealerFinishEvent)--->init
 ```
+# 弹幕接口说明
+## 1. 发送弹幕
+```
+route:  danmu.danmuHandler.sendMessage
+
+参数:  { msg: XXXXXX }
+
+成功返回值: 无
+
+失败返回值: { code: errorCode, error: errMsg }
+
+```
 
 # 主播端接口说明
 
@@ -76,7 +88,7 @@ $ node app.js
     
   成功返回值: { code: 200, result: {broadcaster object}  }
   
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 ```
 
@@ -89,7 +101,7 @@ $ node app.js
     
   成功返回值: { code: 200, result: {scene object}  }
   
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 ```
 
@@ -102,7 +114,7 @@ $ node app.js
 
     成功返回值: { code: 200, result: {scene object}  }
 
-    失败返回值: { code: errorCode, result: errMsg }
+    失败返回值: { code: errorCode, error: errMsg }
 
 ```
 
@@ -115,7 +127,7 @@ $ node app.js
     
   成功返回值: { code: 200, result: {scene object}  }
   
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 ```
 
@@ -133,7 +145,7 @@ $ node app.js
                                   }  
             }
   
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 ```
 
@@ -146,7 +158,7 @@ $ node app.js
     
   成功返回值: { code: 200, result: {scene object}  }
   
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 ```
 
@@ -159,7 +171,7 @@ $ node app.js
     
   成功返回值: { code: 200, result: {scene object}  }
   
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 ```
 
@@ -238,7 +250,7 @@ Event:  BetStartEvent
     
   成功返回值: { code: 200, result: { scene object }  }
   
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 ```
 
@@ -250,7 +262,7 @@ Event:  BetStartEvent
    参数:   无
    
   成功返回值: { code: 200 , result: 'cleared' }
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 
 ```
