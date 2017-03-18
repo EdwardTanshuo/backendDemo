@@ -27,7 +27,7 @@ Handler.prototype.sendMessage = function(msg, session, next) {
     if (!channel) {
         return callback('no channel');
     }
-    channel.pushMessage(route, msg, callback);
+    channel.pushMessage('danmuEvent', msg, callback);
 };
 
 

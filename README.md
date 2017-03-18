@@ -77,6 +77,17 @@ route:  danmu.danmuHandler.sendMessage
 
 ```
 
+# 弹幕推送事件说明
+
+## 1. 接受弹幕
+
+```
+Event:  danmuEvent
+
+推送数据: { msg: XXXXXX user: {user object}}
+
+```
+
 # 主播端接口说明
 
 ## 1. 主播登陆 (包括主播断开游戏重新连接)
