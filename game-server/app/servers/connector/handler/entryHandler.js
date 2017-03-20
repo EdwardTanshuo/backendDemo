@@ -42,7 +42,7 @@ Handler.prototype.entry = function(msg, session, next) {
 									}
 									roleEnter(self_app, session, function(err, scene){
 					  					if(err){
-                                            return next(Error(err.msg), { code: err.code, result: err.msg });
+                                            return next(new Error(err.msg), { code: err.code, result: err.msg });
 						  				} else{
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session));
 						  					return next(null, { code: Code.OK, result: scene});
