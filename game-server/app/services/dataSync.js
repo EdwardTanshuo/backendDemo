@@ -186,11 +186,54 @@ DataSyncService.prototype.syncSceneToRemote = function(scene, callback) {
                 }
             }
             catch(err){
-                callback(err, null); // successful response
+                return callback(err, null); // successful response
             }
         }
     });
 };
+
+DataSyncService.prototype.syncAgainSceneToRemote = function(scene, callback) {
+    if(!scene){
+        return callback('syncSceneToRemote missing params', null); // error response
+    }
+    var headers = {
+        'Content-Type': 'application/json',
+        'cache-control': 'no-cache'
+    };
+
+    headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
+
+    console.log('---------- start sync scene ...');
+    console.log(scene);
+
+    var options = {
+        method: 'POST',
+        url: config.remote.url + config.remote.api.scenePostAgain,
+        headers: headers,
+        json: true,
+        body: scene
+    };
+
+    request(options,  function(err, response, body){
+        if (err) {
+            callback(err, null); // error response
+        } else {
+            try{
+                if(body.result){
+                    console.log('------syncSceneToRemote success resulte');
+                    console.log(body.result);
+                    return callback(null, body.result);
+                } else{
+                    return callback('syncSceneToRemote error', null);
+                }
+            }
+            catch(err){
+                return callback(err, null); // successful response
+            }
+        }
+    });
+};
+
 
 DataSyncService.prototype.syncTransactionToRemote = function(transaction, callback) {
     if(!transaction){

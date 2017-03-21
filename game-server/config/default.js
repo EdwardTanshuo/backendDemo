@@ -18,6 +18,7 @@ module.exports = {
 	    	"userGet": "/api/account",
 	    	"broadcasterGet": "/api/broadcasters",
             'scenePost': "/api/scenes",
+            'scenePostAgain': "/api/scenes",
             'transactionPost': "/api/transactions"
 	    }
     }

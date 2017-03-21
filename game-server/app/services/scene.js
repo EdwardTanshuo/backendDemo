@@ -24,6 +24,43 @@ function pushMessageToOne(roomId, uid, msg, route, callback){
     channelService.pushMessageByUids(route, msg, [{ uid: uid, sid: sid }], callback);
 }
 
+function pushMessageToDealer(roomId, msg, route, callback){
+    var channel = channelService.getChannel(roomId, true);
+    if (!channel) {
+        return callback('no channel');
+    }
+    var sid = channel.getMember(roomId)['sid'];
+    channelService.pushMessageByUids(route, msg, [{ uid: uid, sid: sid }], callback);
+}
+
+function pushMessageToPlayers(roomId, msg, route, callback){
+    var scene = sceneCollection.findOne({'room': roomId});
+    if(!scene){
+        return callback('room not found');
+    } 
+    var channel = channelService.getChannel(roomId, true);
+    if (!channel) {
+        return callback('no channel');
+    }
+    var group = Object.keys(scene.player_bets).map((uid) => {
+        return { uid: uid, sid: channel.getMember(uid)['sid'], bet: scene.player_bets[uid] };
+    }).filter((obj) => {
+        return obj.bet > 0;
+    });
+    
+    
+    // add broadcaster
+    var sid = channel.getMember(roomId)['sid'];
+    group.push({uid: roomId, sid: sid});
+    
+    if(group.length > 0){
+        return channelService.pushMessageByUids(route, msg, group, callback);
+
+    }
+
+    return callback('pushMessage: no target');
+}
+
 function getDateTime(){
     var date = new Date();
     return date.format("yyyy-MM-dd hh:mm:ss");
@@ -73,20 +110,18 @@ function initScene(roomId, dealer, callback){
 
 //重置游戏信息
 function resetScene(scene, callback){
-    console.log('-----reset Scene -----------');
+    console.log('-----reset Scene1 -----------');
     //回合加一
     scene.turns = scene.turns + 1;
     scene.status = 'init';
     scene.bet_amount = 0;  //玩家下注总金额
     //重置玩家列表
-    var tokens = Object.keys(scene.players);
-    var i = 0;
-    for(var i = 0; i < tokens.length; i++){
-        scene.player_platfroms[tokens[i]] = [];
-        scene.player_values[tokens[i]] = {value: 0, busted: false, numberOfHigh: 0};
-        scene.player_bets[tokens[i]] = 0;
-    }
-    
+    Object.keys(scene.players).map((token) => {
+         scene.player_platfroms[token] = [];
+         scene.player_values[token] = {value: 0, busted: false, numberOfHigh: 0};
+         scene.player_bets[token] = 0;
+    });
+   
     //重置主播信息
     scene.dealer_platfrom = [];
     scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
@@ -275,7 +310,8 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
             console.log('-------before PlayerBetEvent------------------------');
             console.log(msg);
 
-            pushMessages(roomId, {role: role, bet: bet, dealerWealth: scene.dealer.wealth}, 'PlayerBetEvent',function(err){
+            pushMessageToPlayers(roomId, {role: role, bet: bet, dealerWealth: scene.dealer.wealth}, 'PlayerBetEvent',function(err){
+                console.log('-------after PlayerBetEvent------------------------');
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'PlayerBetEvent: ' + err });
                 }
@@ -321,7 +357,7 @@ SceneService.prototype.startGame = function(roomId, callback){
             catch(e){
                 return callback({code: Code.COMMON.GET_CARD_ERR, msg: 'startGame: get_card_error' });
             }
-            pushMessages(roomId, scene, 'GameStartEvent', function(err){
+            pushMessageToPlayers(roomId, scene, 'GameStartEvent', function(err){
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'GameStartEvent:  ' + err });
                 }
@@ -394,7 +430,7 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
         }
         scene.status = 'dealer_turn';
         sceneCollection.update(scene);
-        pushMessages(roomId, scene, 'EndPlayerEvent', function(err){
+        pushMessageToPlayers(roomId, scene, 'EndPlayerEvent', function(err){
             if(!!err){
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'EndPlayerEvent:  ' + err });
             } else{
@@ -443,7 +479,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
                 sceneCollection.update(scene);
 
                 //推送DealerGetCardEvent 广播主播抽到的卡
-                pushMessages(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
+                pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
                     if(!!err){
                         return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerGetCardEvent:  ' + err });
                     }
@@ -526,11 +562,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             console.log(playResult);
 
             // 推送每个玩家自己的胜负情况
-            pushMessageToOne(roomId, player.token, playResult, 'GameResultEvent', function(err){
-                if(!!err){
-                    return callback({code: Code.COMMON.MSG_FAIL, msg: 'GameResultEvent:  ' + err });
-                }
-            });
+            pushMessageToOne(roomId, player.token, playResult, 'GameResultEvent');
 
             // 添加到排行榜中
             rankingList.push(playResult);
@@ -548,30 +580,6 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             rankingList[i+1] = temp;
         }
 
-        console.log('-----sync scene -----------');
-
-        // 保存 scene 到mongodb
-        scene.save();
-
-        var nScene = {
-            room: scene.room,
-            turns: scene.turns,
-            player_count: Object.keys(scene.player_bets).length, // 玩家人数
-            bet_amount: scene.dealer_bets,  // 玩家下注总额
-            payment: payment,   // 主播赔付总额
-            profit: scene.dealer_bets-scene.dealer_bets, //主播赢的总额
-            started_at: scene.started_at,   // 回合开始时间
-            finished_at: getDateTime() // 回合结束时间
-        };
-
-        console.log(nScene);
-        // 同步scene 到mysql
-        dataSyncService.syncSceneToRemote(nScene, function(err, result){
-            if(!!err){
-                console.log(err);
-            }
-        });
-
         //重置游戏 更新游戏状态
         resetScene(scene, function(err, newScene){
             if(err){
@@ -584,7 +592,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 return callback('dealerFinish: memdb crash');
             }
 
-            pushMessages(roomId, {scene: newScene, rankingList: rankingList.slice(0,3) }, 'DealerFinishEvent', function(err){
+            pushMessageToPlayers(roomId, {scene: newScene, rankingList: rankingList.slice(0,3) }, 'DealerFinishEvent', function(err){
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
                 }
@@ -629,8 +637,31 @@ SceneService.prototype.endGame = function(roomId, callback) {
         if(!scene){
             return callback('game not exist', scene);
         } else {
-            sceneCollection.remove(scene);
-            return callback(null, scene);
+            console.log('-----sync scene -----------');
+
+            // 保存 scene 到mongodb
+            scene.save();
+
+            var nScene = {
+                room: scene.room,
+                turns: scene.turns,
+                player_count: Object.keys(scene.player_bets).length, // 玩家人数
+                bet_amount: scene.dealer_bets,  // 玩家下注总额
+                payment: payment,   // 主播赔付总额
+                profit: scene.dealer_bets-scene.dealer_bets, //主播赢的总额
+                started_at: scene.started_at,   // 回合开始时间
+                finished_at: getDateTime() // 回合结束时间
+            };
+
+            console.log(nScene);
+            // 同步scene 到mysql
+            dataSyncService.syncSceneToRemote(nScene, function(err, result){
+                if(!!err){
+                    return callback(err);
+                }
+                sceneCollection.remove(scene);
+                return callback(null, scene);
+            });
         }
     } catch(err){
         return callback(err);
@@ -672,12 +703,17 @@ SceneService.prototype.removePlayer = function(roomId, role, callback){
 
 		sceneCollection.update(scene);
 
-        //从channel中去除 player 并推送PlayerLeaveEvent消息
         var channel = channelService.getChannel(roomId, true);
         if(!channel) {
             return callback('no channel', null);
         }
+
+        //从channel中去除 player 
+        channel.leave(currentRole.token, serverId);
+
+        //并推送PlayerLeaveEvent消息
         channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
+
         return callback(null, 'cleared');
 	}
 	catch(err){

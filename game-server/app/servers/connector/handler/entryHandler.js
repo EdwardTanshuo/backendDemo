@@ -69,7 +69,7 @@ var onRoleLeave = function (app, session) {
         serverId= app.get('serverId');
 
     //从channel中去除 player 并推送PlayerLeaveEvent消息
-    var channel = channelService.getChannel(roomId, true);
+    /*var channel = channelService.getChannel(roomId, true);
     if(!channel) {
         logger.error('Role leave error! %j', 'no channel');
     }
@@ -80,7 +80,7 @@ var onRoleLeave = function (app, session) {
         logger.error('Role leave error! %j', 'no danmu_channel');
     }
     danmu.leave(currentRole.token, serverId);
-
+	*/
     // 推送玩家离开消息给主播
     //var sid = channel.getMember(roomId)['sid'];
     //channelService.pushMessageByUids('PlayerLeaveEvent', { role: session.get('currentRole') }, [{ uid: roomId, sid: sid }]);

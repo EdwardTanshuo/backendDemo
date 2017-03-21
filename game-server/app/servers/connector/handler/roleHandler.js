@@ -1,5 +1,6 @@
 var logger = require('pomelo-logger').getLogger(__filename);
 var async = require('async');
+var utils = require('../../../util/utils');
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -51,33 +52,32 @@ Handler.prototype.bet = function(msg, session, next) {
 
     try{
         var result = roleDeckCollection.findOne({token: token});
-        if(!result){
-            var error = 'playerBet: can not find deck';
-            return next(new Error(error), {code: Code.PLAYER.NO_DECK, error: error});
-        }
-        var deck = result.deck;
-        if(!deck){
-            var error = 'playerBet: crash when query memdb';
-            return next(new Error(error), {code: Code.PLAYER.NO_DECK, error: error});
-        }
-        currentRole.wealth -= bet;  //扣除玩家下注金额
-
-        app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, bet, deck, function(err, result){
-            if(err){
-                return next(new Error(err.msg), { code: err.code, error: err.msg });
-            }
-
-            session.set('currentRole', currentRole);
-            session.push('currentRole', function(err) {
-                if (err) {
-                    return next(new Error(err), {code: Code.FAIL, error: 'PlayerBet: update CurrentRole error :' + err});
-                }
-                return next(null, { code: Code.OK, result: result });
-            });
-        });
-    } catch(err){
-        return next(new Error(err), {code: Code.FAIL, error: err});
     }
+    catch(err){
+        var error = 'memdbErr: cannot insert';
+        return next(new Error(error), {code: Code.FAIL, error: error});
+    }
+    if(!result){
+        var error = 'playerBet: can not find deck';
+        return next(new Error(error), {code: Code.PLAYER.NO_DECK, error: error});
+    }
+       
+    //下注
+    currentRole.wealth -= bet;  //扣除玩家下注金额
+
+    app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, bet, result.deck, function(err, result){
+        if(!!err){
+            return next(new Error(err.msg), { code: err.code, error: err.msg });
+        }
+
+        session.set('currentRole', currentRole);
+        session.pushAll(function(err) {
+            if (err) {
+                return next(new Error(err), {code: Code.FAIL, error: 'PlayerBet: update CurrentRole error :' + err});
+            }
+            return next(null, { code: Code.OK, result: result });
+        });
+    });
 }
 
 
@@ -158,7 +158,7 @@ Handler.prototype.draw = function(msg, session, next) {
                 return next(new Error('playerDraw: deck is null'), { code: Code.PLAYER.NO_DECK, error: 'playerDraw: deck is null' });
             }
             roleDeck.deck = result.newDeck;
-            roleDeckCollection.update(roleDeck);
+            //roleDeckCollection.update(roleDeck);
             var remain = roleDeck.deck.length;
 
             return next(null, {code: Code.OK, result: {card: result.card, value: result.value, remain: remain}});
