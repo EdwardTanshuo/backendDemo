@@ -159,33 +159,34 @@ DataSyncService.prototype.syncSceneToRemote = function(params, callback) {
     headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
 
     console.log('---------- start sync scene ...');
-    console.log(scene);
+    console.log(params);
 
     var options = {
         method: 'POST',
         url: config.remote.url + config.remote.api.scenePost ,
         headers: headers,
         json: true,
-        body: scene
+        body: params
     };
 
     request(options, function(err, response, body){
+        /*console.log(JSON.stringify(body));
         if (err) {
             callback(err); // error response
         } else {
-            try{
-                if(body.success){
-                    console.log('------syncSceneToRemote success resulte');
-                    console.log(JSON.stringify(body.result));
-                    return callback(null, body.result);
-                } else{
-                    return callback(body.errors.message, null);
+                try{
+                    if(body.result){
+                        console.log('------syncSceneToRemote success result');
+                        return callback(null, body.result);
+                    } else{
+                        return callback(body.errors.message, null);
+                    }
                 }
-            }
             catch(err){
                 return callback('error when parse response body'); // successful response
             }
-        }
+        }*/
+        return callback();
     });
 };
 
@@ -212,7 +213,7 @@ DataSyncService.prototype.syncAgainSceneToRemote = function(scene, callback) {
     };
 
     request(options,  function(err, response, body){
-        if (err) {
+        /*if (err) {
             callback(err, null); // error response
         } else {
             try{
@@ -227,7 +228,8 @@ DataSyncService.prototype.syncAgainSceneToRemote = function(scene, callback) {
             catch(err){
                 return callback(err);
             }
-        }
+        }*/
+        return callback();
     });
 };
 

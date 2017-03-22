@@ -156,7 +156,6 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	} else{
         //初始化游戏场景
 		initScene(roomId, dealer, function(err, newScene){
-            
             try {
                 if (!!err) {
                     return callback({code: Code.SCENE.CREATE_ERR, msg: 'createGame: ' + err});
@@ -170,7 +169,7 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
                 if(err){
                     return callback({code: Code.FAIL, msg: 'createGame:  ' + err});
                 }
-                dataSyncService.syncSceneToRemote({sceneId: scene._id.toString(), roomId: roomId}, function(err, result){
+                dataSyncService.syncSceneToRemote({sceneId: newScene._id.toString(), roomId: roomId}, function(err, result){
                     if(!!err){
                         return callback(err);
                     }
