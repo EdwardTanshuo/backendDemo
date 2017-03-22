@@ -4,7 +4,7 @@ module.exports = {
   	},
   	"remote": {
 	    "isSyncEnabled": true,
-	    "url": "http://115.159.65.197",
+	    "url": "http://122.112.227.196",
         //"url": "http://127.0.0.1:8080",
 	    "localToken": {
 	      "name": "X_BS_TOKEN",
@@ -17,8 +17,8 @@ module.exports = {
 	    "api": {
 	    	"userGet": "/api/account",
 	    	"broadcasterGet": "/api/broadcasters",
-            'scenePost': "/api/scenes",
-            'scenePostAgain': "/api/scenes",
+            'scenePost': "/api/game/scene",
+            'scenePostAgain': "/api/game/endScene",
             'transactionPost': "/api/transactions"
 	    }
     }

@@ -125,7 +125,6 @@ function resetScene(scene, callback){
     //重置主播信息
     scene.dealer_platfrom = [];
     scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
-    scene.dealer_bets = 0;
     scene.dealer_deck = [];
     
     //创建主播卡组
@@ -155,16 +154,22 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	} else{
         //初始化游戏场景
 		initScene(roomId, dealer, function(err, newScene){
+            newScene.save();
             try {
-                if (err) {
+                if (!!err) {
                     return callback({code: Code.SCENE.CREATE_ERR, msg: 'createGame: ' + err});
                 }
                 //更新缓存
                 sceneCollection.insert(newScene);
-                return callback(null, newScene);
-            } catch(err2){
-                return callback({code: Code.FAIL, msg: 'createGame:  error ' + err2 });
+            } catch(e){
+                return callback({code: Code.FAIL, msg: 'createGame:  memdb error'});
             }
+            dataSyncService.syncSceneToRemote({sceneId: scene._id.toString(), roomId: roomId}, function(err, result){
+                if(!!err){
+                    return callback(err);
+                }
+                return callback(null, newScene);
+            });
 		});
 	}
 }
@@ -640,22 +645,19 @@ SceneService.prototype.endGame = function(roomId, callback) {
             console.log('-----sync scene -----------');
 
             // 保存 scene 到mongodb
-            scene.save();
+            scene.save(scene._id.toString());
 
             var nScene = {
-                room: scene.room,
-                turns: scene.turns,
-                player_count: Object.keys(scene.player_bets).length, // 玩家人数
-                bet_amount: scene.dealer_bets,  // 玩家下注总额
-                payment: payment,   // 主播赔付总额
-                profit: scene.dealer_bets-scene.dealer_bets, //主播赢的总额
-                started_at: scene.started_at,   // 回合开始时间
-                finished_at: getDateTime() // 回合结束时间
+                sceneId:        scene._id.toString(),
+                roomId:         scene.room,
+                turns:          scene.turns,
+                player_count:   Object.keys(scene.player_bets).length, // 玩家人数
+                payment:        scene.dealer_bets,   // 主播赔付总额
             };
 
             console.log(nScene);
             // 同步scene 到mysql
-            dataSyncService.syncSceneToRemote(nScene, function(err, result){
+            dataSyncService.syncAgainSceneToRemote(nScene, function(err, result){
                 if(!!err){
                     return callback(err);
                 }
@@ -664,7 +666,7 @@ SceneService.prototype.endGame = function(roomId, callback) {
             });
         }
     } catch(err){
-        return callback(err);
+        return callback('endGame: memDBErr');
     }
 }
 

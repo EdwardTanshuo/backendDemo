@@ -68,8 +68,6 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
 
 DataSyncService.prototype.syncBroadcaster = function(broadcaster, callback) {
     var broadcasterService = require('./broadcaster');
-
-
     broadcasterService.hasOne(broadcaster, function(err, record){
         if(err){
             return callback(err, null);
@@ -81,10 +79,8 @@ DataSyncService.prototype.syncBroadcaster = function(broadcaster, callback) {
                 wealth: broadcaster.wealth,
                 location: broadcaster.location
             };
-            
             return broadcasterService.create(obj, callback);
         } else{
-
             record.name = broadcaster.name;
             record.avatar = broadcaster.avatar;
             record.wealth = broadcaster.wealth;
@@ -94,9 +90,9 @@ DataSyncService.prototype.syncBroadcaster = function(broadcaster, callback) {
                 record.isDeleted = true;
                 record.save(function(err, result){
                     if(err){
-                        callback('err', null);
+                        callback(err);
                     } else{
-                        callback('has been deleted', null);
+                        callback('has been deleted');
                     }
                 });
                 return;
@@ -134,12 +130,13 @@ DataSyncService.prototype.syncBroadcasterFromRemote = function(roomId, callback)
          } else {
                 try{
                     var json = JSON.parse(body);
+                    console.log(body);
                     if(json.result){
                        json.result.room = roomId;
                        return syncBroadcaster(json.result, callback);
                     }
                     else{
-                        return callback('broadcaster not exist', null);
+                        return callback('broadcaster not exist when sync from php');
                     }
 
                 }
@@ -150,9 +147,9 @@ DataSyncService.prototype.syncBroadcasterFromRemote = function(roomId, callback)
      });
 };
 
-DataSyncService.prototype.syncSceneToRemote = function(scene, callback) {
-    if(!scene){
-        return callback('syncSceneToRemote missing params', null); // error response
+DataSyncService.prototype.syncSceneToRemote = function(params, callback) {
+    if(!params.sceneId || !params.roomId){
+        return callback('syncSceneToRemote missing params'); // error response
     }
     var headers = {
         'Content-Type': 'application/json',
@@ -172,21 +169,21 @@ DataSyncService.prototype.syncSceneToRemote = function(scene, callback) {
         body: scene
     };
 
-    request(options,  function(err, response, body){
+    request(options, function(err, response, body){
         if (err) {
-            callback(err, null); // error response
+            callback(err); // error response
         } else {
             try{
-                if(body.result){
+                if(body.success){
                     console.log('------syncSceneToRemote success resulte');
-                    console.log(body.result);
+                    console.log(JSON.stringify(body.result));
                     return callback(null, body.result);
                 } else{
-                    return callback('syncSceneToRemote error', null);
+                    return callback(body.errors.message, null);
                 }
             }
             catch(err){
-                return callback(err, null); // successful response
+                return callback('error when parse response body'); // successful response
             }
         }
     });
@@ -219,16 +216,16 @@ DataSyncService.prototype.syncAgainSceneToRemote = function(scene, callback) {
             callback(err, null); // error response
         } else {
             try{
-                if(body.result){
-                    console.log('------syncSceneToRemote success resulte');
-                    console.log(body.result);
-                    return callback(null, body.result);
+                if(body.success){
+                    console.log('------syncSceneToRemote success result');
+                    console.log(body);
+                    return callback(null, body);
                 } else{
                     return callback('syncSceneToRemote error', null);
                 }
             }
             catch(err){
-                return callback(err, null); // successful response
+                return callback(err);
             }
         }
     });
