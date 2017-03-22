@@ -135,6 +135,8 @@ function resetScene(scene, callback){
             return callback('dealer deck could not be created');
         }
         scene.dealer_deck = newDeck;
+        // 保存 scene 到mongodb
+        scene.save();
         return callback(null, scene);
     } catch(err){
        return callback('dealer deck could not be reseted');
@@ -154,7 +156,7 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	} else{
         //初始化游戏场景
 		initScene(roomId, dealer, function(err, newScene){
-            newScene.save();
+            
             try {
                 if (!!err) {
                     return callback({code: Code.SCENE.CREATE_ERR, msg: 'createGame: ' + err});
@@ -164,11 +166,16 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
             } catch(e){
                 return callback({code: Code.FAIL, msg: 'createGame:  memdb error'});
             }
-            dataSyncService.syncSceneToRemote({sceneId: scene._id.toString(), roomId: roomId}, function(err, result){
-                if(!!err){
-                    return callback(err);
+            newScene.save((err) => {
+                if(err){
+                    return callback({code: Code.FAIL, msg: 'createGame:  ' + err});
                 }
-                return callback(null, newScene);
+                dataSyncService.syncSceneToRemote({sceneId: scene._id.toString(), roomId: roomId}, function(err, result){
+                    if(!!err){
+                        return callback(err);
+                    }
+                    return callback(null, newScene);
+                });
             });
 		});
 	}
@@ -645,7 +652,7 @@ SceneService.prototype.endGame = function(roomId, callback) {
             console.log('-----sync scene -----------');
 
             // 保存 scene 到mongodb
-            scene.save(scene._id.toString());
+            scene.save();
 
             var nScene = {
                 sceneId:        scene._id.toString(),
