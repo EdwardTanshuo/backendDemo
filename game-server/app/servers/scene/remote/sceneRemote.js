@@ -53,6 +53,7 @@ exp.playerEnter = function(roomId, role, serverId, callback){
                 tempScene.dealer_platfrom = scene.dealer_platfrom;
                 tempScene.dealer_value = scene.dealer_value;
                 tempScene.status = scene.status;
+                tempScene.dealer = scene.dealer;
                 // todo: 玩家加入游戏返回内容，待确定，直接返回scene不合理
                 return callback(null, tempScene);
             }
@@ -63,10 +64,10 @@ exp.playerEnter = function(roomId, role, serverId, callback){
     }
 }
 
-exp.playerLeave = function(roomId, role, callback){
+exp.playerLeave = function(roomId, role, serverId, callback){
     console.log('----' + role.name + 'leave game' + '---------');
     try{
-        sceneService.removePlayer(roomId, role, function(err, result){
+        sceneService.removePlayer(roomId, role, serverId, function(err, result){
             return callback(err, result);
         });
     } catch(err){
@@ -109,4 +110,9 @@ exp.sendDanmu = function(roomId, msg, callback) {
         }
         return callback();
     });
-};
+}
+
+exp.getNum = function(roomId, callback) {
+    var num = sceneService.getNumberOfPlayers(roomId);
+    return callback({viewerCount: num});
+}

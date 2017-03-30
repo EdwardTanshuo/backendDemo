@@ -180,42 +180,6 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	}
 }
 
-//玩家加入游戏
-SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
-    try{
-        var scene = sceneCollection.findOne({'room': roomId});
-        if(!scene){
-            return callback({code: Code.SCENE.NO_SCENE, msg: 'addPlayer: no scene' });
-        }
-
-        // 推送玩家加入游戏消息 (todo:是否有必要推送给所有玩家)
-        var channel = channelService.getChannel(roomId, false);
-        if(!channel) {
-            return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
-        }
-        channel.pushMessage('PlayerEnterEvent', role);
-
-        //TODO: 游戏人数不够的话
-
-        //如果玩家已加入游戏， 返回当前游戏状态
-        if(scene.players[role.token] != null){
-            return callback(null, scene);
-        }
-        //否则创建新的玩家状态
-        role.sid = serverId;
-        scene.players[role.token] = role;
-        scene.player_platfroms[role.token] = [];
-        scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
-        scene.player_bets[role.token] = 0;
-        sceneCollection.update(scene);
-
-        // 并把玩家加入channel
-        channel.add(role.token, serverId);
-        return callback(null, scene);
-    } catch(err){
-        return callback({code: Code.FAIL, msg: 'addPlayer:  error ' + err });
-    }
-}
 
 //主播通知开始下注，并开始下注倒计时，
 SceneService.prototype.startBet = function(roomId, callback){
@@ -682,11 +646,49 @@ SceneService.prototype.getNumberOfPlayers = function(room_id){
 	if(!scene){
 		return 0;
 	}
-	return scene.players.length();
+
+	return Object.keys(scene.players).length;
+}
+
+//玩家加入游戏
+SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
+    try{
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene){
+            return callback({code: Code.SCENE.NO_SCENE, msg: 'addPlayer: no scene' });
+        }
+
+        // 推送玩家加入游戏消息 (todo:是否有必要推送给所有玩家)
+        var channel = channelService.getChannel(roomId, false);
+        if(!channel) {
+            return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
+        }
+        channel.pushMessage('PlayerEnterEvent', role);
+
+        //TODO: 游戏人数不够的话
+
+        //如果玩家已加入游戏， 返回当前游戏状态
+        if(scene.players[role.token] != null){
+            return callback(null, scene);
+        }
+        //否则创建新的玩家状态
+        role.sid = serverId;
+        scene.players[role.token] = role;
+        scene.player_platfroms[role.token] = [];
+        scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
+        scene.player_bets[role.token] = 0;
+        sceneCollection.update(scene);
+
+        // 并把玩家加入channel
+        channel.add(role.token, serverId);
+        return callback(null, scene);
+    } catch(err){
+        return callback({code: Code.FAIL, msg: 'addPlayer:  error ' + err });
+    }
 }
 
 //玩家离开游戏
-SceneService.prototype.removePlayer = function(roomId, role, callback){
+SceneService.prototype.removePlayer = function(roomId, role, serverId, callback){
 	try{
         //更新scene
 		var scene = sceneCollection.findOne({'room': roomId});
@@ -698,16 +700,16 @@ SceneService.prototype.removePlayer = function(roomId, role, callback){
 		}
 		
 		//var player = scene.players[role.token];
-		scene.players[role.token] = undefined;
+		delete scene.players[role.token];
 
 		//var player_platfrom = scene.player_platfroms[role.token];
-		scene.player_platfroms[role.token] = undefined;
+		delete scene.player_platfroms[role.token];
 
 		//var player_value = scene.player_values[role.token];
-		scene.player_values[role.token] = undefined;
+		delete scene.player_values[role.token];
 
 		//var player_bet = scene.player_bets[role.token];
-		scene.player_bets[role.token] = undefined;
+		delete scene.player_bets[role.token]; 
 
 		sceneCollection.update(scene);
 
@@ -717,7 +719,7 @@ SceneService.prototype.removePlayer = function(roomId, role, callback){
         }
 
         //从channel中去除 player 
-        channel.leave(currentRole.token, serverId);
+        channel.leave(role.token, serverId);
 
         //并推送PlayerLeaveEvent消息
         channel.pushMessage({route: 'PlayerLeaveEvent', role: role});

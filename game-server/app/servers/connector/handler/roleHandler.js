@@ -97,6 +97,7 @@ Handler.prototype.bet = function(msg, session, next) {
 Handler.prototype.leave = function(msg, session, next) {
     var currentRole = session.get('currentRole'),
         roomId = session.get('room'),
+        serverId = this.app.get('serverId'),
         token = session.get('token');
 
     try{
@@ -104,7 +105,7 @@ Handler.prototype.leave = function(msg, session, next) {
         var find_result = roleDeckCollection.findOne({'token': token});
         roleDeckCollection.remove(find_result);
         //清除scene缓存
-        app.rpc.scene.sceneRemote.playerLeave(session, roomId, currentRole, function(err, result){
+        app.rpc.scene.sceneRemote.playerLeave(session, roomId, currentRole, serverId, function(err, result){
             if(err){
                 return next(new Error(err.msg), { code: err.code, error: err.msg });
             }
@@ -168,7 +169,7 @@ Handler.prototype.draw = function(msg, session, next) {
 }
 
 /**
- * 玩家退出游戏接口 connector.roleHandler.sendDanmu
+ * 玩家发送弹幕接口 connector.roleHandler.sendDanmu
  */
 Handler.prototype.sendDanmu = function(msg, session, next) {
     var currentRole = session.get('currentRole'),
@@ -181,5 +182,18 @@ Handler.prototype.sendDanmu = function(msg, session, next) {
                 return next(new Error(err.msg), { code: err.code, error: err.msg });
             }
             return next(null, { code: Code.OK });
+    });
+}
+
+/**
+ * 玩家获取观众数量接口 connector.roleHandler.getViewerCount
+ */
+Handler.prototype.getViewerCount = function(msg, session, next) {
+    var currentRole = session.get('currentRole'),
+        roomId = session.get('room'),
+        token = session.get('token');
+
+    app.rpc.scene.sceneRemote.getNum(session, roomId, function(result){
+            return next(null, { code: Code.OK, result: result });
     });
 }

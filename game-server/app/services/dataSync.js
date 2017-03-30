@@ -60,7 +60,7 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
                     return callback({code: Code.PLAYER.NO_PLAYER, msg: 'syncRoleFromRemote: user not exist' });
                 }
             } catch(error){
-                return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: '+err });
+                return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: ' + 'result can not be parsed' });
             }
         }
      });

@@ -403,6 +403,23 @@ Event:  BetStartEvent
         type字段：Bet-表示用户下注，接口放扣除用户魔法石，Reward-表示奖励，接口方增加用户魔法石,Tie-表示平局退还下注金额
 ```
 
+## 1.玩家获取当前观众人数 
+
+```
+route:  connector.roleHandler.getViewerCount
+
+参数: 无
+
+成功返回值:   {   
+                code: 200, 
+                result: {
+                            viewerCount: 20 //观众数
+                        } 
+            }
+
+失败返回值: 无
+
+```
 
 
 
