@@ -42,12 +42,12 @@ function pushMessageToPlayers(roomId, msg, route, callback){
     if (!channel) {
         return callback('no channel');
     }
-    var group = Object.keys(scene.player_bets).map((uid) => {
-        return { uid: uid, sid: channel.getMember(uid)['sid'], bet: scene.player_bets[uid] };
-    }).filter((obj) => {
-        return obj.bet > 0;
+    var group = [];
+    Object.keys(scene.player_bets).filter((key) => {
+        scene.player_bets[key] > 0;
+    }).map((uid) => {
+        group.push({ uid: uid, sid: channel.getMember(uid)['sid'] });
     });
-    
     
     // add broadcaster
     var sid = channel.getMember(roomId)['sid'];
@@ -70,7 +70,9 @@ function getDateTime(){
 function initScene(roomId, dealer, callback){
     var self = this;
 
-	//初始化游戏场景
+    console.log('-----init Scene:' +  roomId + '-----------');
+	
+    //初始化游戏场景
 	var newScene = new Scene();
 	newScene.room = roomId;
 	newScene.status = 'init';
@@ -113,7 +115,7 @@ function initScene(roomId, dealer, callback){
 
 //重置游戏信息
 function resetScene(scene, callback){
-    console.log('-----reset Scene1 -----------');
+    console.log('-----reset Scene:' +  roomId + '-----------');
     //回合加一
     scene.turns = scene.turns + 1;
     scene.status = 'init';
@@ -216,7 +218,7 @@ SceneService.prototype.startBet = function(roomId, callback){
                     self.cancelGame(roomId, function(err, result){
 
                     });
-                    return console.log('################ room: ' + roomId + ', will cancel game');
+                    console.log('################ room: ' + roomId + ', will cancel game');
                 }, sceneConfig.durationBet, roomId);
                 return callback(null, scene);
             }
@@ -581,7 +583,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 return callback('dealerFinish: memdb crash');
             }
             //TODO: don't push to everyone
-            pushMessages(roomId, {scene: newScene, rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent', function(err){
+            pushMessageToPlayers(roomId, {scene: newScene, rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent', function(err){
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
                 }

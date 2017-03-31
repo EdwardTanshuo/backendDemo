@@ -63,11 +63,11 @@ var onBroadcasterLeave = function (app, session) {
         broadcaster= session.get('currentBroadcaster'),
         serverId= app.get('serverId');
 	app.rpc.scene.sceneRemote.dealerLeave(session, roomId, broadcaster, serverId, function(err){
-		if(!err){
+		if(!!err){
 			console.error('Broadcaster leave error! %j', err);
             //next(new Error(err), {code: err.code, error: err.msg});
 		} else{
-            //next(null, {code: Code.OK});
+            console.log('broadcaster: ' + roomId + ' leave!!');
         }
 	});
 };
