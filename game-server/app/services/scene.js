@@ -94,6 +94,9 @@ function initScene(roomId, dealer, callback){
     newScene.durationPlayerTurn = sceneConfig.durationPlayerTurn;
     newScene.durationDealerTurn = sceneConfig.durationDealerTurn;
     
+    //初始化排行
+    newScene.rank = [];
+
 	//创建主播卡组
     try{
         var deckId = 'default';
@@ -485,89 +488,100 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         console.log('=======dealerFinish=begin==================')
 
-        for (var k in player_bets) {
-            var bet = player_bets[k];
-            var rank = bet;
-            var dealerValue = scene.dealer_value;
-            var playValue = scene.player_values[k];
+        var dealerValue = scene.dealer_value;
+        var globalRank = scene.rank;
+
+        var group = Object.keys(scene.player_bets).map((uid) => {
+            var netValue = bet;
+
+            var bet = player_bets[uid];
+            var playValue = scene.player_values[uid];
+            var player = scene.players[uid];
             // 计算玩家输赢
             var bunko = game.determinePlayerWin(dealerValue, playValue);
 
             // 如果玩家的 抽了4张以上直接胜利
-            if(scene.player_platfroms[k].length > 4){
+            if(scene.player_platfroms[uid].length > 4 && !playValue.busted){
                 bunko = 'win'
             }
-
-            var player = scene.players[k];
-
             // 如果玩家是赢了， 就生成Reward类型Transaction。
             if(bunko == 'win'){
-                rank = bet * sceneConfig.ratio;
-                payment += rank;
+                netValue = bet * sceneConfig.ratio;
+                payment += netValue;
                 var newTransaction = new Transaction();
-                newTransaction.quantity = rank;
+                newTransaction.quantity = netValue;
                 newTransaction.type = 'Reward';
                 newTransaction.roomId = roomId;
                 newTransaction.sceneId = scene._id.toString();
                 newTransaction.userId = player.token;
                 newTransaction.save();
             }else if(bunko == 'tie'){
-                rank = bet;
-                payment += rank;
+                netValue = bet;
+                payment += netValue;
                 var newTransaction = new Transaction();
-                newTransaction.quantity = rank;
+                newTransaction.quantity = netValue;
                 newTransaction.type = 'Tie';
                 newTransaction.roomId = roomId;
                 newTransaction.sceneId = scene._id.toString();
                 newTransaction.userId = player.token;
                 newTransaction.save();
             }else if(bunko == 'lose'){
-                rank = -bet;
+                netValue = 0;
             }
-
-            // 玩家的结果
+             // 玩家的结果
             var playResult = {
                 bunko: bunko,
-                quantity: rank,
+                quantity: netValue,
                 play_value: playValue,
                 dealer_value: dealerValue,
-                player: player
+                token: player.token
             };
 
-            console.log(playResult);
-
-            // 推送每个玩家自己的胜负情况
-            pushMessageToOne(roomId, player.token, playResult, 'GameResultEvent');
-
-            // 添加到排行榜中
+            //将结果存入排行榜
             rankingList.push(playResult);
-        }
+            console.log(playResult);
+        });
+        
+        //整理排行版
+        rankingList.sort(function(resultA, resultB) {
+            return resultA.quantity - resultB.quantity;
+        });
 
-        for(var j=1,jl=rankingList.length; j < jl; j++){
-            var temp = rankingList[j];
-
-             var val  = temp["quantity"],
-                 i    = j-1;
-            while(i >=0 && rankingList[i]["quantity"]>val){
-                rankingList[i+1] = rankingList[i];
-                i = i-1;
+        //同步累计排行版
+        rankingList.map((current_result) => {
+            //查找全局排名中的成绩
+            var index = globalRank.findIndex((globol_result) => {
+                return globol_result.token == current_result.token;
+            });
+             
+            if(index < 0){
+                //如果没有查到 增加一个记录
+                globalRank.push(current_result);
+            } else{
+                //如果查到了修改之
+                globalRank[index].quantity = globalRank[index].quantity + current_result.quantity;
             }
-            rankingList[i+1] = temp;
-        }
+        });
+
+        //整理排行版
+        globalRank.sort(function(resultA, resultB) {
+            return resultA.quantity - resultB.quantity;
+        });
+        
+        scene.rank = globalRank;
 
         //重置游戏 更新游戏状态
         resetScene(scene, function(err, newScene){
             if(err){
                 return callback(err);
             }
-
             try{
                 sceneCollection.update(newScene);
             } catch(e){
                 return callback('dealerFinish: memdb crash');
             }
-
-            pushMessageToPlayers(roomId, {scene: newScene, rankingList: rankingList.slice(0,3) }, 'DealerFinishEvent', function(err){
+            //TODO: don't push to everyone
+            pushMessages(roomId, {scene: newScene, rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent', function(err){
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
                 }

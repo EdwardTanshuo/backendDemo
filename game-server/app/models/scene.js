@@ -13,6 +13,7 @@ var SceneSchema = mongoose.Schema({
     dealer_value: {type: Object, required: false},
     dealer_bets: {type: Number, required: false},
     dealer_deck: {type: Array, required: false},
+    rank: {type: Array, required: false},
     durationBet: {type: Number, required: false},
     durationPlayerTurn: {type: Number, required: false},
     durationDealerTurn: {type: Number, required: false}
