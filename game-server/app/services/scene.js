@@ -44,7 +44,7 @@ function pushMessageToPlayers(roomId, msg, route, callback){
     }
     var group = [];
     Object.keys(scene.player_bets).filter((key) => {
-        scene.player_bets[key] > 0;
+        return scene.player_bets[key] > 0;
     }).map((uid) => {
         group.push({ uid: uid, sid: channel.getMember(uid)['sid'] });
     });
@@ -52,10 +52,9 @@ function pushMessageToPlayers(roomId, msg, route, callback){
     // add broadcaster
     var sid = channel.getMember(roomId)['sid'];
     group.push({uid: roomId, sid: sid});
-    
+
     if(group.length > 0){
         return channelService.pushMessageByUids(route, msg, group, callback);
-
     }
 
     return callback('pushMessage: no target');
@@ -115,7 +114,7 @@ function initScene(roomId, dealer, callback){
 
 //重置游戏信息
 function resetScene(scene, callback){
-    console.log('-----reset Scene:' +  roomId + '-----------');
+    console.log('-----reset Scene:' + '-----------');
     //回合加一
     scene.turns = scene.turns + 1;
     scene.status = 'init';
@@ -267,10 +266,11 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         scene.player_bets[role.token] = bet;
         scene.dealer_bets += bet;
         scene.dealer.wealth -= bet;
-
+        
 
         // 下足成功后 为玩家发两张卡牌
         game.dealDefaultCard(deck, function(err, newDeck, card1, card2){
+
             scene.player_platfroms[role.token].push(card1);
             scene.player_platfroms[role.token].push(card2);
             var newValue = game.calculateHandValue(scene.player_platfroms[role.token]);
@@ -305,7 +305,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
 
 //主播开始游戏,并抽一张卡, 并开始玩家抽卡倒计时，倒计时结束调用 玩家抽卡结束
 SceneService.prototype.startGame = function(roomId, callback){
-    try {
+    
     	var self = this;
         var scene = sceneCollection.findOne({'room': roomId});
         var betPlayers = Object.keys(scene.player_bets);
@@ -357,9 +357,7 @@ SceneService.prototype.startGame = function(roomId, callback){
                 }
             });
         });
-    } catch(err){
-        callback(err, null);
-    }
+    
 }
 
 //玩家抽卡
@@ -476,7 +474,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
 
 //主播结束回合，生成下注排行榜，重置游戏，开始下一回合
 SceneService.prototype.dealerFinish = function(roomId, callback){
-    try{
+    
         var scene = sceneCollection.findOne({'room': roomId});
         if(!scene){
             return callback({code: Code.SCENE.NO_SCENE, msg: 'dealerFinish: no scene' });
@@ -546,9 +544,10 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         
         //整理排行版
         rankingList.sort(function(resultA, resultB) {
-            return resultA.quantity - resultB.quantity;
+            return resultB.quantity - resultA.quantity;
         });
 
+        console.log('=======dealerFinish=global==================')
         //同步累计排行版
         rankingList.map((current_result) => {
             //查找全局排名中的成绩
@@ -567,11 +566,12 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         //整理排行版
         globalRank.sort(function(resultA, resultB) {
-            return resultA.quantity - resultB.quantity;
+            return resultB.quantity - resultA.quantity;
         });
         
         scene.rank = globalRank;
 
+        console.log('=======dealerFinish=reset==================')
         //重置游戏 更新游戏状态
         resetScene(scene, function(err, newScene){
             if(err){
@@ -583,16 +583,16 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 return callback('dealerFinish: memdb crash');
             }
             //TODO: don't push to everyone
+            console.log('=======dealerFinish=send msg==================')
             pushMessageToPlayers(roomId, {scene: newScene, rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent', function(err){
                 if(!!err){
+                    console.error(err.msg);
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
                 }
-                return callback(null, newScene, rankingList);
+                return callback(null, newScene, rankingList, globalRank);
             });
         });
-    } catch(err){
-        return callback(err);
-    }
+     
 }
 
 //主播取消游戏

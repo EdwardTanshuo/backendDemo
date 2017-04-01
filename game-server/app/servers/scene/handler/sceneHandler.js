@@ -127,11 +127,11 @@ Handler.prototype.dealerDrawCard = function(msg, session, next) {
  * 功能说明：
  */
 Handler.prototype.dealerFinish = function(msg, session, next) {
-    sceneService.dealerFinish(session.get('room'), function(err, scene, rankingList){
+    sceneService.dealerFinish(session.get('room'), function(err, scene, rankingList, globalRank){
         if(err){
             return next(new Error(err.msg), {code: err.code, error: err.msg});
         }
-        next(null, {code: Code.OK, result: { scene: scene, rankingList: rankingList}});
+        next(null, {code: Code.OK, result: { scene: scene, rankingList: rankingList, globalRank: globalRank}});
     });
 };
 
