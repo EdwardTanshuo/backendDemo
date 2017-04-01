@@ -584,7 +584,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             }
             //TODO: don't push to everyone
             console.log('=======dealerFinish=send msg==================')
-            pushMessageToPlayers(roomId, {scene: newScene, rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent', function(err){
+            pushMessages(roomId, {rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent', function(err){
                 if(!!err){
                     console.error(err.msg);
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
