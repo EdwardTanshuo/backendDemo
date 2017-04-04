@@ -449,23 +449,21 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
                 return callback(err);
             }
             //更新卡组
-            try{
-                scene.dealer_platfrom.push(card);
-                var newValue = game.calculateHandValue(scene.dealer_platfrom);
-                scene.dealer_value = newValue;
-                scene.dealer_deck = newDeck;
-                sceneCollection.update(scene);
+            
+            scene.dealer_platfrom.push(card);
+            var newValue = game.calculateHandValue(scene.dealer_platfrom);
+            scene.dealer_value = newValue;
+            scene.dealer_deck = newDeck;
+            sceneCollection.update(scene);
 
-                //推送DealerGetCardEvent 广播主播抽到的卡
-                pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
-                    if(!!err){
-                        return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerGetCardEvent:  ' + err });
-                    }
-                    return callback(null, newDeck, card, newValue);
-                });
-            } catch(error){
-                return callback({code: Code.FAIL, msg: 'dealNextCard: can not update dealer deck error ' + error });
-            }
+            //推送DealerGetCardEvent 广播主播抽到的卡
+            pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
+                if(!!err){
+                    return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerGetCardEvent:  ' + err });
+                }
+                return callback(null, newDeck, card, newValue);
+            });
+            
         });
     } catch(err){
         return callback({code: Code.FAIL, msg: 'dealNextCard: dealerDrawCard: memdb crash ' + err });
@@ -763,6 +761,20 @@ SceneService.prototype.sendDanmu = function(roomId, params, callback){
         });
     } catch(err){
         callback({code: Code.FAIL, msg: 'DanmuEvent:  ' + err });
+    }
+}
+
+// 广播送礼 GiftEvent
+SceneService.prototype.sendGift = function(roomId, gift, callback){
+    try{
+        pushMessages(roomId, gift, 'GiftEvent', function(err){
+            if(!!err){
+                return callback({code: Code.COMMON.MSG_FAIL, msg: 'GiftEvent:  ' + err });
+            }
+            return callback();
+        });
+    } catch(err){
+        callback({code: Code.FAIL, msg: 'GiftEvent:  ' + err });
     }
 }
 

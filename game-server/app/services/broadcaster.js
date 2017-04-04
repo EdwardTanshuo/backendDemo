@@ -52,6 +52,4 @@ BroadcasterService.prototype.initFromRemote = function(data, callback) {
 	
 };
 
-
-
 module.exports = new BroadcasterService();

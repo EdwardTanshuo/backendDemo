@@ -107,7 +107,16 @@ exp.getNumberOfPlayers = function(args, callback){
 
 
 exp.sendDanmu = function(roomId, msg, callback) {
-    sceneService.sendDanmu(roomId, msg, function(err, scene){
+    sceneService.sendDanmu(roomId, msg, function(err){
+        if(err){
+            return callback(err);
+        }
+        return callback();
+    });
+}
+
+exp.sendGift = function(roomId, gift, callback) {
+    sceneService.sendGift(roomId, gift, function(err){
         if(err){
             return callback(err);
         }

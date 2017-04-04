@@ -1,6 +1,7 @@
 var logger = require('pomelo-logger').getLogger(__filename);
 var async = require('async');
 var utils = require('../../../util/utils');
+var giftService = require('../../../services/gift');
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -182,6 +183,30 @@ Handler.prototype.sendDanmu = function(msg, session, next) {
                 return next(new Error(err.msg), { code: err.code, error: err.msg });
             }
             return next(null, { code: Code.OK });
+    });
+}
+
+/**
+ * 玩家送礼接口 connector.roleHandler.sendGift
+ */
+Handler.prototype.sendGift = function(gift, session, next) {
+    var currentRole = session.get('currentRole'),
+        roomId = session.get('room'),
+        token = session.get('token');
+
+    gift.broadcaster_id = roomId;
+
+    giftService.sendGift(token, gift, (err, body)=>{
+        if(err){
+            return next(new Error(err), { code: Code.FAIL, error: err });
+        } else{
+            app.rpc.scene.sceneRemote.sendGift(session, roomId, gift, function(err){
+                if(!!err){
+                    return next(new Error(err.msg), { code: err.code, error: err.msg });
+                }
+                return next(null, { code: Code.OK });
+            });
+        }
     });
 }
 
