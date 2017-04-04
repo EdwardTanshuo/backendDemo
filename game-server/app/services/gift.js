@@ -22,7 +22,7 @@ GiftService.prototype.sendGift = function(token, gift, callback){
     };
     request(options,  function(err, response, body){
     	return callback(err, body);
-    };
+    });
 };
 
 GiftService.prototype.listGift = function(token, callback){
@@ -42,5 +42,5 @@ GiftService.prototype.listGift = function(token, callback){
     };
     request(options,  function(err, response, body){
         return callback({code: Code.Fail, msg: err }, body);
-    };
+    });
 };
