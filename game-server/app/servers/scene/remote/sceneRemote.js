@@ -104,12 +104,13 @@ exp.playerDraw = function(roomId, token, deck, callback){
 	});
 }
 
+//获取直播间人数
 exp.getNumberOfPlayers = function(args, callback){
 	var num = sceneService.getNumberOfPlayers(args.room_id);
 	utils.invokeCallback(callback, null, num);
 }
 
-
+//送礼成功后广播
 exp.sendDanmu = function(roomId, msg, callback) {
     sceneService.sendDanmu(roomId, msg, function(err){
         if(err){

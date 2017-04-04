@@ -20,7 +20,8 @@ module.exports = {
             'scenePost': "/api/game/scene",
             'scenePostAgain': "/api/game/endScene",
             'transactionPost': "/api/transactions",
-            'sendGift': "/api/giveGift"
+            'sendGift': "/api/giveGift",
+            'listGift': "/api/gifts"
 	    }
     }
 }

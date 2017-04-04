@@ -6,7 +6,7 @@ function GiftService() {
 
 GiftService.prototype.sendGift = function(token, gift, callback){
 	if(token == null){
-        return callback({code: Code.COMMON.LESS_PARAM, msg: 'syncRoleFromRemote: missing token' });
+        return callback('syncRoleFromRemote: missing token');
     }
     var headers = {
        'content-type': 'application/json',
@@ -22,5 +22,25 @@ GiftService.prototype.sendGift = function(token, gift, callback){
     };
     request(options,  function(err, response, body){
     	return callback(err, body);
+    };
+};
+
+GiftService.prototype.listGift = function(token, callback){
+    if(token == null){
+        return callback('syncRoleFromRemote: missing token');
+    }
+    var headers = {
+       'content-type': 'application/json',
+       'cache-control': 'no-cache'
+    };
+    headers[config.remote.remoteToken.name] = token;
+    var options = {
+        method: 'GET',
+        url: config.remote.url + config.remote.api.listGift,
+        headers: headers,
+        json: true
+    };
+    request(options,  function(err, response, body){
+        return callback({code: Code.Fail, msg: err }, body);
     };
 };

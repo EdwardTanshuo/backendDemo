@@ -211,6 +211,23 @@ Handler.prototype.sendGift = function(gift, session, next) {
 }
 
 /**
+ * 玩家获取礼品列表 connector.roleHandler.listGift
+ */
+Handler.prototype.listGift = function(msg, session, next) {
+    var currentRole = session.get('currentRole'),
+        roomId = session.get('room'),
+        token = session.get('token');
+
+    giftService.listGift(token, (err, body)=>{
+        if(!!err){
+            return next(new Error(err), { code: Code.FAIL, error: err });
+        } else{
+            return next(null, { code: Code.OK, result: body });
+        }
+    });
+}
+
+/**
  * 玩家获取观众数量接口 connector.roleHandler.getViewerCount
  */
 Handler.prototype.getViewerCount = function(msg, session, next) {
@@ -219,6 +236,6 @@ Handler.prototype.getViewerCount = function(msg, session, next) {
         token = session.get('token');
 
     app.rpc.scene.sceneRemote.getNum(session, roomId, function(result){
-            return next(null, { code: Code.OK, result: result });
+        return next(null, { code: Code.OK, result: result });
     });
 }
