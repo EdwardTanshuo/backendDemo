@@ -67,6 +67,7 @@ exp.playerEnter = function(roomId, role, serverId, callback){
     }
 }
 
+//玩家退出游戏， 清理除了排行版外所有相关数据
 exp.playerLeave = function(roomId, role, serverId, callback){
     console.log('----' + role.name + 'leave game' + '---------');
     try{
@@ -78,6 +79,7 @@ exp.playerLeave = function(roomId, role, serverId, callback){
     }
 }
 
+//玩家下注 生成transaction， 推送PlayerBetEvent给所有人，玩家下注后，会被加入游戏的广播组，而被作为游戏玩家
 exp.playerBet = function(roomId, role, bet, deck, callback){
     if(roomId == null || role == null || bet == null){
         return callback({ code: Code.COMMON.LESS_PARAM, result: 'playerBet: missing params' });
@@ -87,10 +89,12 @@ exp.playerBet = function(roomId, role, bet, deck, callback){
     });
 }
 
+//玩家结束自己回合， 当前无用
 exp.playerFinish = function(args, callback){
 	utils.invokeCallback(callback, null, {});
 }
 
+//玩家抽卡， 返回新的卡组以及卡片object
 exp.playerDraw = function(roomId, token, deck, callback){
     if(roomId == null || deck == null || token == null){
         return callback({ code: Code.COMMON.LESS_PARAM, result: 'playerDraw: missing params' });

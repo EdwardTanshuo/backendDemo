@@ -88,6 +88,17 @@ Event:  DanmuEvent
 
 ```
 
+# 礼物推送事件说明
+
+## 1. 送出礼物
+
+```
+Event:  GiftEvent
+
+推送数据: { "gift_id": xxxxx, "user_name": xxxxx }
+
+```
+
 # 主播端接口说明
 
 ## 1. 主播登陆 (包括主播断开游戏重新连接)
@@ -387,23 +398,23 @@ Event:  BetStartEvent
  
 ```
 
-## 用户下注或者 获得奖励时生成交易记录接口
 
-```  
-    method: 'POST',
-    url: host + '/api/transactions/',
-    headers: headers["X_MCV_TOKEN"] = "d858bd235c7faf19f5da18a1118788e2";
-    body: { userId: xxxxxxx(用户的token),
-            quantity: 50,
-            type: 'Bet',  
-            roomId: xxxxxxx,
-            createdAt: createdAt }
-  
-    说明： 接口方需要生成一条 transactions记录，并变更玩家魔法石余额
-        type字段：Bet-表示用户下注，接口放扣除用户魔法石，Reward-表示奖励，接口方增加用户魔法石,Tie-表示平局退还下注金额
+## 玩家送礼，调用PHP送礼接口， 并广播给所有的用户
+
 ```
+    route:  connector.roleHandler.sendGift
 
-## 1.玩家获取当前观众人数 
+    参数: {
+            "gift_id": xxxxx,
+            "user_name": xxxxx,
+         }
+
+    成功返回值:   { code: 200 }
+
+    失败返回值: { code: errorCode, result: errMsg }
+
+
+## 玩家获取当前观众人数 
 
 ```
 route:  connector.roleHandler.getViewerCount
