@@ -81,12 +81,9 @@ app.configure('production|development', 'connector', function(){
     {
       connector : pomelo.connectors.hybridconnector,
       useProtobuf : false,
+      useDict: false,
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
-      //transports : ['websocket'],
-      heartbeats : true,
-      closeTimeout : 60000,
-      heartbeatTimeout : 600,
-      heartbeatInterval : 25
+      heartbeat: 3,
     });
   initMongo();
   initRoleDeckCache();
@@ -100,6 +97,8 @@ app.configure('production|development', 'broadcaster', function(){
       useProtobuf : true,
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
       //transports : ['websocket'],
+      heartbeat: 3,
+      useDict: true,
       heartbeats : true,
       closeTimeout : 60000,
       heartbeatTimeout : 60,
