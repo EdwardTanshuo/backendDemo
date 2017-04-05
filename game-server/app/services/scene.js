@@ -606,6 +606,10 @@ SceneService.prototype.cancelGame = function(roomId, callback){
 
         //更新游戏状态
         scene.status = 'init';
+        //重置玩家列表
+        Object.keys(scene.players).map((token) => {
+             scene.player_bets[token] = 0;
+        });
         sceneCollection.update(scene);
 
         pushMessages(roomId, scene, 'CancelGameEvent', function(err){
