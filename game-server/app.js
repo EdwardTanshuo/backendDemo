@@ -80,8 +80,8 @@ app.configure('production|development', 'connector', function(){
   app.set('connectorConfig',
     {
       connector : pomelo.connectors.hybridconnector,
-      useProtobuf : false,
-      useDict: false,
+      useProtobuf : true,
+      useDict: true,
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
       heartbeat: 3,
     });
