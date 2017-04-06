@@ -21,7 +21,10 @@ GiftService.prototype.sendGift = function(token, gift, callback){
         body: gift
     };
     request(options,  function(err, response, body){
-    	return callback(err, body);
+        if(!!err){
+            return callback({code: Code.Fail, msg: err });
+        }
+        return callback(null, body);
     });
 };
 
@@ -41,6 +44,11 @@ GiftService.prototype.listGift = function(token, callback){
         json: true
     };
     request(options,  function(err, response, body){
-        return callback({code: Code.Fail, msg: err }, body);
+        if(!!err){
+            return callback({code: Code.Fail, msg: err });
+        }
+        return callback(null, body);
     });
 };
+
+module.exports = new GiftService();
