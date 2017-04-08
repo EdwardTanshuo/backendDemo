@@ -338,7 +338,7 @@ SceneService.prototype.startGame = function(roomId, callback){
             catch(e){
                 return callback({code: Code.COMMON.GET_CARD_ERR, msg: 'startGame: get_card_error' });
             }
-            pushMessages(roomId, scene, 'GameStartEvent', function(err){
+            pushMessages(roomId, {dealer_platfrom: scene.dealer_platfrom, dealer_value: scene.dealer_value, dealer: scene.dealer, status: scene.status}, 'GameStartEvent', function(err){
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'GameStartEvent:  ' + err });
                 }
