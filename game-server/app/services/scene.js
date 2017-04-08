@@ -130,6 +130,7 @@ function resetScene(scene, callback){
     scene.dealer_platfrom = [];
     scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
     scene.dealer_deck = [];
+    scene.player_bets = {};
     
     //创建主播卡组
     try{
@@ -337,7 +338,7 @@ SceneService.prototype.startGame = function(roomId, callback){
             catch(e){
                 return callback({code: Code.COMMON.GET_CARD_ERR, msg: 'startGame: get_card_error' });
             }
-            pushMessageToPlayers(roomId, scene, 'GameStartEvent', function(err){
+            pushMessages(roomId, scene, 'GameStartEvent', function(err){
                 if(!!err){
                     return callback({code: Code.COMMON.MSG_FAIL, msg: 'GameStartEvent:  ' + err });
                 }
