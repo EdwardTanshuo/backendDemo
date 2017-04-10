@@ -1,22 +1,22 @@
 var mongoose = require('mongoose');
 
 var SceneSchema = mongoose.Schema({
-    room: {type: String, required: true},
-    turns: {type: Number, required: true, default: 0},
-    status: {type: String, required: true, default: 'init'},
-    players: {type: Object, required: false},
-    player_platfroms: {type: Object, required: false},
-    player_values: {type: Object, required: false},
-    player_bets: {type: Object, required: false},
-    dealer: {type: Object, required: false},
-    dealer_platfrom: {type: Array, required: false},
-    dealer_value: {type: Object, required: false},
-    dealer_bets: {type: Number, required: false},
-    dealer_deck: {type: Array, required: false},
-    rank: {type: Array, required: false},
-    durationBet: {type: Number, required: false},
-    durationPlayerTurn: {type: Number, required: false},
-    durationDealerTurn: {type: Number, required: false}
+    room: {type: String, required: true},                       //所在房间
+    turns: {type: Number, required: true, default: 0},          //回合数
+    status: {type: String, required: true, default: 'init'},    //状态
+    players: {type: Object, required: false},                   //玩家列表
+    player_platfroms: {type: Object, required: false},          //所有玩家抽卡记录
+    player_values: {type: Object, required: false},             //所有玩家当前的输赢情况
+    player_bets: {type: Object, required: false},               //所有玩家当前的下注
+    dealer: {type: Object, required: false},                    //主播信息
+    dealer_platfrom: {type: Array, required: false},            //主播抽卡记录
+    dealer_value: {type: Object, required: false},              //主播输赢
+    dealer_bets: {type: Number, required: false},               //主播下注
+    dealer_deck: {type: Array, required: false},                //主播剩余卡片
+    rank: {type: Array, required: false},                       //总排名
+    durationBet: {type: Number, required: false},               //下注倒计时
+    durationPlayerTurn: {type: Number, required: false},        //玩家抽卡倒计时
+    durationDealerTurn: {type: Number, required: false}         //主播抽卡倒计时
 });
 
 var Scene = mongoose.model('Scene', SceneSchema);
