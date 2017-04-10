@@ -40,7 +40,7 @@ Handler.prototype.bet = function(msg, session, next) {
         bet = Number(msg.bet);
 
     // 没有赌注
-    if(bet == null ){
+    if(bet == null){
         var error = 'playerBet: no bet';
         return next(new Error(error), {code: Code.PLAYER.NO_BET, error: error});
     }
