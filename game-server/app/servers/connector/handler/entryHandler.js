@@ -105,8 +105,7 @@ var roleEnter = function (app, session, callback) {
 	try{
 		var find_result = roleDeckCollection.findOne({'token': token});
 		if(find_result != null){
-			//find_result.deck = new_model.deck;
-			//roleDeckCollection.update(find_result);
+			roleDeckCollection.update(new_model);
 		} else{
 			roleDeckCollection.insert(new_model);
 		}

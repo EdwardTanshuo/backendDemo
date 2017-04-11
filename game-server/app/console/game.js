@@ -19,11 +19,11 @@ function Blackjack() {
   this.dealDefaultCard = function(deck_array, callback) {
       var self = this;
       self.deck.drawCard(deck_array, function(err1, deck, card1){
-          if(!!err1){
+          if(!!err1 || !card1){
                 return callback(err1);
           }
           self.deck.drawCard(deck, function(err2, newDeck, card2){
-            if(!!err2){
+            if(!!err2 || !card2){
                 return callback(err2);
             }
             return callback(null, newDeck, card1, card2);

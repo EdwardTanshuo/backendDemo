@@ -250,10 +250,14 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     scene.player_bets[role.token] = bet;
     scene.dealer_bets += bet;
     scene.dealer.wealth -= bet;
+    
     // 下足成功后 为玩家发两张卡牌
     game.dealDefaultCard(deck, function(err, newDeck, card1, card2){
         scene.player_platfroms[role.token].push(card1);
         scene.player_platfroms[role.token].push(card2);
+
+        console.log('$$$###' + JSON.stringify(scene.player_platfroms[role.token]) + ')))@@@@ ' + role.token);
+
         var newValue = game.calculateHandValue(scene.player_platfroms[role.token]);
         scene.player_values[role.token] = newValue;
         sceneCollection.update(scene);
@@ -642,7 +646,7 @@ SceneService.prototype.removePlayer = function(roomId, role, serverId, callback)
     if(!channel) {
         return callback('no channel', null);
     }
-    //从channel中去除 player 
+    //从channel中去除 player sc
     channel.leave(role.token, serverId);
     //并推送PlayerLeaveEvent消息
     channel.pushMessage({route: 'PlayerLeaveEvent', role: role});

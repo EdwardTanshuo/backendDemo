@@ -22,6 +22,9 @@ module.exports = function HandValueCalculator() {
     // so we'll do them later.
     for ( var i = 0; i < platform.length; i++) {      
       var monster = platform[i];
+      if(!monster){
+          continue;
+      }
       var numberOfTrans = 0;
       var numberOfHigh = 0;
       switch (monster.type) {
@@ -61,7 +64,6 @@ module.exports = function HandValueCalculator() {
     };
   };
 
-  
   // parameter dealerTotal and playerTotal are integers
   this.determinePlayerWin = function(dealerTotal, playerTotal) {
     if (playerTotal.value == this.BUSTED_VALUE && dealerTotal.value == this.BUSTED_VALUE) {
@@ -69,7 +71,7 @@ module.exports = function HandValueCalculator() {
     } else if (dealerTotal.busted == true) {
       return 'win';
     } else if (playerTotal.busted == true) {
-      return 'bust';
+      return 'lose';
     } else if (playerTotal.value > dealerTotal.value) {
       return 'win';
     } else if (playerTotal.value == dealerTotal.value) {

@@ -32,6 +32,9 @@ DeckOperation.prototype.drawCard = function(deck, callback){
         break;
       }
     }
+    if(index >= deck.length){
+      return callback({code: Code.COMMON.NO_CARD, msg: 'drawCard: index out deck length' });
+    }
     var result = deck[index];
     var new_deck = deck.splice(index, 1);
     return callback(null, deck, result);
