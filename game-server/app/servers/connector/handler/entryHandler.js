@@ -31,6 +31,7 @@ Handler.prototype.entry = function(msg, session, next) {
 	  				if(err){
 	  					return next(new Error(err), {code: Code.FAIL, error: 'PlayerEnter:' + err });
 	  				} else{
+	  					
 	  					session.bind(msg.token, function(err){
 			  				if(!err){
 			  					session.set('token', msg.token);
@@ -40,10 +41,12 @@ Handler.prototype.entry = function(msg, session, next) {
 									if(err){
 										return next(new Error(err), {code: Code.FAIL, error: 'PlayerEnter.session.bind:' + err});
 									}
+									
 									roleEnter(self_app, session, function(err, scene){
-					  					if(err){
+					  					if(!!err){
                                             return next(new Error(err.msg), { code: err.code, result: err.msg });
 						  				} else{
+						  					
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session));
 						  					return next(null, { code: Code.OK, result: scene});
 						  				}
@@ -105,7 +108,7 @@ var roleEnter = function (app, session, callback) {
 	try{
 		var find_result = roleDeckCollection.findOne({'token': token});
 		if(find_result != null){
-			roleDeckCollection.update(new_model);
+			//roleDeckCollection.update(find_result);
 		} else{
 			roleDeckCollection.insert(new_model);
 		}
