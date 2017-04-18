@@ -135,5 +135,22 @@ Handler.prototype.dealerFinish = function(msg, session, next) {
     });
 };
 
+/**
+ * 主播更新人脸坐标 scene.sceneHandler.updateCoor
+ *
+ * 接收参数： {Object} params
+ * 返回结果： 无
+ *
+ * 功能说明：
+ */
+Handler.prototype.updateCoor = function(msg, session, next) {
+    sceneService.updateCoor(session.get('room'), msg, function(err){
+        if(err){
+            return next(new Error(err.msg), {code: err.code, error: err.msg});
+        }
+        next(null, {code: Code.OK});
+    });
+};
+
 
 

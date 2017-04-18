@@ -353,6 +353,17 @@ Event:  BetStartEvent
   
 ```
 
+## 3. 更新人脸坐标
+
+```
+Event:  UpdateCoorEvent
+
+推送数据: { params object }
+
+推送对象：玩家和主播
+
+```
+
 # 调用到的php接口
 
 ## 获取主播基本信息

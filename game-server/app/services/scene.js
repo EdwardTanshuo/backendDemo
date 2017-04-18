@@ -679,4 +679,14 @@ SceneService.prototype.sendGift = function(roomId, gift, callback){
     });
 }
 
+// 人脸识别
+SceneService.prototype.updateCoor = function(roomId, params, callback){
+    pushMessageToPlayers(roomId, params, 'UpdateCoorEvent', function(err){
+        if(!!err){
+            return callback({code: Code.COMMON.MSG_FAIL, msg: 'UpdateCoorEvent:  ' + err });
+        }
+        return callback();
+    });
+}
+
 module.exports = new SceneService();
