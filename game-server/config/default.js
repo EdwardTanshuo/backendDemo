@@ -19,7 +19,7 @@ module.exports = {
 	    	"broadcasterGet": "/api/broadcasters",
             'scenePost': "/api/game/scene",
             'scenePostAgain': "/api/game/endScene",
-            'transactionPost': "/api/transactions",
+            'transactionPost': "/api/game／transactions",
             'sendGift': "/api/giveGift",
             'listGift': "/api/gifts"
 	    }
