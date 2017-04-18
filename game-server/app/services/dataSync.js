@@ -260,19 +260,9 @@ DataSyncService.prototype.syncTransactionToRemote = function(transaction, callba
         if (err) {
             callback(err, null); // error response
         } else {
-            try{
-                if(body.result){
-                    console.log('------syncTransactionToRemote success resulte');
-                    console.log(body.result);
-                    return callback(null, body.result);
-                }
-                else{
-                    return callback('syncTransactionToRemote error', null);
-                }
-            }
-            catch(err){
-                callback(err, null); // successful response
-            }
+             console.log('------syncTransactionToRemote success resulte');
+             console.log(body);
+             return callback(null, body.result);
         }
     });
 };
