@@ -238,13 +238,13 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     }
 
     // 增加一条 Transaction
-    /*var newTransaction = new Transaction();
+    var newTransaction = new Transaction();
     newTransaction.userId = role.token;
     newTransaction.quantity = bet;
     newTransaction.type = 'Bet';
     newTransaction.roomId = roomId;
     newTransaction.sceneId = scene._id.toString();
-    newTransaction.save();*/
+    transactionCollection.insert(newTransaction);
 
     scene.players[role.token] = role;
     scene.player_bets[role.token] = bet;
@@ -457,23 +457,23 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         if(bunko == 'win'){
             netValue = bet * sceneConfig.ratio;
             payment += netValue;
-            /*var newTransaction = new Transaction();
+            var newTransaction = new Transaction();
             newTransaction.quantity = netValue;
             newTransaction.type = 'Reward';
             newTransaction.roomId = roomId;
             newTransaction.sceneId = scene._id.toString();
             newTransaction.userId = player.token;
-            newTransaction.save();*/
+            transactionCollection.insert(newTransaction);
         }else if(bunko == 'tie'){
             netValue = bet;
             payment += netValue;
-            /*var newTransaction = new Transaction();
+            var newTransaction = new Transaction();
             newTransaction.quantity = netValue;
-            newTransaction.type = 'Tie';
+            newTransaction.type = 'Reward';
             newTransaction.roomId = roomId;
             newTransaction.sceneId = scene._id.toString();
             newTransaction.userId = player.token;
-            newTransaction.save();*/
+            transactionCollection.insert(newTransaction);
         }else if(bunko == 'lose'){
             netValue = 0;
         }
@@ -526,7 +526,12 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         }
         //TODO: don't push to everyone
         console.log('=======dealerFinish=send msg==================')
-        pushMessages(roomId, {rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent', function(err){
+        var transactionList = transactionCollection.find();
+        transactionList.map((aTransaction) => {
+            transactionCollection.remove(aTransaction);
+        });
+        dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
+            pushMessages(roomId, {rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
             if(!!err){
                 console.error(err.msg);
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });

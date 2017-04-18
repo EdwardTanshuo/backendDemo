@@ -28,7 +28,9 @@ function initRoleDeckCache() {
 // 交易记录缓存
 function initTransactionCache() {
     var dbmem = new loki('transaction.json');
-    global.transactionCollection = dbmem.addCollection('transactionCollection');
+    var transactionCollection = dbmem.addCollection('transactionCollection');
+    //transactionCollection.constraints.unique['token']; 
+    global.transactionCollection = transactionCollection;
 }
 
 function initMongo(){
