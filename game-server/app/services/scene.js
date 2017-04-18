@@ -1,10 +1,14 @@
 var Scene = require('../models/scene');
 var Transaction = require('../models/transaction');
+
 var game = require('../console/game');
 var utils = require('../util/utils');
+
 var channelService = app.get('channelService');
-var sceneConfig = require('../../config/scene');
 var dataSyncService = require('./dataSync');
+var transactionService = require('./transaction');
+
+var sceneConfig = require('../../config/scene');
 var async = require('async');
 
 function pushMessages(roomId, msg, route, callback){
@@ -238,13 +242,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     }
 
     // 增加一条 Transaction
-    var newTransaction = new Transaction();
-    newTransaction.userId = role.token;
-    newTransaction.quantity = bet;
-    newTransaction.type = 'Bet';
-    newTransaction.roomId = roomId;
-    newTransaction.sceneId = scene._id.toString();
-    transactionCollection.insert(newTransaction);
+    transactionService.append({ userId: role.token, quantity: bet, type: 'Bet', roomId: roomId, sceneId: scene._id.toString() });
 
     scene.players[role.token] = role;
     scene.player_bets[role.token] = bet;
@@ -456,24 +454,12 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         // 如果玩家是赢了， 就生成Reward类型Transaction。
         if(bunko == 'win'){
             netValue = bet * sceneConfig.ratio;
-            payment += netValue;
-            var newTransaction = new Transaction();
-            newTransaction.quantity = netValue;
-            newTransaction.type = 'Reward';
-            newTransaction.roomId = roomId;
-            newTransaction.sceneId = scene._id.toString();
-            newTransaction.userId = player.token;
-            transactionCollection.insert(newTransaction);
+            payment += netValue; 
+            transactionService.append({ userId: player.token, quantity: netValue, type: 'Reward', roomId: roomId, sceneId: scene._id.toString() });
         }else if(bunko == 'tie'){
             netValue = bet;
             payment += netValue;
-            var newTransaction = new Transaction();
-            newTransaction.quantity = netValue;
-            newTransaction.type = 'Reward';
-            newTransaction.roomId = roomId;
-            newTransaction.sceneId = scene._id.toString();
-            newTransaction.userId = player.token;
-            transactionCollection.insert(newTransaction);
+            transactionService.append({ userId: player.token, quantity: netValue, type: 'Reward', roomId: roomId, sceneId: scene._id.toString() });
         }else if(bunko == 'lose'){
             netValue = 0;
         }
@@ -524,12 +510,11 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         } catch(e){
             return callback('dealerFinish: memdb crash');
         }
-        //TODO: don't push to everyone
+        
         console.log('=======dealerFinish=send msg==================')
-        var transactionList = transactionCollection.find();
-        transactionList.map((aTransaction) => {
-            transactionCollection.remove(aTransaction);
-        });
+        var transactionList = transactionService.fetch();
+        transactionService.deleteAll(transactionList);
+
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
             pushMessages(roomId, {rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
             if(!!err){

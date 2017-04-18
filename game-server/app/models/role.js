@@ -4,15 +4,18 @@ var RoleSchema = mongoose.Schema({
     //profile
     name: {type: String, required: true},
     avatar: {type: String, required: false},
-    wealth: {type: Number, required: true},
+    diamond: {type: Number, required: false, "default": 0},
+    wealth: {type: Number, required: false, "default": 0},
     //verification
-    foreignId: {type: Number, required: true},
+    foreignId: {type: Number, required: false},
     token: {type: String, required: true, unique: true},
     //game
     exp : {type: Number, required: false, "default": 0},
     level : {type: Number, required: false, "default": 0},
     bag : {type: Object, required: false, "default": {}},
-    deckId: {type: String, required: false, default: "default"}
+    deckId: {type: String, required: false, default: "default"},
+    intimacy: {type: Number, required: false, "default": 0},
+    follow: {type: Boolean, required: false, "default": false}
 });
 
 

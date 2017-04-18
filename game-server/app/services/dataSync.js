@@ -15,7 +15,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
                 foreignId: role.id,
                 avatar: role.avatar,
                 wealth: role.wealth,
-                token: role.token
+                token: role.token,
             };
             return roleService.create(obj, callback);
         } else{
@@ -49,7 +49,7 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
 
      request(options, function(err, response, body){
          if (err) {
-             return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: '+err });
+             return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: '+ err });
          } else {
             try{
                 var json = JSON.parse(body);

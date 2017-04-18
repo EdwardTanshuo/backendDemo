@@ -21,7 +21,7 @@ module.exports = {
             'scenePostAgain': "/api/game/endScene",
             'transactionPost': "/api/game／transactions",
             'sendGift': "/api/giveGift",
-            'listGift': "/api/gifts"
+            'listGift': "/api/gifts",
 	    }
     }
 }
