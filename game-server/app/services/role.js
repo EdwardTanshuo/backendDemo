@@ -27,7 +27,6 @@ RoleService.prototype.create = function(data, callback) {
 	}
 };
 
-
 RoleService.prototype.hasOne = function(role, callback) {
 	console.log('finding user from server cache...');
 	Role.findOne({token: role.token}, callback);

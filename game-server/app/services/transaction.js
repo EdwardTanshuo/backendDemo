@@ -7,7 +7,7 @@ function TransactionService() {
 }
 
 TransactionService.prototype.append = function(data) {
-	var transaction = TransactionService(data);
+	var transaction = Transaction(data);
 	transactionCollection.insert(transaction);
 	return transaction;
 };
