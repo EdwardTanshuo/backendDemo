@@ -10,12 +10,6 @@ DataSyncService.prototype.syncRole = function(role, callback) {
         if(err){
             return callback({code: Code.FAIL, msg: 'syncRole: '+err });
         } else if(!record){
-            var isFollowed = false;
-            if(role.follow === "0"){
-                isFollowed = false;
-            } else if(role.follow === "1"){
-                isFollowed = true;
-            }
             var obj = {
                 name: role.username,
                 foreignId: role.id,
@@ -27,7 +21,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
                 level: role.level,
                 exp: role.experience,
                 next_level_experience: role.next_level_experience,
-                follow: isFollowed
+                follow: role.follow
             };
             return roleService.create(obj, callback);
         } else{
@@ -39,7 +33,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
             record.level = role.level;
             record.exp = role.experience;
             record.next_level_experience = role.next_level_experience;
-            record.follow = isFollowed;
+            record.follow = role.follow;
             console.log('updating user in server cache...');
             console.log(record);
             return record.save(callback);

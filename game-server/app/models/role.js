@@ -16,7 +16,7 @@ var RoleSchema = mongoose.Schema({
     bag : {type: Object, required: false, "default": {}},
     deckId: {type: String, required: false, default: "default"},
     intimacy: {type: Number, required: false, "default": 0},
-    follow: {type: Boolean, required: false, "default": false}
+    follow: {type: String, required: false, "default": "0"}
 });
 
 
