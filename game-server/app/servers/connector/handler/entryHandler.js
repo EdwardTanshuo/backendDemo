@@ -23,7 +23,7 @@ Handler.prototype.entry = function(msg, session, next) {
 	  if(msg.token == null || msg.room == null){
           return next(null, { code: Code.COMMON.LESS_PARAM, result: 'PlayerEnter: missing params' });
 	  }
-	  roleService.auth(msg.token, function(err, result){
+	  roleService.auth(msg.room, msg.token, function(err, result){
 	  		if(err){
                 return next(null, { code: err.code, error: err.msg });
 	  		} else{

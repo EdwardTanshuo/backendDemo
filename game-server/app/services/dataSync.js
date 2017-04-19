@@ -16,12 +16,23 @@ DataSyncService.prototype.syncRole = function(role, callback) {
                 avatar: role.avatar,
                 wealth: role.wealth,
                 token: role.token,
+                diamond: role.diamond,
+                intimacy: role.intimacy,
+                level: role.level,
+                exp: role.experience,
+                next_level_experience: role.next_level_experience
             };
             return roleService.create(obj, callback);
         } else{
             record.name = role.username;
             record.avatar = role.avatar;
             record.wealth = role.wealth;
+            record.diamond = role.diamond;
+            record.intimacy = role.intimacy;
+            record.level = role.level;
+            record.exp = role.experience;
+            record.next_level_experience = role.next_level_experience;
+
             console.log('updating user in server cache...');
             console.log(record);
             return record.save(callback);
@@ -29,7 +40,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
     });
 };
 
-DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
+DataSyncService.prototype.syncRoleFromRemote = function(room, token, callback) {
      if(token == null){
          return callback({code: Code.COMMON.LESS_PARAM, msg: 'syncRoleFromRemote: missing token' });
      }
@@ -40,27 +51,24 @@ DataSyncService.prototype.syncRoleFromRemote = function(token, callback) {
      headers[config.remote.remoteToken.name] = token;
 
      var options = {
-         method: 'GET',
+         method: 'POST',
          url: config.remote.url + config.remote.api.userGet,
-         headers: headers
+         headers: headers,
+         json: true,
+         body: {room: room}
      };
 
      var syncRole = DataSyncService.prototype.syncRole;
 
      request(options, function(err, response, body){
-         if (err) {
-             return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: '+ err });
-         } else {
-            try{
-                var json = JSON.parse(body);
-                if(json.result){
-                   json.result.token = token;
-                   return syncRole(json.result, callback);
-                } else{
-                    return callback({code: Code.PLAYER.NO_PLAYER, msg: 'syncRoleFromRemote: user not exist' });
-                }
-            } catch(error){
-                return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: ' + 'result can not be parsed' });
+        if(!!err) {
+            return callback({code: Code.FAIL, msg: 'syncRoleFromRemote: '+ err });
+        } else {
+            if(body.result){
+                body.result.token = token;
+                return syncRole(body.result, callback);
+            } else{
+                return callback({code: Code.PLAYER.NO_PLAYER, msg: 'syncRoleFromRemote: user not exist' });
             }
         }
      });
@@ -293,7 +301,7 @@ DataSyncService.prototype.followActivity = function(params, callback) {
         body: params
     };
     request(options,  function(err, response, body){
-        if (err) {
+        if (!!err) {
             callback(err, null); // error response
         } else {
              console.log('------followActivity success result');

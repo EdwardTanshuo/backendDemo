@@ -11,6 +11,7 @@ var RoleSchema = mongoose.Schema({
     token: {type: String, required: true, unique: true},
     //game
     exp : {type: Number, required: false, "default": 0},
+    next_level_experience : {type: Number, required: false, "default": 0},
     level : {type: Number, required: false, "default": 0},
     bag : {type: Object, required: false, "default": {}},
     deckId: {type: String, required: false, default: "default"},

@@ -5,11 +5,11 @@ var Code = require('../../../shared/code');
 function RoleService() {
 }
 
-RoleService.prototype.auth = function(token, callback) {
+RoleService.prototype.auth = function(room, token, callback) {
 	if(token == null){
 		return callback({code: Code.COMMON.LESS_PARAM, msg: 'addPlayer: missing token' });
 	}
-	this.syncFromRemote(token, callback);
+	this.syncFromRemote(room, token, callback);
 };
 
 RoleService.prototype.getRoleByToken = function(token, callback) {
@@ -32,9 +32,9 @@ RoleService.prototype.hasOne = function(role, callback) {
 	Role.findOne({token: role.token}, callback);
 };
 
-RoleService.prototype.syncFromRemote = function(token, callback) {
+RoleService.prototype.syncFromRemote = function(room, token, callback) {
 	console.log('sync user from server cache...');
-	return dataSyncService.syncRoleFromRemote(token, callback);
+	return dataSyncService.syncRoleFromRemote(room, token, callback);
 };
 
 RoleService.prototype.save = function(role, callback) {
