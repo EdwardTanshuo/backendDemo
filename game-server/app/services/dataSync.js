@@ -244,7 +244,7 @@ DataSyncService.prototype.syncAgainSceneToRemote = function(scene, callback) {
 
 
 DataSyncService.prototype.syncTransactionToRemote = function(transactionList, callback) {
-    if(!transaction){
+    if(!transactionList){
         return callback('syncTransactionToRemote missing params', null); // error response
     }
     var headers = {
