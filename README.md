@@ -197,6 +197,19 @@ Event:  GiftEvent
   
 ```
 
+## 8. 主播获取礼物列表
+
+```
+route:  scene.sceneHandler.listGift
+
+参数:  无
+
+成功返回值: { code: 200, result: [{gift object}, ..]  }
+
+失败返回值: { code: errorCode, error: errMsg }
+
+```
+
 # 主播端推送事件说明
 
 ## 1. 主播进入游戏

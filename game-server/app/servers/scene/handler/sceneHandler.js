@@ -1,5 +1,6 @@
 var Code = require('../../../../../shared/code');
 var sceneService = require('../../../services/scene');
+var giftService = require('../../../services/gift');
 var utils = require('../../../util/utils');
 var router = require('../../../util/routeUtil');
 var sceneConfig = require('../../../../config/scene');
@@ -134,6 +135,21 @@ Handler.prototype.dealerFinish = function(msg, session, next) {
         next(null, {code: Code.OK, result: { scene: scene, rankingList: rankingList, globalRank: globalRank}});
     });
 };
+
+/**
+ * 获取礼品列表 scene.sceneHandler.listGift
+ */
+Handler.prototype.listGift = function(msg, session, next) {
+    var token = config.remote.remoteToken.value;
+
+    giftService.listGift(token, (err, body)=>{
+        if(!!err){
+            return next(new Error(err), { code: Code.FAIL, error: err });
+        } else{
+            return next(null, { code: Code.OK, result: body });
+        }
+    });
+}
 
 /**
  * 主播更新人脸坐标 scene.sceneHandler.updateCoor
