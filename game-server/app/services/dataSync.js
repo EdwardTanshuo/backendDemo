@@ -243,7 +243,7 @@ DataSyncService.prototype.syncAgainSceneToRemote = function(scene, callback) {
 };
 
 
-DataSyncService.prototype.syncTransactionToRemote = function(transaction, callback) {
+DataSyncService.prototype.syncTransactionToRemote = function(transactionList, callback) {
     if(!transaction){
         return callback('syncTransactionToRemote missing params', null); // error response
     }
@@ -254,24 +254,24 @@ DataSyncService.prototype.syncTransactionToRemote = function(transaction, callba
 
     headers[config.remote.remoteToken.name] = config.remote.remoteToken.value;
 
-    console.log('---------- start sync transaction ...');
-    console.log(transaction);
+    console.log('---------- start sync transactionList ...');
+    console.log(transactionList);
 
     var options = {
         method: 'POST',
         url: config.remote.url + config.remote.api.transactionPost ,
         headers: headers,
         json: true,
-        body: transaction
+        body: transactionList
     };
 
     request(options,  function(err, response, body){
         if (err) {
-            callback(err, null); // error response
+            callback(err); // error response
         } else {
              console.log('------syncTransactionToRemote success result');
              console.log(body);
-             return callback(null, body.result);
+             return callback(null);
         }
     });
 };

@@ -102,21 +102,16 @@ Handler.prototype.leave = function(msg, session, next) {
         serverId = this.app.get('serverId'),
         token = session.get('token');
 
-    try{
-        //清除玩家端缓存
-        var find_result = roleDeckCollection.findOne({'token': token});
-        roleDeckCollection.remove(find_result);
-        //清除scene缓存
-        app.rpc.scene.sceneRemote.playerLeave(session, roomId, currentRole, serverId, function(err, result){
-            if(err){
-                return next(new Error(err.msg), { code: err.code, error: err.msg });
-            }
-            return next(null, { code: Code.OK, result: result });
-        });
-    } catch(err){
-        return next(new Error(err), {code: Code.FAIL, error: err});
-    }
-
+    //清除玩家端缓存
+    var find_result = roleDeckCollection.findOne({'token': token});
+    roleDeckCollection.remove(find_result);
+    //清除scene缓存
+    app.rpc.scene.sceneRemote.playerLeave(session, roomId, currentRole, serverId, function(err, result){
+        if(err){
+            return next(new Error(err.msg), { code: err.code, error: err.msg });
+        }
+        return next(null, { code: Code.OK, result: result });
+    });
 }
 
 /**
