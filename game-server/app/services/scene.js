@@ -129,19 +129,15 @@ function resetScene(scene, callback){
     scene.dealer_deck = [];
     scene.player_bets = {};
     //创建主播卡组
-    try{
-        var deckId = 'default';
-        var newDeck = utils.createDeck(deckId);
-        if(!newDeck){
-            return callback('dealer deck could not be created');
-        }
-        scene.dealer_deck = newDeck;
-        // 保存 scene 到mongodb
-        scene.save();
-        return callback(null, scene);
-    } catch(err){
-        return callback('dealer deck could not be reseted');
+    var deckId = 'default';
+    var newDeck = utils.createDeck(deckId);
+    if(!newDeck){
+        return callback('dealer deck could not be created');
     }
+    scene.dealer_deck = newDeck;
+    // 保存 scene 到mongodb
+    scene.save();
+    return callback(null, scene);
 }
 
 function SceneService() {
