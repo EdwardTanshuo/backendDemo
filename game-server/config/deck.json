@@ -73,18 +73,10 @@
 			"weight": 1.0
 		},
 		{
-			"name": "shuangzia.png",
-			"thumb": "http://release.mofangvr.com:30001/images/icons/shuangzia.png",
+			"name": "shuangzi.png",
+			"thumb": "http://release.mofangvr.com:30001/images/icons/shuangzi.png",
 			"model": "",
 			"value": 11,
-			"type": "SUPER",
-			"weight": 1.0
-		},
-		{
-			"name": "shuangzib.pn",
-			"thumb": "http://release.mofangvr.com:30001/images/icons/shuangzib.pn",
-			"model": "",
-			"value": 12,
 			"type": "SUPER",
 			"weight": 1.0
 		},
@@ -92,7 +84,7 @@
 			"name": "shuiping.png",
 			"thumb": "http://release.mofangvr.com:30001/images/icons/shuiping.png",
 			"model": "",
-			"value": 13,
+			"value": 12,
 			"type": "SUPER",
 			"weight": 1.0
 		},
@@ -100,15 +92,15 @@
 			"name": "tianping.png",
 			"thumb": "http://release.mofangvr.com:30001/images/icons/tianping.png",
 			"model": "",
-			"value": 14,
-			"type": "TRANSFORM",
+			"value": 13,
+			"type": "SUPER",
 			"weight": 1.0
 		},
 		{
 			"name": "tianxie.png",
 			"thumb": "http://release.mofangvr.com:30001/images/icons/tianxie.png",
 			"model": "",
-			"value": 15,
+			"value": 14,
 			"type": "TRANSFORM",
 			"weight": 1.0
 		}
