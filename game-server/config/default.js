@@ -17,11 +17,12 @@ module.exports = {
 	    "api": {
 	    	"userGet": "/api/account",
 	    	"broadcasterGet": "/api/broadcasters",
-            'scenePost': "/api/game/scene",
-            'scenePostAgain': "/api/game/endScene",
-            'transactionPost': "/api/game／transactions",
-            'sendGift': "/api/giveGift",
-            'listGift': "/api/gifts",
+            "scenePost": "/api/game/scene",
+            "scenePostAgain": "/api/game/endScene",
+            "transactionPost": "/api/game／transactions",
+            "sendGift": "/api/giveGift",
+            "listGift": "/api/gifts",
+            "follow": "/api/account/followBroadcaster"
 	    }
     }
 }

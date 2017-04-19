@@ -260,7 +260,43 @@ DataSyncService.prototype.syncTransactionToRemote = function(transaction, callba
         if (err) {
             callback(err, null); // error response
         } else {
-             console.log('------syncTransactionToRemote success resulte');
+             console.log('------syncTransactionToRemote success result');
+             console.log(body);
+             return callback(null, body.result);
+        }
+    });
+};
+
+DataSyncService.prototype.followActivity = function(params, callback) {
+    if(params.broadcaster_id === null){
+        return callback('followActivity missing params: broadcaster_id', null); // error response
+    }
+    if(params.follow === null){
+        return callback('followActivity missing params: follow', null); // error response
+    }
+    if(params.token === null){
+        return callback('followActivity missing params: token', null); // error response
+    }
+
+    var headers = {
+        'Content-Type': 'application/json',
+        'cache-control': 'no-cache'
+    };
+    headers[config.remote.remoteToken.name] = params.token;
+
+    console.log('---------- start followActivity ...');
+    var options = {
+        method: 'POST',
+        url: config.remote.url + config.remote.api.follow ,
+        headers: headers,
+        json: true,
+        body: params
+    };
+    request(options,  function(err, response, body){
+        if (err) {
+            callback(err, null); // error response
+        } else {
+             console.log('------followActivity success result');
              console.log(body);
              return callback(null, body.result);
         }

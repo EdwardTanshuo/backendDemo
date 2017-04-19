@@ -2,6 +2,7 @@ var logger = require('pomelo-logger').getLogger(__filename);
 var async = require('async');
 var utils = require('../../../util/utils');
 var giftService = require('../../../services/gift');
+var dataSyncService = require('../../../services/dataSync');
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -237,5 +238,23 @@ Handler.prototype.getViewerCount = function(msg, session, next) {
 
     app.rpc.scene.sceneRemote.getNum(session, roomId, function(result){
         return next(null, { code: Code.OK, result: result });
+    });
+}
+
+/**
+ * 玩家关注主播接口 connector.roleHandler.follow
+ */
+Handler.prototype.follow = function(msg, session, next) {
+    var currentRole = session.get('currentRole'),
+        roomId = session.get('room'),
+        token = session.get('token');
+    msg.token = token;
+    msg.broadcaster_id = roomId;
+    dataSyncService.followActivity(msg, function(err){
+        if(!!err){
+            return next(new Error(err), { code: Code.FAIL, error: err });
+        } else{
+            return next(null, { code: Code.OK });
+        }
     });
 }

@@ -296,16 +296,18 @@ Event:  BetStartEvent
   
    参数:   { bet: 50  }  玩家下注金额，要求：bet > 0
     
-  成功返回值: { code: 200 ,
-               result:  {  isBet: true,  //是否下注 true | false
-                           quantity: 50,   //下注金额
-                           roleWealth: 350,  // 玩家余额
-                           dealerWealth: 98234, //  主播余额
-                           defaultCards: [card1,card2],   //卡组信息
-                           value: {value: 18, busted: false, numberOfHigh: 35 numberOfTrans: 0}  // 玩家当前卡点数 
-               } 
+  成功返回值: { 
+                code: 200 ,
+                result:  {  
+                            isBet: true,  //是否下注 true | false
+                            quantity: 50,   //下注金额
+                            roleWealth: 350,  // 玩家余额
+                            dealerWealth: 98234, //  主播余额
+                            defaultCards: [card1,card2],   //卡组信息
+                            value: {value: 18, busted: false, numberOfHigh: 35 numberOfTrans: 0}  // 玩家当前卡点数 
+                } 
              }
-  失败返回值: { code: errorCode, result: errMsg }
+  失败返回值: { code: errorCode, error: errMsg }
   
 ```
 
@@ -317,15 +319,29 @@ Event:  BetStartEvent
   
    参数:  无
     
-  成功返回值: { code: 200 ,
-               result:  { 
+  成功返回值: { 
+                code: 200 ,
+                result:  { 
                       card: { card object },  // 玩家抽到的卡情况
                       value: { value: 18, busted: false, numberOfHigh: 35 numberOfTrans: 0 },  //玩家当前卡点数
                       remain: 3  //已抽卡数量
-                  } 
-             }
-  失败返回值: { code: errorCode, result: errMsg }
+                } 
+            }
+  失败返回值: { code: errorCode, error: errMsg }
   
+```
+
+
+## 5.玩家关注主播 
+
+```
+route:  connector.roleHandler.follow
+
+参数:  { follow: true } //true为关注主播，false为取消关注
+
+成功返回值: { code: 200 }
+失败返回值: { code: errorCode, error: errMsg }
+
 ```
 
 
@@ -422,7 +438,7 @@ Event:  UpdateCoorEvent
 
     成功返回值:   { code: 200 }
 
-    失败返回值: { code: errorCode, result: errMsg }
+    失败返回值: { code: errorCode, error: errMsg }
 
 
 ## 玩家获取当前观众人数 
@@ -436,7 +452,7 @@ route:  connector.roleHandler.getViewerCount
                 code: 200, 
                 result: {
                             viewerCount: 20 //观众数
-                        } 
+                } 
             }
 
 失败返回值: 无
