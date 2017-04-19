@@ -468,7 +468,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             bunko: bunko,
             quantity: netValue,
             play_value: playValue,
-            dealer_value: dealerValue,
+            //dealer_value: dealerValue,
             token: player.token,
             name: player.name,
             benifit: netValue - bet
