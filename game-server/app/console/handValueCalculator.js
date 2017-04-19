@@ -67,7 +67,7 @@ module.exports = function HandValueCalculator() {
   // parameter dealerTotal and playerTotal are integers
   this.determinePlayerWin = function(dealerTotal, playerTotal) {
     if (playerTotal.value == this.BUSTED_VALUE && dealerTotal.value == this.BUSTED_VALUE) {
-      return 'tie';
+      return 'lose';
     } else if (dealerTotal.busted == true) {
       return 'win';
     } else if (playerTotal.busted == true) {
@@ -82,7 +82,7 @@ module.exports = function HandValueCalculator() {
           return 'lose';
         }
         else{
-          return 'tie';
+          return 'lose';
         }
     } else {
       return 'lose';

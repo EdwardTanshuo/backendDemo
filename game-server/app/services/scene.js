@@ -469,7 +469,9 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             quantity: netValue,
             play_value: playValue,
             dealer_value: dealerValue,
-            token: player.token
+            token: player.token,
+            name: player.name,
+            benifit: netValue - bet
         };
         //将结果存入排行榜
         rankingList.push(playResult);
@@ -516,7 +518,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         transactionService.deleteAll(transactionList);
 
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
-            pushMessages(roomId, {rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
+            pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
             if(!!err){
                 console.error(err.msg);
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
