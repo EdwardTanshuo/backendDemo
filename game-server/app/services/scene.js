@@ -598,7 +598,10 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     channel.pushMessage('PlayerEnterEvent', role);
     //TODO: 游戏人数不够的话
     //如果玩家已加入游戏， 返回当前游戏状态
+
+    console.log('@@@@@@@ add player into cache');
     if(scene.players[role.token] != null){
+        console.log('@@@@@@@ already in the cache');
         return callback(null, sceneConstructor.make(scene));
     }
     //否则创建新的玩家状态
@@ -609,8 +612,9 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     scene.player_bets[role.token] = 0;
     sceneCollection.update(scene);
     // 并把玩家加入channel
+    console.log('@@@@@@@ create new in the cache');
     channel.add(role.token, serverId);
-    return callback(null, sceneConstructor.make(scene));
+    return callback(null, scene);
 }
 
 //玩家离开游戏

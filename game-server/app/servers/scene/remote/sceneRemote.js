@@ -40,31 +40,27 @@ exp.dealerLeave = function(roomId, dealer, serverId, callback){
 //玩家进入游戏，查找并变更scene对象，channel中增加该玩家，推送 PlayerEnterEvent 消息给当前room内的全部人员
 exp.playerEnter = function(roomId, role, serverId, callback){
     console.log('----' + role.name + 'enter game' + '---------');
-    try{
-        sceneService.addPlayer(roomId, role, serverId, function(err, scene){
-            if(scene != null){
-                console.log(JSON.stringify(scene));
+    sceneService.addPlayer(roomId, role, serverId, function(err, scene){
+        if(scene != null){
+            console.log(JSON.stringify(scene));
 
-                var tempScene = {};
-                tempScene.player = scene.players[role.token];
-                tempScene.player_platfrom = scene.player_platfroms[role.token];
-                tempScene.player_value = scene.player_values[role.token];
-                tempScene.player_bet = scene.player_bets[role.token];
-                tempScene.dealer_platfrom = scene.dealer_platfrom;
-                tempScene.dealer_value = scene.dealer_value;
-                tempScene.durationDealerTurn = scene.durationDealerTurn;
-                tempScene.durationPlayerTurn = scene.durationPlayerTurn;
-                tempScene.durationBet = scene.durationBet;
-                tempScene.status = scene.status;
-                tempScene.dealer = scene.dealer;
-                // todo: 玩家加入游戏返回内容，待确定，直接返回scene不合理
-                return callback(null, tempScene);
-            }
-            return callback(err);
-        });
-    } catch(err){
-        return callback({code: Code.FAIL, msg: 'playerEnter:  error ' + err });
-    }
+            var tempScene = {};
+            tempScene.player = scene.players[role.token];
+            tempScene.player_platfrom = scene.player_platfroms[role.token];
+            tempScene.player_value = scene.player_values[role.token];
+            tempScene.player_bet = scene.player_bets[role.token];
+            tempScene.dealer_platfrom = scene.dealer_platfrom;
+            tempScene.dealer_value = scene.dealer_value;
+            tempScene.durationDealerTurn = scene.durationDealerTurn;
+            tempScene.durationPlayerTurn = scene.durationPlayerTurn;
+            tempScene.durationBet = scene.durationBet;
+            tempScene.status = scene.status;
+            tempScene.dealer = scene.dealer;
+            // todo: 玩家加入游戏返回内容，待确定，直接返回scene不合理
+            return callback(null, tempScene);
+        }
+        return callback(err);
+    });
 }
 
 //玩家退出游戏， 清理除了排行版外所有相关数据

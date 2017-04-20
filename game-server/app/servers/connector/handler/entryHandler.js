@@ -44,9 +44,8 @@ Handler.prototype.entry = function(msg, session, next) {
 									
 									roleEnter(self_app, session, function(err, scene){
 					  					if(!!err){
-                                            return next(new Error(err.msg), { code: err.code, result: err.msg });
+                                            return next(new Error(err.msg), { code: err.code, error: err.msg });
 						  				} else{
-						  					
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session));
 						  					return next(null, { code: Code.OK, result: scene});
 						  				}
@@ -98,6 +97,7 @@ var roleEnter = function (app, session, callback) {
 	var deckId = (currentRole.deckId != null) ? currentRole.deckId : 'default';
 	var deck = utils.createDeck(deckId);
 	if(deck == null){
+		console.error('PlayerEnter: no such deck');
 		return callback('PlayerEnter: no such deck');
 	}
 	var new_model = {};
