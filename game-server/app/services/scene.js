@@ -602,7 +602,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     console.log('@@@@@@@ add player into cache');
     if(scene.players[role.token] != null){
         console.log('@@@@@@@ already in the cache');
-        return callback(null, sceneConstructor.make(scene));
+        return callback(null, scene);
     }
     //否则创建新的玩家状态
     role.sid = serverId;
