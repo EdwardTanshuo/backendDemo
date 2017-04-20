@@ -5,6 +5,12 @@ var isPrintFlag = false;
 // var isPrintFlag = true;
 var fs = require('fs');
 
+
+utils.getCurrentDate = function(){
+    var date = new Date();
+    return date.format("yyyy-MM-dd hh:mm:ss");
+};
+
 utils.createDeck = function(deckId) {
   try{
     //var obj = JSON.parse(fs.readFileSync('../../config/deck.json', 'utf8'))

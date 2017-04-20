@@ -8,67 +8,10 @@ var sceneConstructor = require('../util/sceneConstructor');
 var channelService = app.get('channelService');
 var dataSyncService = require('./dataSync');
 var transactionService = require('./transaction');
+var pushService = require('./push');
 
 var sceneConfig = require('../../config/scene');
 var async = require('async');
-
-function pushMessages(roomId, msg, route, callback){
-	var channel = channelService.getChannel(roomId, true);
-    if (!channel) {
-        return callback('no channel');
-    }
-    channel.pushMessage(route, msg, callback);
-}
-
-function pushMessageToOne(roomId, uid, msg, route, callback){
-    var channel = channelService.getChannel(roomId, true);
-    if (!channel) {
-        return callback('no channel');
-    }
-    var sid = channel.getMember(uid)['sid'];
-    channelService.pushMessageByUids(route, msg, [{ uid: uid, sid: sid }], callback);
-}
-
-function pushMessageToDealer(roomId, msg, route, callback){
-    var channel = channelService.getChannel(roomId, true);
-    if (!channel) {
-        return callback('no channel');
-    }
-    var sid = channel.getMember(roomId)['sid'];
-    channelService.pushMessageByUids(route, msg, [{ uid: uid, sid: sid }], callback);
-}
-
-function pushMessageToPlayers(roomId, msg, route, callback){
-    var scene = sceneCollection.findOne({'room': roomId});
-    if(!scene){
-        return callback('room not found');
-    } 
-    var channel = channelService.getChannel(roomId, true);
-    if (!channel) {
-        return callback('no channel');
-    }
-    var group = [];
-    Object.keys(scene.player_bets).filter((key) => {
-        return scene.player_bets[key] > 0;
-    }).map((uid) => {
-        group.push({ uid: uid, sid: channel.getMember(uid)['sid'] });
-    });
-    
-    // add broadcaster
-    var sid = channel.getMember(roomId)['sid'];
-    group.push({uid: roomId, sid: sid});
-
-    if(group.length > 0){
-        return channelService.pushMessageByUids(route, msg, group, callback);
-    }
-
-    return callback('pushMessage: no target');
-}
-
-function getDateTime(){
-    var date = new Date();
-    return date.format("yyyy-MM-dd hh:mm:ss");
-};
 
 //初始化游戏信息
 function initScene(roomId, dealer, callback){
@@ -78,7 +21,7 @@ function initScene(roomId, dealer, callback){
     var newScene = new Scene();          //+
     newScene.room = roomId;              //+              
     newScene.status = 'init';            //+
-    newScene.started_at = getDateTime(); //+游戏创建时间
+    newScene.started_at = utils.getCurrentDate(); //+游戏创建时间
     //初始化玩家列表
     newScene.players = {};               //-             
     newScene.player_platfroms = {};      //- 
@@ -189,7 +132,7 @@ SceneService.prototype.startBet = function(roomId, callback){
     //更新缓存
     scene.status = 'betting';
     sceneCollection.update(scene);
-    pushMessages(roomId, sceneConstructor.make(scene), 'BetStartEvent', function(err){
+    pushService.pushMessages(roomId, sceneConstructor.make(scene), 'BetStartEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'BetStartEvent:  ' + err });
         }
@@ -304,7 +247,7 @@ SceneService.prototype.startGame = function(roomId, callback){
         catch(e){
             return callback({code: Code.COMMON.GET_CARD_ERR, msg: 'startGame: get_card_error' });
         }
-        pushMessages(roomId, {dealer_platfrom: scene.dealer_platfrom, dealer_value: scene.dealer_value, dealer: scene.dealer, status: scene.status}, 'GameStartEvent', function(err){
+        pushService.pushMessages(roomId, {dealer_platfrom: scene.dealer_platfrom, dealer_value: scene.dealer_value, dealer: scene.dealer, status: scene.status}, 'GameStartEvent', function(err){
             if(!!err){
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'GameStartEvent:  ' + err });
             }
@@ -365,7 +308,7 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
     }
     scene.status = 'dealer_turn';
     sceneCollection.update(scene);
-    pushMessageToPlayers(roomId, sceneConstructor.make(scene), 'EndPlayerEvent', function(err){
+    pushService.pushMessageToPlayers(roomId, sceneConstructor.make(scene), 'EndPlayerEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'EndPlayerEvent:  ' + err });
         } else{
@@ -406,7 +349,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
         scene.dealer_deck = newDeck;
         sceneCollection.update(scene);
         //推送DealerGetCardEvent 广播主播抽到的卡
-        pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
+        pushService.pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
             if(!!err){
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerGetCardEvent:  ' + err });
             }
@@ -514,7 +457,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         sceneCollection.update(newScene);
 
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
-            pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
+            pushService.pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
             if(!!err){
                 console.error(err.msg);
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
@@ -546,7 +489,7 @@ SceneService.prototype.cancelGame = function(roomId, callback){
     var transactionList = transactionService.fetch();
     transactionService.deleteAll(transactionList);
     
-    pushMessages(roomId, sceneConstructor.make(scene), 'CancelGameEvent', function(err){
+    pushService.pushMessages(roomId, sceneConstructor.make(scene), 'CancelGameEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'CancelGameEvent:  ' + err });
         }
@@ -658,7 +601,7 @@ SceneService.prototype.playerFinish = function(room_id, token, callback){
 
 // 发送弹幕 并推送 DanmuEvent
 SceneService.prototype.sendDanmu = function(roomId, params, callback){
-    pushMessages(roomId, params, 'DanmuEvent', function(err){
+    pushService.pushMessages(roomId, params, 'DanmuEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'DanmuEvent:  ' + err });
         }
@@ -669,7 +612,7 @@ SceneService.prototype.sendDanmu = function(roomId, params, callback){
 
 // 广播送礼 GiftEvent
 SceneService.prototype.sendGift = function(roomId, gift, callback){
-    pushMessages(roomId, gift, 'GiftEvent', function(err){
+    pushService.pushMessages(roomId, gift, 'GiftEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'GiftEvent:  ' + err });
         }
@@ -679,7 +622,7 @@ SceneService.prototype.sendGift = function(roomId, gift, callback){
 
 // 人脸识别
 SceneService.prototype.updateCoor = function(roomId, params, callback){
-    pushMessageToPlayers(roomId, params, 'UpdateCoorEvent', function(err){
+    pushService.pushMessageToPlayers(roomId, params, 'UpdateCoorEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'UpdateCoorEvent:  ' + err });
         }
