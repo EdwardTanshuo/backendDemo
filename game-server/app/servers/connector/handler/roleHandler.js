@@ -38,8 +38,8 @@ var Handler = function(app) {
 Handler.prototype.bet = function(msg, session, next) {
     var roomId = session.get('room'),
         token = session.get('token'),
+        currentRole = session.get('currentRole'),
         bet = Number(msg.bet);
-
 
     //本地创建卡组model
     var deckId = (currentRole.deckId != null) ? currentRole.deckId : 'default';
@@ -49,14 +49,16 @@ Handler.prototype.bet = function(msg, session, next) {
         return callback('PlayerBet: no such deck');
     }
    
-    //新用户的卡组加入用户缓存
+    //卡组加入用户缓存
     var find_result = roleDeckCollection.findOne({'token': token});
     if(find_result != null){
         find_result.deck = deck;
         roleDeckCollection.update(find_result);
     } else{
-        console.error('PlayerBet: miss deck');
-        return callback('PlayerBet: miss deck');
+        var new_model = {};
+        new_model.deck = deck;
+        new_model.token = token;
+        roleDeckCollection.insert(new_model);
     }
 
     // 没有赌注
@@ -90,7 +92,7 @@ Handler.prototype.bet = function(msg, session, next) {
                 var error = 'playerBet: can not find deck';
                 return next(new Error(error), {code: Code.PLAYER.NO_DECK, error: error});
             }
-            
+
             //下注
             app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, bet, result.deck, function(err, result){
                 if(!!err){

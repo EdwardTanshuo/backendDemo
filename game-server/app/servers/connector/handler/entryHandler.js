@@ -91,25 +91,6 @@ var roleEnter = function (app, session, callback) {
         currentRole = session.get('currentRole'),
         token = session.get('token');
 	
-	//本地创建卡组model
-	var deckId = (currentRole.deckId != null) ? currentRole.deckId : 'default';
-	var deck = utils.createDeck(deckId);
-	if(deck == null){
-		console.error('PlayerEnter: no such deck');
-		return callback('PlayerEnter: no such deck');
-	}
-	var new_model = {};
-	new_model.deck = deck;
-	new_model.token = token;
-
-    //新用户的卡组加入用户缓存
-	var find_result = roleDeckCollection.findOne({'token': token});
-	if(find_result != null){
-		//roleDeckCollection.update(find_result);
-	} else{
-		roleDeckCollection.insert(new_model);
-	}
-
 	//加入游戏scene
 	app.rpc.scene.sceneRemote.playerEnter(session, session.get('room'), currentRole, serverId, callback);
 };
