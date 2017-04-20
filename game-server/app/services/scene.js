@@ -244,6 +244,9 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     
     // 下足成功后 为玩家发两张卡牌
     game.dealDefaultCard(deck, function(err, newDeck, card1, card2){
+        if(!!err){
+            return callback(err);  
+        }
         scene.player_platfroms[role.token].push(card1);
         scene.player_platfroms[role.token].push(card2);
 
