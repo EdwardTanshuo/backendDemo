@@ -3,6 +3,7 @@ var Transaction = require('../models/transaction');
 
 var game = require('../console/game');
 var utils = require('../util/utils');
+var sceneConstructor = require('../util/sceneConstructor');
 
 var channelService = app.get('channelService');
 var dataSyncService = require('./dataSync');
@@ -74,28 +75,28 @@ function initScene(roomId, dealer, callback){
     var self = this;
     console.log('-----init Scene:' +  roomId + '-----------');
     //初始化游戏场景
-    var newScene = new Scene();
-    newScene.room = roomId;
-    newScene.status = 'init';
-    newScene.started_at = getDateTime(); //游戏创建时间
+    var newScene = new Scene();          //+
+    newScene.room = roomId;              //+              
+    newScene.status = 'init';            //+
+    newScene.started_at = getDateTime(); //+游戏创建时间
     //初始化玩家列表
-    newScene.players = {};
-    newScene.player_platfroms = {};
-    newScene.player_values = {};
-    newScene.player_bets = {};
+    newScene.players = {};               //-             
+    newScene.player_platfroms = {};      //- 
+    newScene.player_values = {};         //- 
+    newScene.player_bets = {};           //-
     //初始化主播信息
-    newScene.dealer = dealer;
-    newScene.dealer_platfrom = [];
-    newScene.dealer_value = {value: 0, busted: false, numberOfHigh: 0};
-	newScene.dealer_bets = 0; // 主播冻结金额，等于 玩家下注总金额
-	newScene.dealer_deck = [];
-	newScene.turns = 0;
+    newScene.dealer = dealer;            //+
+    newScene.dealer_platfrom = [];       //+
+    newScene.dealer_value = {value: 0, busted: false, numberOfHigh: 0}; //+
+	newScene.dealer_bets = 0;            //+ 主播冻结金额，等于 玩家下注总金额
+	newScene.dealer_deck = [];           //-
+	newScene.turns = 0;                  //+
     //初始化计时器信息
-    newScene.durationBet = sceneConfig.durationBet;
-    newScene.durationPlayerTurn = sceneConfig.durationPlayerTurn;
-    newScene.durationDealerTurn = sceneConfig.durationDealerTurn;
+    newScene.durationBet = sceneConfig.durationBet;               //+
+    newScene.durationPlayerTurn = sceneConfig.durationPlayerTurn; //+
+    newScene.durationDealerTurn = sceneConfig.durationDealerTurn; //+
     //初始化排行
-    newScene.rank = [];
+    newScene.rank = [];                                           //-
 	//创建主播卡组
     try{
         var deckId = 'default';
@@ -170,7 +171,7 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
                     if(!!err){
                         return callback(err);
                     }
-                    return callback(null, newScene);
+                    return callback(null, sceneConstructor.make(newScene));
                 });
             });
         });
@@ -192,7 +193,7 @@ SceneService.prototype.startBet = function(roomId, callback){
     //更新缓存
     scene.status = 'betting';
     sceneCollection.update(scene);
-    pushMessages(roomId, scene, 'BetStartEvent', function(err){
+    pushMessages(roomId, sceneConstructor.make(scene), 'BetStartEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'BetStartEvent:  ' + err });
         }
@@ -207,7 +208,7 @@ SceneService.prototype.startBet = function(roomId, callback){
                 });
                 console.log('################ room: ' + roomId + ', will cancel game');
             }, sceneConfig.durationBet, roomId);
-            return callback(null, scene);
+            return callback(null, sceneConstructor.make(scene));
         }
     });
 }
@@ -315,7 +316,7 @@ SceneService.prototype.startGame = function(roomId, callback){
                     });
                     console.log('################ room: ' + roomId + ', will end players turn');
                 }, sceneConfig.durationPlayerTurn, roomId);
-                return callback(null, scene);
+                return callback(null, sceneConstructor.make(scene));
             }
         });
     });
@@ -364,7 +365,7 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
     }
     scene.status = 'dealer_turn';
     sceneCollection.update(scene);
-    pushMessageToPlayers(roomId, scene, 'EndPlayerEvent', function(err){
+    pushMessageToPlayers(roomId, sceneConstructor.make(scene), 'EndPlayerEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'EndPlayerEvent:  ' + err });
         } else{
@@ -377,7 +378,7 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
                 console.log('################ room: ' + roomId + ', will end dealer turn, into dealerFinish ');
                 self.dealerFinish(roomId, function(err, result){});
             }, sceneConfig.durationDealerTurn, roomId);
-            return callback(null, scene);
+            return callback(null, sceneConstructor.make(scene));
         }
     });
 }
@@ -514,7 +515,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
                 console.error(err.msg);
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
             }
-            return callback(null, newScene, rankingList, globalRank);
+            return callback(null, sceneConstructor.make(newScene), rankingList, globalRank);
         });
     }); 
 }
@@ -545,7 +546,7 @@ SceneService.prototype.cancelGame = function(roomId, callback){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'CancelGameEvent:  ' + err });
         }
-        return callback(null, scene);
+        return callback(null, sceneConstructor.make(scene));
     });
 }
 
@@ -572,7 +573,7 @@ SceneService.prototype.endGame = function(roomId, callback) {
                 return callback(err);
             }
             sceneCollection.remove(scene);
-            return callback(null, scene);
+            return callback(null, sceneConstructor.make(scene));
         });
     }
 }
@@ -602,7 +603,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     //TODO: 游戏人数不够的话
     //如果玩家已加入游戏， 返回当前游戏状态
     if(scene.players[role.token] != null){
-        return callback(null, scene);
+        return callback(null, sceneConstructor.make(scene));
     }
     //否则创建新的玩家状态
     role.sid = serverId;
@@ -613,7 +614,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     sceneCollection.update(scene);
     // 并把玩家加入channel
     channel.add(role.token, serverId);
-    return callback(null, scene);
+    return callback(null, sceneConstructor.make(scene));
 }
 
 //玩家离开游戏
