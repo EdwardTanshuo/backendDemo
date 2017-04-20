@@ -247,9 +247,13 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         if(!!err){
             return callback(err);  
         }
-        scene.player_platfroms[role.token].push(card1);
-        scene.player_platfroms[role.token].push(card2);
-
+        if(!!card1){
+            scene.player_platfroms[role.token].push(card1);
+        }
+         if(!!card2){
+            scene.player_platfroms[role.token].push(card2);
+        }
+        
         console.log('$$$###' + JSON.stringify(scene.player_platfroms[role.token]) + ')))@@@@ ' + role.token);
         console.log('$$$###' + JSON.stringify(deck) + ')))@@@@ ' + role.token);
 
