@@ -14,6 +14,7 @@ function DeckOperation() {
  */
 DeckOperation.prototype.drawCard = function(deck, callback){
   if(!deck.length){
+    console.error(JSON.stringify(deck));
     return callback({code: Code.COMMON.NO_CARD, msg: 'drawCard: no card' });
   } else{
     var total_weight = 0;

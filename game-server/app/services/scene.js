@@ -346,14 +346,10 @@ SceneService.prototype.playerDraw = function(room_id, token, deck, callback){
         if(err){
             return callback(err);
         }
-        try{
-            scene.player_platfroms[token].push(card);
-            var newValue = game.calculateHandValue(scene.player_platfroms[token]);
-            scene.player_values[token] = newValue;
-            return callback(null, {newDeck: newDeck, card: card, value: newValue});
-        }catch(error){
-            return callback( {code: Code.FAIL, msg: 'playerDraw:  error ' + error });
-        }
+        scene.player_platfroms[token].push(card);
+        var newValue = game.calculateHandValue(scene.player_platfroms[token]);
+        scene.player_values[token] = newValue;
+        return callback(null, {newDeck: newDeck, card: card, value: newValue});
     });
 }
 
@@ -471,6 +467,10 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         //更新用户缓存
         scene.players[uid].wealth += (netValue - bet);
+        if(bunko == 'win'){
+            scene.players[uid].intimacy += bet;
+        }
+        scene.players[uid].exp += bet;
 
         //将结果存入排行榜
         rankingList.push(playResult);
