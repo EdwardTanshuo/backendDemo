@@ -466,7 +466,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         };
 
         //更新用户缓存
-        scene.players[uid] -= (netValue - bet);
+        scene.players[uid].wealth -= (netValue - bet);
 
         //将结果存入排行榜
         rankingList.push(playResult);
