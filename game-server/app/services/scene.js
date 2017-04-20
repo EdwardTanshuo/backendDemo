@@ -542,7 +542,7 @@ SceneService.prototype.cancelGame = function(roomId, callback){
     var transactionList = transactionService.fetch();
     transactionService.deleteAll(transactionList);
     
-    pushMessages(roomId, scene, 'CancelGameEvent', function(err){
+    pushMessages(roomId, sceneConstructor.make(scene), 'CancelGameEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'CancelGameEvent:  ' + err });
         }
