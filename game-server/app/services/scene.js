@@ -41,17 +41,14 @@ function initScene(roomId, dealer, callback){
     //初始化排行
     newScene.rank = [];                                           //-
 	//创建主播卡组
-    try{
-        var deckId = 'default';
-        var newDeck = utils.createDeck(deckId);
-        if(!newDeck){
-            return callback('dealer deck could not be created');
-        }
-        newScene.dealer_deck = newDeck;
-        return callback(null, newScene);
-    } catch(err){
+    var deckId = 'default';
+    var newDeck = utils.createDeck(deckId);
+    if(!newDeck){
         return callback('dealer deck could not be created');
     }
+    newScene.dealer_deck = newDeck;
+    newScene.save();
+    return callback(null, newScene);
 }
 
 //重置游戏信息
@@ -102,16 +99,13 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
             }
             //更新缓存
             sceneCollection.insert(newScene);
-            newScene.save((err) => {
-                if(err){
-                    return callback({code: Code.FAIL, msg: 'createGame:  ' + err});
+
+            //同步到远程
+            dataSyncService.syncSceneToRemote({sceneId: newScene._id.toString(), roomId: roomId}, function(err, result){
+                if(!!err){
+                    return callback(err);
                 }
-                dataSyncService.syncSceneToRemote({sceneId: newScene._id.toString(), roomId: roomId}, function(err, result){
-                    if(!!err){
-                        return callback(err);
-                    }
-                    return callback(null, sceneConstructor.make(newScene));
-                });
+                return callback(null, sceneConstructor.make(newScene));
             });
         });
     }
@@ -237,35 +231,30 @@ SceneService.prototype.startGame = function(roomId, callback){
         if(err){
             return callback(err);
         }
-        try{
-            scene.dealer_platfrom.push(card);
-            var newValue = game.calculateHandValue(scene.dealer_platfrom);
-            scene.dealer_value = newValue;
-            scene.dealer_deck = newDeck;
-            sceneCollection.update(scene);
-        }
-        catch(e){
-            return callback({code: Code.COMMON.GET_CARD_ERR, msg: 'startGame: get_card_error' });
-        }
-        pushService.pushMessages(roomId, {dealer_platfrom: scene.dealer_platfrom, dealer_value: scene.dealer_value, dealer: scene.dealer, status: scene.status}, 'GameStartEvent', function(err){
-            if(!!err){
-                return callback({code: Code.COMMON.MSG_FAIL, msg: 'GameStartEvent:  ' + err });
+        scene.dealer_platfrom.push(card);
+        var newValue = game.calculateHandValue(scene.dealer_platfrom);
+        scene.dealer_value = newValue;
+        scene.dealer_deck = newDeck;
+        sceneCollection.update(scene);
+        
+        //开启计时器
+        setTimeout(function(roomId) {
+            var scene = sceneCollection.findOne({'room': roomId});
+            if(!scene || scene.status != 'player_started'){
+                return;
             }
-            else{
-                //开启计时器
-                setTimeout(function(roomId) {
-                    var scene = sceneCollection.findOne({'room': roomId});
-                    if(!scene || scene.status != 'player_started'){
-                        return;
-                    }
-                    self.endPlayerTurn(roomId, function(err, result){
-
-                    });
-                    console.log('################ room: ' + roomId + ', will end players turn');
-                }, sceneConfig.durationPlayerTurn, roomId);
-                return callback(null, sceneConstructor.make(scene));
-            }
-        });
+            self.endPlayerTurn(roomId, function(err, result){
+            });
+            console.log('################ room: ' + roomId + ', will end players turn');
+        }, sceneConfig.durationPlayerTurn, roomId);
+        
+        //通知其他观众
+        pushService.pushMessages(roomId, { 
+                                            dealer_platfrom: scene.dealer_platfrom, 
+                                            dealer_value: scene.dealer_value, 
+                                            dealer: scene.dealer, status: scene.status
+                                         }, 'GameStartEvent');
+        return callback(null, sceneConstructor.make(scene));
     });
 }
 
@@ -308,22 +297,21 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
     }
     scene.status = 'dealer_turn';
     sceneCollection.update(scene);
-    pushService.pushMessageToPlayers(roomId, sceneConstructor.make(scene), 'EndPlayerEvent', function(err){
-        if(!!err){
-            return callback({code: Code.COMMON.MSG_FAIL, msg: 'EndPlayerEvent:  ' + err });
-        } else{
-            //开启计时器
-            setTimeout(function(roomId) {
-                var scene = sceneCollection.findOne({'room': roomId});
-                if(!scene || scene.status != 'dealer_turn'){
-                    return;
-                }
-                console.log('################ room: ' + roomId + ', will end dealer turn, into dealerFinish ');
-                self.dealerFinish(roomId, function(err, result){});
-            }, sceneConfig.durationDealerTurn, roomId);
-            return callback(null, sceneConstructor.make(scene));
+   
+    //开启倒计时
+    setTimeout(function(roomId) {
+        var scene = sceneCollection.findOne({'room': roomId});
+        if(!scene || scene.status != 'dealer_turn'){
+            return;
         }
-    });
+        console.log('################ room: ' + roomId + ', will end dealer turn, into dealerFinish ');
+        self.dealerFinish(roomId, function(err, result){});
+    }, sceneConfig.durationDealerTurn, roomId);
+
+    //通知所有玩家
+    pushService.pushMessageToPlayers(roomId, sceneConstructor.make(scene), 'EndPlayerEvent');
+
+    return callback(null, sceneConstructor.make(scene));
 }
 
 //主播抽卡
@@ -349,12 +337,8 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
         scene.dealer_deck = newDeck;
         sceneCollection.update(scene);
         //推送DealerGetCardEvent 广播主播抽到的卡
-        pushService.pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err){
-            if(!!err){
-                return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerGetCardEvent:  ' + err });
-            }
-            return callback(null, newDeck, card, newValue);
-        }); 
+        pushService.pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent'); 
+        return callback(null, newDeck, card, newValue);
     });
 }
 
@@ -456,6 +440,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         //同步缓存
         sceneCollection.update(newScene);
 
+        //同步远程
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
             pushService.pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
             if(!!err){
@@ -489,12 +474,8 @@ SceneService.prototype.cancelGame = function(roomId, callback){
     var transactionList = transactionService.fetch();
     transactionService.deleteAll(transactionList);
     
-    pushService.pushMessages(roomId, sceneConstructor.make(scene), 'CancelGameEvent', function(err){
-        if(!!err){
-            return callback({code: Code.COMMON.MSG_FAIL, msg: 'CancelGameEvent:  ' + err });
-        }
-        return callback(null, sceneConstructor.make(scene));
-    });
+    pushService.pushMessages(roomId, sceneConstructor.make(scene), 'CancelGameEvent');
+    return callback(null, sceneConstructor.make(scene));
 }
 
 //游戏结束
@@ -547,9 +528,10 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
     }
     channel.pushMessage('PlayerEnterEvent', role);
+    
     //TODO: 游戏人数不够的话
-    //如果玩家已加入游戏， 返回当前游戏状态
 
+    //如果玩家已加入游戏， 返回当前游戏状态
     console.log('@@@@@@@ add player into cache');
     if(scene.players[role.token] != null){
         console.log('@@@@@@@ already in the cache');

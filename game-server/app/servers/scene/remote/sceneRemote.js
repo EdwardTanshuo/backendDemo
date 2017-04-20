@@ -9,32 +9,24 @@ var logger = require('pomelo-logger').getLogger(__filename);
 //主播进入游戏，推送 DealerEnterEvent 消息给当前room的所有人，消息内容为主播的模型
 // 然后把主播的roomId加入该room的channel
 exp.dealerEnter = function(roomId, dealer, serverId, callback){
-    try{
-        var channel = channelService.getChannel(roomId, true);
-        if(!channel) {
-            return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerEnter: no channel' });
-        }
-        channel.add(roomId, serverId);
-        channel.pushMessage({ route: 'DealerEnterEvent', dealer: dealer });
-        callback(null, dealer);
-    } catch(err){
-        return callback({code: Code.FAIL, msg: 'dealerEnter:  error ' + err });
+    var channel = channelService.getChannel(roomId, true);
+    if(!channel) {
+        return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerEnter: no channel' });
     }
+    channel.add(roomId, serverId);
+    channel.pushMessage({ route: 'DealerEnterEvent', dealer: dealer });
+    callback(null, dealer);
 }
 
 //主播离开游戏， 从channel中去掉主播信息， 推送 DealerLeaverEvent 给当前room内的全部人员
 exp.dealerLeave = function(roomId, dealer, serverId, callback){
-    try{
-        var channel = channelService.getChannel(roomId, true);
-        if(!channel) {
-            return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerLeave: no channel' });
-        }
-        channel.leave(roomId, serverId);
-        channel.pushMessage({route: 'DealerLeaverEvent', dealer: dealer});
-        callback(null);
-    } catch(err){
-        return callback({code: Code.FAIL, msg: 'dealerLeave:  error ' + err });
+    var channel = channelService.getChannel(roomId, true);
+    if(!channel) {
+        return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerLeave: no channel' });
     }
+    channel.leave(roomId, serverId);
+    channel.pushMessage({route: 'DealerLeaverEvent', dealer: dealer});
+    callback(null);
 }
 
 //玩家进入游戏，查找并变更scene对象，channel中增加该玩家，推送 PlayerEnterEvent 消息给当前room内的全部人员
@@ -66,13 +58,9 @@ exp.playerEnter = function(roomId, role, serverId, callback){
 //玩家退出游戏， 清理除了排行版外所有相关数据
 exp.playerLeave = function(roomId, role, serverId, callback){
     console.log('----' + role.name + 'leave game' + '---------');
-    try{
-        sceneService.removePlayer(roomId, role, serverId, function(err, result){
-            return callback(err, result);
-        });
-    } catch(err){
-        return callback({code: Code.FAIL, msg: 'playerLeave:  error ' + err });
-    }
+    sceneService.removePlayer(roomId, role, serverId, function(err, result){
+        return callback(err, result);
+    });
 }
 
 //玩家下注 生成transaction， 推送PlayerBetEvent给所有人，玩家下注后，会被加入游戏的广播组，而被作为游戏玩家
