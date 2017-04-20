@@ -157,7 +157,7 @@ Handler.prototype.draw = function(msg, session, next) {
                 return next(new Error('playerDraw: deck is null'), { code: Code.PLAYER.NO_DECK, error: 'playerDraw: deck is null' });
             }
             roleDeck.deck = result.newDeck;
-            //roleDeckCollection.update(roleDeck);
+            roleDeckCollection.update(roleDeck);
             var remain = roleDeck.deck.length;
 
             return next(null, {code: Code.OK, result: {card: result.card, value: result.value, remain: remain}});
