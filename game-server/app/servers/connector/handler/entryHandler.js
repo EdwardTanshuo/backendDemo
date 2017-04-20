@@ -105,15 +105,11 @@ var roleEnter = function (app, session, callback) {
 	new_model.token = token;
 
     //新用户的卡组加入用户缓存
-	try{
-		var find_result = roleDeckCollection.findOne({'token': token});
-		if(find_result != null){
-			//roleDeckCollection.update(find_result);
-		} else{
-			roleDeckCollection.insert(new_model);
-		}
-	} catch(err){
-        return callback('PlayerEnter: ' + err);
+	var find_result = roleDeckCollection.findOne({'token': token});
+	if(find_result != null){
+		//roleDeckCollection.update(find_result);
+	} else{
+		roleDeckCollection.insert(new_model);
 	}
 
 	//加入游戏scene
