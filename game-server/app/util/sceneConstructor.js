@@ -39,5 +39,5 @@ sceneConstructor.make = function(scene){
 	newScene.durationPlayerTurn = sceneConfig.durationPlayerTurn;  
 	newScene.durationDealerTurn = sceneConfig.durationDealerTurn;  
 
-	return scene;
+	return newScene;
 };
