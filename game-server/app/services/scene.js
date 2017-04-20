@@ -154,15 +154,11 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
     } else{
         //初始化游戏场景
         initScene(roomId, dealer, function(err, newScene){
-            try {
-                if (!!err) {
-                    return callback({code: Code.SCENE.CREATE_ERR, msg: 'createGame: ' + err});
-                }
-                //更新缓存
-                sceneCollection.insert(newScene);
-            } catch(e){
-                return callback({code: Code.FAIL, msg: 'createGame:  memdb error'});
+            if (!!err) {
+                return callback({code: Code.SCENE.CREATE_ERR, msg: 'createGame: ' + err});
             }
+            //更新缓存
+            sceneCollection.insert(newScene);
             newScene.save((err) => {
                 if(err){
                     return callback({code: Code.FAIL, msg: 'createGame:  ' + err});
