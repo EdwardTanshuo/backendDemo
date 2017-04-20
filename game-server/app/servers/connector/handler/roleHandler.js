@@ -3,6 +3,7 @@ var async = require('async');
 var utils = require('../../../util/utils');
 var giftService = require('../../../services/gift');
 var dataSyncService = require('../../../services/dataSync');
+var roleService = require('../../../services/role');
 
 module.exports = function(app) {
 	return new Handler(app);
@@ -34,9 +35,7 @@ var Handler = function(app) {
  * 功能说明: 玩家下注接口
  */
 Handler.prototype.bet = function(msg, session, next) {
-
-    var currentRole = session.get('currentRole'),
-        roomId = session.get('room'),
+    var roomId = session.get('room'),
         token = session.get('token'),
         bet = Number(msg.bet);
 
@@ -46,38 +45,40 @@ Handler.prototype.bet = function(msg, session, next) {
         return next(new Error(error), {code: Code.PLAYER.NO_BET, error: error});
     }
 
-    // 用户财富值是否足够
-    if(currentRole.wealth < bet){
-        var error = 'playerBet: player no enough wealth';
-        return next(new Error(error), {code: Code.PLAYER.NO_WEALTH, error: error});
-    }
-
-    try{
-        var result = roleDeckCollection.findOne({token: token});
-    }
-    catch(err){
-        var error = 'memdbErr: cannot insert';
-        return next(new Error(error), {code: Code.FAIL, error: error});
-    }
-    if(!result){
-        var error = 'playerBet: can not find deck';
-        return next(new Error(error), {code: Code.PLAYER.NO_DECK, error: error});
-    }
-       
-    //下注
-    currentRole.wealth -= bet;  //扣除玩家下注金额
-
-    app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, bet, result.deck, function(err, result){
+    // 同步当前用户信息
+    roleService.auth(roomId, token, function(err, currentRole){
         if(!!err){
-            return next(new Error(err.msg), { code: err.code, error: err.msg });
+            return next(new Error(err), {code: Code.FAIL, error: 'PlayerBet: update CurrentRole error :' + err});
         }
 
+        // 更新session
         session.set('currentRole', currentRole);
         session.pushAll(function(err) {
             if (err) {
                 return next(new Error(err), {code: Code.FAIL, error: 'PlayerBet: update CurrentRole error :' + err});
             }
-            return next(null, { code: Code.OK, result: result });
+            
+            // 用户财富值是否足够
+            if(currentRole.wealth < bet){
+                var error = 'playerBet: player no enough wealth';
+                return next(new Error(error), {code: Code.PLAYER.NO_WEALTH, error: error});
+            }
+
+            // 用户卡组
+            var result = roleDeckCollection.findOne({token: token});
+            if(!result){
+                var error = 'playerBet: can not find deck';
+                return next(new Error(error), {code: Code.PLAYER.NO_DECK, error: error});
+            }
+               
+            //下注
+            app.rpc.scene.sceneRemote.playerBet(session, roomId, currentRole, bet, result.deck, function(err, result){
+                if(!!err){
+                    return next(new Error(err.msg), { code: err.code, error: err.msg });
+                }
+                return next(null, { code: Code.OK, result: result });
+            }); 
+            
         });
     });
 }

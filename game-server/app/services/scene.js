@@ -265,13 +265,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
 
         console.log('-------before PlayerBetEvent------------------------');
         console.log(msg);
-        pushMessageToPlayers(roomId, {role: role, bet: bet, dealerWealth: scene.dealer.wealth}, 'PlayerBetEvent',function(err){
-            console.log('-------after PlayerBetEvent------------------------');
-            if(!!err){
-                return callback({code: Code.COMMON.MSG_FAIL, msg: 'PlayerBetEvent: ' + err });
-            }
-            return callback(null, { isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
-        });
+        return callback(null, { isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
     }); 
 }
 
@@ -469,6 +463,10 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
             name: player.name,
             benifit: netValue - bet
         };
+
+        //更新用户缓存
+        scene.players[uid] -= (netValue - bet);
+
         //将结果存入排行榜
         rankingList.push(playResult);
         console.log(playResult);
@@ -503,15 +501,12 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         if(err){
             return callback(err);
         }
-        try{
-            sceneCollection.update(newScene);
-        } catch(e){
-            return callback('dealerFinish: memdb crash');
-        }
-        
         console.log('=======dealerFinish=send msg==================')
         var transactionList = transactionService.fetch();
         transactionService.deleteAll(transactionList);
+        
+        //同步缓存
+        sceneCollection.update(newScene);
 
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
             pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
