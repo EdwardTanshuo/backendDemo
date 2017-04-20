@@ -32,6 +32,7 @@ sceneConstructor.make = function(scene){
 	newScene.status = scene.status;
 	newScene.started_at = scene.status;
 	newScene.dealer = scene.dealer;
+	newScene.dealer_value = scene.dealer_value;
 	newScene.dealer_platfrom = scene.dealer_platfrom;
 	newScene.dealer_bets = scene.dealer_bets;
 	newScene.turns = scene.turns;
