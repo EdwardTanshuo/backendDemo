@@ -538,8 +538,14 @@ SceneService.prototype.cancelGame = function(roomId, callback){
     //重置玩家列表
     Object.keys(scene.players).map((token) => {
         scene.player_bets[token] = 0;
+        scene.player_platfroms[token] = [];
     });
     sceneCollection.update(scene);
+
+    //清空transaction
+    var transactionList = transactionService.fetch();
+    transactionService.deleteAll(transactionList);
+    
     pushMessages(roomId, scene, 'CancelGameEvent', function(err){
         if(!!err){
             return callback({code: Code.COMMON.MSG_FAIL, msg: 'CancelGameEvent:  ' + err });
