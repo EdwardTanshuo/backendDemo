@@ -36,8 +36,8 @@ sceneConstructor.make = function(scene){
 	newScene.dealer_bets = scene.dealer_bets;
 	newScene.turns = scene.turns;
 	newScene.durationBet = scene.durationBet;  
-	newScene.durationPlayerTurn = sceneConfig.durationPlayerTurn;  
-	newScene.durationDealerTurn = sceneConfig.durationDealerTurn;  
+	newScene.durationPlayerTurn = scene.durationPlayerTurn;  
+	newScene.durationDealerTurn = scene.durationDealerTurn;  
 
 	return newScene;
 };
