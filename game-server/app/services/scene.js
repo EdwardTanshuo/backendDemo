@@ -248,6 +248,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         scene.player_platfroms[role.token].push(card2);
 
         console.log('$$$###' + JSON.stringify(scene.player_platfroms[role.token]) + ')))@@@@ ' + role.token);
+        console.log('$$$###' + JSON.stringify(deck) + ')))@@@@ ' + role.token);
 
         var newValue = game.calculateHandValue(scene.player_platfroms[role.token]);
         scene.player_values[role.token] = newValue;
