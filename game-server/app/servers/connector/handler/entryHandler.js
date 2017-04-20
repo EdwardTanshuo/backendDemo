@@ -31,7 +31,6 @@ Handler.prototype.entry = function(msg, session, next) {
 	  				if(err){
 	  					return next(new Error(err), {code: Code.FAIL, error: 'PlayerEnter:' + err });
 	  				} else{
-	  					
 	  					session.bind(msg.token, function(err){
 			  				if(!err){
 			  					session.set('token', msg.token);
@@ -41,7 +40,6 @@ Handler.prototype.entry = function(msg, session, next) {
 									if(err){
 										return next(new Error(err), {code: Code.FAIL, error: 'PlayerEnter.session.bind:' + err});
 									}
-									
 									roleEnter(self_app, session, function(err, scene){
 					  					if(!!err){
                                             return next(new Error(err.msg), { code: err.code, error: err.msg });
