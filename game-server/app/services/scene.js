@@ -198,15 +198,9 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         scene.player_values[role.token] = newValue;
         sceneCollection.update(scene);
         var defaultCards = scene.player_platfroms[role.token];
-        var msg= {
-            isBet: true,
-            quantity: bet,
-            platfroms: defaultCards,
-            values: newValue
-        };
-
+        
         console.log('-------before PlayerBetEvent------------------------');
-        console.log(msg);
+        
         return callback(null, { newDeck: newDeck, isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
     }); 
 }
