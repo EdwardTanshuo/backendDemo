@@ -97,14 +97,10 @@ app.configure('production|development', 'broadcaster', function(){
     {
       connector : pomelo.connectors.sioconnector,
       useProtobuf : true,
+      useDict: true,
       //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
       //transports : ['websocket'],
       heartbeat: 3,
-      useDict: true,
-      heartbeats : true,
-      closeTimeout : 60000,
-      heartbeatTimeout : 60,
-      heartbeatInterval : 25
     });
     initMongo();
 });
