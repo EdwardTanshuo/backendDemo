@@ -207,7 +207,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
 
         console.log('-------before PlayerBetEvent------------------------');
         console.log(msg);
-        return callback(null, { isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
+        return callback(null, { newDeck: newDeck, isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
     }); 
 }
 

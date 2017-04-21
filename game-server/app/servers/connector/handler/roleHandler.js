@@ -98,6 +98,12 @@ Handler.prototype.bet = function(msg, session, next) {
                 if(!!err){
                     return next(new Error(err.msg), { code: err.code, error: err.msg });
                 }
+                var find_result = roleDeckCollection.findOne({'token': token});
+                if(find_result != null){
+                    find_result.deck = result.newDeck;
+                    roleDeckCollection.update(find_result);
+                }
+                delete result['newDeck'];
                 return next(null, { code: Code.OK, result: result });
             }); 
             
