@@ -541,7 +541,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     console.log('@@@@@@@ add player into cache');
     if(scene.players[role.token] != null){
         console.log('@@@@@@@ already in the cache');
-        scene.timeRemain = seconds;
+        scene.timeElapse = seconds;
         return callback(null, scene);
     }
     //否则创建新的玩家状态
@@ -554,7 +554,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     // 并把玩家加入channel
     console.log('@@@@@@@ create new in the cache');
     channel.add(role.token, serverId);
-    scene.timeRemain = seconds;
+    scene.timeElapse = seconds;
     return callback(null, scene);
 }
 

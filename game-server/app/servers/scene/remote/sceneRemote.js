@@ -48,7 +48,17 @@ exp.playerEnter = function(roomId, role, serverId, callback){
             tempScene.durationBet = scene.durationBet;
             tempScene.status = scene.status;
             tempScene.dealer = scene.dealer;
-            tempScene.timeRemain = scene.timeRemain;
+
+            var remain = 0;
+            if(scene.status === 'betting'){
+                remain = durationBet / 1000 - scene.timeElapse;
+            } else if(scene.status === 'player_started'){
+                remain = durationPlayerTurn / 1000 - scene.timeElapse;
+            } else if(scene.status === 'dealer_turn'){
+                remain = durationDealerTurn / 1000 - scene.timeElapse;
+            }
+
+            tempScene.timeRemain = remain;
             // todo: 玩家加入游戏返回内容，待确定，直接返回scene不合理
             return callback(null, tempScene);
         }
