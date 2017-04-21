@@ -48,6 +48,7 @@ exp.playerEnter = function(roomId, role, serverId, callback){
             tempScene.durationBet = scene.durationBet;
             tempScene.status = scene.status;
             tempScene.dealer = scene.dealer;
+            tempScene.timeRemain = scene.timeRemain;
             // todo: 玩家加入游戏返回内容，待确定，直接返回scene不合理
             return callback(null, tempScene);
         }

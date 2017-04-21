@@ -40,6 +40,10 @@ function initScene(roomId, dealer, callback){
     newScene.durationDealerTurn = sceneConfig.durationDealerTurn; //+
     //初始化排行
     newScene.rank = [];                                           //-
+
+    //创建
+    newScene.current_status_time = utils.getCurrentDate();        //+游戏状态更新时间
+
 	//创建主播卡组
     var deckId = 'default';
     var newDeck = utils.createDeck(deckId);
@@ -57,6 +61,7 @@ function resetScene(scene, callback){
     //回合加一
     scene.turns = scene.turns + 1;
     scene.status = 'init';
+    scene.current_status_time = utils.getCurrentDate(); 
     scene.bet_amount = 0;  //玩家下注总金额
     //重置玩家列表
     Object.keys(scene.players).map((token) => {
@@ -125,6 +130,7 @@ SceneService.prototype.startBet = function(roomId, callback){
     }
     //更新缓存
     scene.status = 'betting';
+    scene.current_status_time = utils.getCurrentDate(); 
     sceneCollection.update(scene);
     pushService.pushMessages(roomId, sceneConstructor.make(scene), 'BetStartEvent', function(err){
         if(!!err){
@@ -219,6 +225,7 @@ SceneService.prototype.startGame = function(roomId, callback){
     }
     //更新缓存
     scene.status = 'player_started';
+    scene.current_status_time = utils.getCurrentDate(); 
     sceneCollection.update(scene);
     //加入随机的卡
     game.dealNextCard(scene.dealer_deck, function(err, newDeck, card){
@@ -290,6 +297,7 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
         return callback('game is not at player turn');
     }
     scene.status = 'dealer_turn';
+    scene.current_status_time = utils.getCurrentDate(); 
     sceneCollection.update(scene);
    
     //开启倒计时
@@ -513,7 +521,7 @@ SceneService.prototype.getNumberOfPlayers = function(room_id){
 //玩家加入游戏
 SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     var scene = sceneCollection.findOne({'room': roomId});
-    
+
     if(!scene){
         return callback({code: Code.SCENE.NO_SCENE, msg: 'addPlayer: no scene' });
     }
@@ -526,10 +534,14 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     
     //TODO: 游戏人数不够的话
 
+    //计算剩余时间
+    var seconds = (utils.getCurrentDate().getTime() - scene.current_status_time.getTime()) / 1000;
+
     //如果玩家已加入游戏， 返回当前游戏状态
     console.log('@@@@@@@ add player into cache');
     if(scene.players[role.token] != null){
         console.log('@@@@@@@ already in the cache');
+        scene.timeRemain = seconds;
         return callback(null, scene);
     }
     //否则创建新的玩家状态
@@ -542,6 +554,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     // 并把玩家加入channel
     console.log('@@@@@@@ create new in the cache');
     channel.add(role.token, serverId);
+    scene.timeRemain = seconds;
     return callback(null, scene);
 }
 
