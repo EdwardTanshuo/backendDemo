@@ -1,6 +1,8 @@
 var Scene = require('../models/scene');
 var Transaction = require('../models/transaction');
 
+var moment = require('moment');
+
 var game = require('../console/game');
 var utils = require('../util/utils');
 var sceneConstructor = require('../util/sceneConstructor');
@@ -535,8 +537,11 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     //TODO: 游戏人数不够的话
 
     //计算剩余时间
-    var seconds = (utils.getCurrentDate().getTime() - scene.current_status_time.getTime()) / 1000;
-
+    var startDate = moment('2013-5-11 8:73:18', 'YYYY-M-DD HH:mm:ss')
+    var endDate = moment('2013-5-11 10:73:18', 'YYYY-M-DD HH:mm:ss')
+    var secondsDiff = endDate.diff(startDate, 'seconds')
+    var seconds = moment(utils.getCurrentDate()).diff(scene.current_status_time, 'seconds')
+    
     //如果玩家已加入游戏， 返回当前游戏状态
     console.log('@@@@@@@ add player into cache');
     if(scene.players[role.token] != null){
