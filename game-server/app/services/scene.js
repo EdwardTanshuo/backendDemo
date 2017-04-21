@@ -513,6 +513,7 @@ SceneService.prototype.getNumberOfPlayers = function(room_id){
 //玩家加入游戏
 SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     var scene = sceneCollection.findOne({'room': roomId});
+    
     if(!scene){
         return callback({code: Code.SCENE.NO_SCENE, msg: 'addPlayer: no scene' });
     }

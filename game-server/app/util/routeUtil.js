@@ -9,6 +9,7 @@ exp.scene = function(session, msg, context, cb) {
 	var lastChar = hash[hash.length -1];
 	var code = lastChar.charCodeAt(0);
  	var id = sceneServers[code % sceneServers.length].id;
+ 	console.log('=====================' + id);
   	cb(null, id);
 };
 
@@ -44,7 +45,7 @@ exp.connector = function(session, msg, app, cb) {
 		cb(new Error('fail to find frontend id in session'));
 		return;
 	}
-
+	console.log('+++++++++++++++' + session.frontendId);
 	cb(null, session.frontendId);
 };
 

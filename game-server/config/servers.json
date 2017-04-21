@@ -11,10 +11,16 @@
       {"id": "auth-server-1", "host": "127.0.0.1", "port": 3650}
     ],
     "broadcaster": [
-      {"id":"broadcaster-server-1","host":"127.0.0.1", "port": 3160, "clientPort": 3020, "frontend": true}
+      {"id":"broadcaster-server-1","host":"127.0.0.1", "port": 3160, "clientPort": 3020, "frontend": true},
+      {"id":"broadcaster-server-2","host":"127.0.0.1", "port": 3161, "clientPort": 3021, "frontend": true}
     ],
     "scene": [
-      {"id":"scene-server-1","host":"127.0.0.1","port":3850}
+      {"id":"scene-server-1","host":"127.0.0.1","port":3850},
+      {"id":"scene-server-2","host":"127.0.0.1","port":3851},
+      {"id":"scene-server-3","host":"127.0.0.1","port":3852},
+      {"id":"scene-server-4","host":"127.0.0.1","port":3853},
+      {"id":"scene-server-5","host":"127.0.0.1","port":3854},
+      {"id":"scene-server-6","host":"127.0.0.1","port":3855}
     ]
   },
 
@@ -30,10 +36,15 @@
       {"id": "auth-server-1", "host": "127.0.0.1", "port": 3650}
     ],
     "broadcaster": [
-      {"id":"broadcaster-server-1","host":"127.0.0.1", "port": 3160, "clientPort": 3020, "frontend": true}
+      {"id":"broadcaster-server-1","host":"127.0.0.1", "port": 3160, "clientPort": 3020, "frontend": true},
+      {"id":"broadcaster-server-2","host":"127.0.0.1", "port": 3161, "clientPort": 3021, "frontend": true}
     ],
     "scene": [
-      {"id":"scene-server-1","host":"127.0.0.1","port":3850}
+      {"id":"scene-server-1","host":"127.0.0.1","port":3850},
+      {"id":"scene-server-2","host":"127.0.0.1","port":3851},
+      {"id":"scene-server-3","host":"127.0.0.1","port":3852},
+      {"id":"scene-server-5","host":"127.0.0.1","port":3854},
+      {"id":"scene-server-6","host":"127.0.0.1","port":3855}
     ]
   }
 }
