@@ -254,7 +254,7 @@ $(document).ready(function() {
         }
         // broadcaster entry
         pomelo.init({
-            host: '127.0.0.1',
+            host: '122.112.227.196',
             port: 3020,
             log: true
         }, function() {
