@@ -43,7 +43,7 @@ function initScene(roomId, dealer, callback){
     //初始化排行
     newScene.rank = [];                                           //-
 
-    //创建
+    //当前状态时间
     newScene.current_status_time = utils.getCurrentDate();        //+游戏状态更新时间
 
 	//创建主播卡组
@@ -199,15 +199,19 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
             scene.player_platfroms[role.token].push(card2);
         }
         
-        console.log('$$$###' + JSON.stringify(scene.player_platfroms[role.token]) + ')))@@@@ ' + role.token);
-        console.log('$$$###' + JSON.stringify(deck) + ')))@@@@ ' + role.token);
-
         var newValue = game.calculateHandValue(scene.player_platfroms[role.token]);
         scene.player_values[role.token] = newValue;
         sceneCollection.update(scene);
         var defaultCards = scene.player_platfroms[role.token];
         
         console.log('-------before PlayerBetEvent------------------------');
+
+        //通知其他观众
+        pushService.pushMessages(roomId, { 
+                                            role: role, 
+                                           	bet: bet,
+                                           	dealer_wealth: scene.dealer.wealth
+                                         }, 'PlayerBetEvent');
         
         return callback(null, { newDeck: newDeck, isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
     }); 
@@ -527,20 +531,12 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     if(!scene){
         return callback({code: Code.SCENE.NO_SCENE, msg: 'addPlayer: no scene' });
     }
-    // 推送玩家加入游戏消息 (todo:是否有必要推送给所有玩家)
-    var channel = channelService.getChannel(roomId, false);
-    if(!channel) {
-        return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
-    }
-    channel.pushMessage('PlayerEnterEvent', role);
+    // 推送玩家加入游戏消息 (todo:是否有必要推送给所有玩家) 
+    pushService.pushMessages(roomId, role, 'PlayerEnterEvent');
     
     //TODO: 游戏人数不够的话
 
-    //计算剩余时间
-    var startDate = moment('2013-5-11 8:73:18', 'YYYY-M-DD HH:mm:ss')
-    var endDate = moment('2013-5-11 10:73:18', 'YYYY-M-DD HH:mm:ss')
-    var secondsDiff = endDate.diff(startDate, 'seconds')
-    var seconds = moment(utils.getCurrentDate()).diff(scene.current_status_time, 'seconds')
+    
     
     //如果玩家已加入游戏， 返回当前游戏状态
     console.log('@@@@@@@ add player into cache');
@@ -556,9 +552,12 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
     scene.player_bets[role.token] = 0;
     sceneCollection.update(scene);
-    // 并把玩家加入channel
-    console.log('@@@@@@@ create new in the cache');
-    channel.add(role.token, serverId);
+    
+    //计算剩余时间
+    var startDate = moment(scene.current_status_time);
+    var endDate = moment(utils.getCurrentDate());
+    var secondsDiff = endDate.diff(startDate, 'seconds');
+    var seconds = moment(utils.getCurrentDate()).diff(scene.current_status_time, 'seconds');
     scene.timeElapse = seconds;
     return callback(null, scene);
 }
@@ -578,12 +577,7 @@ SceneService.prototype.removePlayer = function(roomId, role, serverId, callback)
     delete scene.player_values[role.token];
     delete scene.player_bets[role.token]; 
     sceneCollection.update(scene);
-    var channel = channelService.getChannel(roomId, true);
-    if(!channel) {
-        return callback('no channel', null);
-    }
-    //从channel中去除 player sc
-    channel.leave(role.token, serverId);
+    
     //并推送PlayerLeaveEvent消息
     channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
     return callback(null, 'cleared');

@@ -337,7 +337,7 @@ $(document).ready(function() {
                 showError(data.error);
                 return;
             }
-            addMessage('你抽到一张卡牌');
+            addMessage('你抽到一张卡牌' + JSON.stringify(data.card));
             $("#chatHistory").show();
         })
     });
