@@ -35,13 +35,6 @@ exp.playerEnter = function(roomId, role, serverId, callback){
     sceneService.addPlayer(roomId, role, serverId, function(err, scene){
         if(scene != null){
             
-            //加入广播组
-            var channel = channelService.getChannel(roomId, false);
-            if(!channel) {
-                return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
-            }
-            channel.add(role.token, serverId);
-
             //生成返回数据
             var tempScene = {};
             tempScene.player = scene.players[role.token];
@@ -77,12 +70,6 @@ exp.playerEnter = function(roomId, role, serverId, callback){
 exp.playerLeave = function(roomId, role, serverId, callback){
     console.log('----' + role.name + 'leave game' + '---------');
     sceneService.removePlayer(roomId, role, serverId, function(err, result){
-        var channel = channelService.getChannel(roomId, true);
-        if(!channel) {
-            return callback('no channel', null);
-        }
-        //从channel中去除 player sc
-        channel.leave(role.token, serverId);
         return callback(err, result);
     });
 }

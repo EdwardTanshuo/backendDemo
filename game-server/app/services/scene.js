@@ -552,6 +552,13 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
     scene.player_values[role.token] = {value: 0, busted: false, numberOfHigh: 0};
     scene.player_bets[role.token] = 0;
     sceneCollection.update(scene);
+
+    //加入广播组
+    var channel = channelService.getChannel(roomId, false);
+    if(!channel) {
+        return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
+    }
+    channel.add(role.token, serverId);
     
     //计算剩余时间
     var startDate = moment(scene.current_status_time);
@@ -579,7 +586,14 @@ SceneService.prototype.removePlayer = function(roomId, role, serverId, callback)
     sceneCollection.update(scene);
     
     //并推送PlayerLeaveEvent消息
+    var channel = channelService.getChannel(roomId, true);
+    if(!channel) {
+        return callback('no channel', null);
+    }
     channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
+    //从channel中去除 player sc
+    channel.leave(role.token, serverId);
+    
     return callback(null, 'cleared');
 }
 
