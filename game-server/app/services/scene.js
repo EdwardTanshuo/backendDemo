@@ -140,9 +140,10 @@ SceneService.prototype.startBet = function(roomId, callback){
         }
         else{
             //开启计时器
+            var current_turn = scene.turns;
             setTimeout(function(roomId) {
                 var scene = sceneCollection.findOne({'room': roomId});
-                if(!scene || scene.status != 'betting'){
+                if(!scene || scene.status != 'betting' || current_turn != scene.turns){
                     return;
                 }
                 self.cancelGame(roomId, function(err, result){
@@ -245,9 +246,10 @@ SceneService.prototype.startGame = function(roomId, callback){
         sceneCollection.update(scene);
         
         //开启计时器
+        var current_turn = scene.turns;
         setTimeout(function(roomId) {
             var scene = sceneCollection.findOne({'room': roomId});
-            if(!scene || scene.status != 'player_started'){
+            if(!scene || scene.status != 'player_started' || current_turn != scene.turns){
                 return;
             }
             self.endPlayerTurn(roomId, function(err, result){
@@ -307,9 +309,10 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
     sceneCollection.update(scene);
    
     //开启倒计时
+    var current_turn = scene.turns;
     setTimeout(function(roomId) {
         var scene = sceneCollection.findOne({'room': roomId});
-        if(!scene || scene.status != 'dealer_turn'){
+        if(!scene || scene.status != 'dealer_turn' || current_turn != scene.turns){
             return;
         }
         console.log('################ room: ' + roomId + ', will end dealer turn, into dealerFinish ');
