@@ -154,7 +154,7 @@ function showChat() {
 
 // query connector
 function queryEntry(token, callback) {
-    var route = 'gate.gateHandler.queryEntry';
+    var route = 'gate.gateHandler.queryBroadcaster';
     pomelo.init({
         host: window.location.hostname,
         port: 3014,
