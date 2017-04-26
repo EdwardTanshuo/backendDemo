@@ -28,7 +28,7 @@ PushService.prototype.pushMessageToDealer = function(roomId, msg, route, callbac
         return callback('no channel');
     }
     var sid = channel.getMember(roomId)['sid'];
-    channelService.pushMessageByUids(route, msg, [{ uid: uid, sid: sid }], callback);
+    channelService.pushMessageByUids(route, msg, [{ uid: roomId, sid: sid }], callback);
 }
 
 PushService.prototype.pushMessageToPlayers = function(roomId, msg, route, callback){
