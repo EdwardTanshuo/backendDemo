@@ -75,6 +75,7 @@ function resetScene(scene, callback){
     scene.dealer_platfrom = [];
     scene.dealer_value =  {value: 0, busted: false, numberOfHigh: 0};
     scene.dealer_deck = [];
+    scene.dealer_bets = 0;
     scene.player_bets = {};
     //创建主播卡组
     var deckId = 'default';
@@ -186,7 +187,6 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     scene.players[role.token] = role;
     scene.player_bets[role.token] = bet;
     scene.dealer_bets += bet;
-    scene.dealer.wealth -= bet;
     
     // 下足成功后 为玩家发两张卡牌
     game.dealDefaultCard(deck, function(err, newDeck, card1, card2){
@@ -207,11 +207,13 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         
         console.log('-------before PlayerBetEvent------------------------');
 
-        //通知其他观众
-        pushService.pushMessages(roomId, { 
-                                            role: role, 
-                                           	bet: bet,
-                                           	dealer_wealth: scene.dealer.wealth
+        //通知zhubo
+        var numOfPlayers = Object.keys(scene.player_bets).filter((key) => {
+            return scene.player_bets[key] > 0;
+        }).length;
+        pushService.pushMessageToDealer(roomId, { 
+                                            totalPlayers: numOfPlayers,
+                                           	totalBet: scene.dealer_bets
                                          }, 'PlayerBetEvent');
         
         return callback(null, { newDeck: newDeck, isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
@@ -410,6 +412,9 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
         }
         scene.players[uid].exp += bet;
 
+        //更新主播缓存
+        scene.dealer.wealth -= (netValue - bet);
+        
         //将结果存入排行榜
         rankingList.push(playResult);
         console.log(playResult);
@@ -453,7 +458,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         //同步远程
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
-            pushService.pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
+            pushService.pushMessageToPlayers(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
             if(!!err){
                 console.error(err.msg);
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
@@ -479,6 +484,7 @@ SceneService.prototype.cancelGame = function(roomId, callback){
         scene.player_bets[token] = 0;
         scene.player_platfroms[token] = [];
     });
+    scene.dealer_bets = 0;
     sceneCollection.update(scene);
 
     //清空transaction
@@ -503,7 +509,6 @@ SceneService.prototype.endGame = function(roomId, callback) {
             roomId:         scene.room,
             turns:          scene.turns,
             player_count:   Object.keys(scene.player_bets).length, // 玩家人数
-            payment:        scene.dealer_bets,   // 主播赔付总额
         };
         console.log(nScene);
         // 同步scene 到mysql
