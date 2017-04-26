@@ -458,7 +458,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         //同步远程
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
-            pushService.pushMessageToPlayers(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
+            pushService.pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
             if(!!err){
                 console.error(err.msg);
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
