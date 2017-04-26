@@ -10,7 +10,9 @@ module.exports = function HandValueCalculator() {
   // the hand value calculator
   this.calculateHandValue = function(platform) {
     var totalValue = 0;
-    var numberOfAces = 0;
+    var cardValue = 0;
+    var numberOfTrans = 0;
+    var numberOfHigh = 0;
 
     // protect against empty argument list or empty collection
     if (!platform || platform.length == 0) {
@@ -25,8 +27,7 @@ module.exports = function HandValueCalculator() {
       if(!monster){
           continue;
       }
-      var numberOfTrans = 0;
-      var numberOfHigh = 0;
+      
       switch (monster.type) {
         case 'TRANSFORM':
           cardValue = 0;
