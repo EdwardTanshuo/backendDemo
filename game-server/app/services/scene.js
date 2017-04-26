@@ -97,7 +97,7 @@ SceneService.prototype.createGame = function(dealer, roomId, callback) {
     //主播 非主观意图断开游戏，重新加入
     if(scene){
         //游戏已经创建，直接返回
-        return callback(null, sceneConstructor.make(newScene));
+        return callback(null, sceneConstructor.make(scene));
     } else{
         //初始化游戏场景
         initScene(roomId, dealer, function(err, newScene){
