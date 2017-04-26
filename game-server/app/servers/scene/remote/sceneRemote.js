@@ -18,13 +18,13 @@ exp.dealerEnter = function(roomId, dealer, serverId, callback){
     callback(null, dealer);
 }
 
-//主播离开游戏， 从channel中去掉主播信息， 推送 DealerLeaverEvent 给当前room内的全部人员
+//主播离开游戏， 从channel中去掉主播信息， 推送 DealerLeaveEvent 给当前room内的全部人员
 exp.dealerLeave = function(roomId, dealer, serverId, callback){
     var channel = channelService.getChannel(roomId, true);
     if(!channel) {
         return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerLeave: no channel' });
     }
-    channel.pushMessage({route: 'DealerLeaverEvent', dealer: dealer});
+    channel.pushMessage({route: 'DealerLeaveEvent', dealer: dealer});
     channel.leave(roomId, serverId);
     callback(null);
 }
