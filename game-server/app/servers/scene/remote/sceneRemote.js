@@ -24,8 +24,8 @@ exp.dealerLeave = function(roomId, dealer, serverId, callback){
     if(!channel) {
         return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerLeave: no channel' });
     }
-    channel.leave(roomId, serverId);
     channel.pushMessage({route: 'DealerLeaverEvent', dealer: dealer});
+    channel.leave(roomId, serverId);
     callback(null);
 }
 
