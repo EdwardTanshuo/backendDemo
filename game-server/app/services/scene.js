@@ -615,23 +615,25 @@ SceneService.prototype.playerFinish = function(room_id, token, callback){
 
 // 发送弹幕 并推送 DanmuEvent
 SceneService.prototype.sendDanmu = function(roomId, params, callback){
-    pushService.pushMessages(roomId, params, 'DanmuEvent', function(err){
-        if(!!err){
-            return callback({code: Code.COMMON.MSG_FAIL, msg: 'DanmuEvent:  ' + err });
-        }
-        return callback(null);
-    });
+    pushService.pushMessages(roomId, params, 'DanmuEvent');
+    return callback();
 } 
 
 
 // 广播送礼 GiftEvent
-SceneService.prototype.sendGift = function(roomId, gift, callback){
-    pushService.pushMessages(roomId, gift, 'GiftEvent', function(err){
-        if(!!err){
-            return callback({code: Code.COMMON.MSG_FAIL, msg: 'GiftEvent:  ' + err });
-        }
-        return callback();
-    });
+SceneService.prototype.sendGift = function(roomId, gift, role, callback){
+    pushService.pushMessages(roomId, gift, 'GiftEvent');
+
+    //更新缓存
+    var scene = sceneCollection.findOne({'room': roomId});
+    //scene.dealer.wealth -= gift.value
+    if(!scene.players[role.token]){
+        return callback({code: Code.PLAYER.NO_PLAYER, msg: 'removePlayer: player is not inside' });
+    }
+    scene.players[role.token] = role;
+    sceneCollection.update(scene);;
+    
+    return callback();
 }
 
 // 人脸识别

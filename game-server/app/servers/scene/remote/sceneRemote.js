@@ -115,8 +115,8 @@ exp.sendDanmu = function(roomId, msg, callback) {
     });
 }
 
-exp.sendGift = function(roomId, gift, callback) {
-    sceneService.sendGift(roomId, gift, function(err){
+exp.sendGift = function(roomId, gift, role, callback) {
+    sceneService.sendGift(roomId, gift, role, function(err){
         if(err){
             return callback(err);
         }

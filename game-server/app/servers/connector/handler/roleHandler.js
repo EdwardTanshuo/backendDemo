@@ -221,17 +221,29 @@ Handler.prototype.sendGift = function(gift, session, next) {
 
     gift.broadcaster_id = roomId;
 
-    giftService.sendGift(token, gift, (err, body)=>{
-        if(err){
-            return next(new Error(err), { code: Code.FAIL, error: err });
-        } else{
-            app.rpc.scene.sceneRemote.sendGift(session, roomId, gift, function(err){
-                if(!!err){
-                    return next(new Error(err.msg), { code: err.code, error: err.msg });
-                }
-                return next(null, { code: Code.OK });
-            });
+    roleService.auth(roomId, token, function(err, currentRole){
+        if(!!err){
+            return next(new Error(err), {code: Code.FAIL, error: 'sendGift: update CurrentRole error :' + err});
         }
+        // 更新session
+        session.set('currentRole', currentRole);
+        session.pushAll(function(err) {
+            if (err) {
+                return next(new Error(err), {code: Code.FAIL, error: 'sendGift: update CurrentRole error :' + err});
+            }
+            giftService.sendGift(token, gift, (err, body)=>{
+                if(!!err){
+                    return next(new Error(err.msg), { code: Code.FAIL, error: err.msg });
+                } else{
+                    app.rpc.scene.sceneRemote.sendGift(session, roomId, gift, currentRole, function(err){
+                        if(!!err){
+                            return next(new Error(err.msg), { code: err.code, error: err.msg });
+                        }
+                        return next(null, { code: Code.OK });
+                    });
+                }
+            });
+        });
     });
 }
 
