@@ -41,9 +41,11 @@ Handler.prototype.entry = function(msg, session, next) {
 										return next(new Error(err), {code: Code.FAIL, error: 'PlayerEnter.session.bind:' + err});
 									}
 									roleEnter(self_app, session, function(err, scene){
+										console.log('----------------------- Enter Scene ----------------------------');
 					  					if(!!err){
                                             return next(new Error(err.msg), { code: err.code, error: err.msg });
 						  				} else{
+						  					console.log('----------------------- Enter Finished ----------------------------');
 						  					session.on('closed', onRoleLeave.bind(null, self_app, session));
 						  					return next(null, { code: Code.OK, result: scene});
 						  				}

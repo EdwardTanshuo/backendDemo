@@ -133,7 +133,10 @@ Handler.prototype.leave = function(msg, session, next) {
 
     //清除玩家端缓存
     var find_result = roleDeckCollection.findOne({'token': token});
-    roleDeckCollection.remove(find_result);
+    if(find_result){
+        roleDeckCollection.remove(find_result);
+    }
+    
     //清除scene缓存
     app.rpc.scene.sceneRemote.playerLeave(session, roomId, currentRole, serverId, function(err, result){
         if(err){
