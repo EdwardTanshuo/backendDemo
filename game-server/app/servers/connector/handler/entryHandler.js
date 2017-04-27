@@ -72,7 +72,12 @@ var onRoleLeave = function (app, session) {
         serverId= app.get('serverId');
 
     //退出游戏scene
-	app.rpc.scene.sceneRemote.playerDisconnect(session, session.get('room'), currentRole, serverId);
+	app.rpc.scene.sceneRemote.playerDisconnect(session, session.get('room'), currentRole, serverId, function(err){
+		if(!!err){
+			console.error('Player leave error! %j', err);
+            //next(new Error(err), {code: err.code, error: err.msg});
+		} 
+	});
 
     //从channel中去除 player 并推送PlayerLeaveEvent消息
     /*var channel = channelService.getChannel(roomId, true);

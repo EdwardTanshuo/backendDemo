@@ -86,11 +86,12 @@ exp.playerDisconnect = function(roomId, role, serverId, callback){
     //并推送PlayerLeaveEvent消息
     var channel = channelService.getChannel(roomId, true);
     if(!channel) {
-        return callback('no channel', null);
+        return callback('no channel');
     }
     //channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
     //从channel中去除 player sc
     channel.leave(role.token, serverId);
+    return callback();
 }
 
 //玩家下注 生成transaction， 推送PlayerBetEvent给所有人，玩家下注后，会被加入游戏的广播组，而被作为游戏玩家
