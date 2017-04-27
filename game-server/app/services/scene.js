@@ -520,7 +520,7 @@ SceneService.prototype.endGame = function(roomId, callback) {
                 return callback(err);
             }
             sceneCollection.remove(scene);
-            pushService.pushMessages(roomId, role, 'DealerLeaveEvent');
+            pushService.pushMessages(roomId, sceneConstructor.make(scene), 'DealerLeaveEvent');
             return callback(null, sceneConstructor.make(scene));
         });
     }
