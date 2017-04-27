@@ -21,7 +21,9 @@ GiftService.prototype.sendGift = function(token, gift, callback){
         body: gift
     };
     request(options,  function(err, response, body){
+        console.error(body);
         if(!!err){
+            console.error(err);
             return callback({code: Code.Fail, msg: err });
         }
         return callback(null, body);
