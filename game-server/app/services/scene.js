@@ -480,6 +480,9 @@ SceneService.prototype.cancelGame = function(roomId, callback){
     if(scene.status != 'betting'){
         return callback('game is not at betting yet');
     }
+
+    pushService.pushMessageToPlayers(roomId, {}, 'CancelGameEvent');
+
     //更新游戏状态
     scene.status = 'init';
     //重置玩家列表
@@ -494,7 +497,7 @@ SceneService.prototype.cancelGame = function(roomId, callback){
     var transactionList = transactionService.fetch();
     transactionService.deleteAll(transactionList);
     
-    pushService.pushMessages(roomId, sceneConstructor.make(scene), 'CancelGameEvent');
+    
     return callback(null, sceneConstructor.make(scene));
 }
 
