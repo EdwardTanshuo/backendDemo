@@ -269,6 +269,9 @@ DataSyncService.prototype.syncTransactionToRemote = function(transactionList, ca
     request(options,  function(err, response, body){
         if (err) {
             callback(err); // error response
+        } else if(response.statusCode != 200){
+            console.error(body);
+            return callback({code: Code.Fail, msg: body });
         } else {
              console.log('------syncTransactionToRemote success result');
              console.log(body);
