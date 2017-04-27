@@ -372,8 +372,11 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
     var dealerValue = scene.dealer_value;
     var globalRank = scene.rank;
     var group = Object.keys(scene.player_bets).map((uid) => {
-        var netValue = bet;
         var bet = player_bets[uid];
+        if(bet <= 0){
+            return;
+        }
+        var netValue = 0;
         var playValue = scene.player_values[uid];
         var player = scene.players[uid];
         // 计算玩家输赢
