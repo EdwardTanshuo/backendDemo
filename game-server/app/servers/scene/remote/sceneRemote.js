@@ -34,7 +34,13 @@ exp.playerEnter = function(roomId, role, serverId, callback){
     console.log('----' + role.name + 'enter game' + '---------');
     sceneService.addPlayer(roomId, role, serverId, function(err, scene){
         if(scene != null){
-            
+            //加入广播组
+            var channel = channelService.getChannel(roomId, false);
+            if(!channel) {
+                return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
+            }
+            channel.add(role.token, serverId);
+
             //生成返回数据
             var tempScene = {};
             tempScene.player = scene.players[role.token];
@@ -72,6 +78,19 @@ exp.playerLeave = function(roomId, role, serverId, callback){
     sceneService.removePlayer(roomId, role, serverId, function(err, result){
         return callback(err, result);
     });
+}
+
+//玩家断开连接
+exp.playerDisconnect = function(roomId, role, serverId, callback){
+    console.log('----' + role.name + 'disconnected' + '---------');
+    //并推送PlayerLeaveEvent消息
+    var channel = channelService.getChannel(roomId, true);
+    if(!channel) {
+        return callback('no channel', null);
+    }
+    //channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
+    //从channel中去除 player sc
+    channel.leave(role.token, serverId);
 }
 
 //玩家下注 生成transaction， 推送PlayerBetEvent给所有人，玩家下注后，会被加入游戏的广播组，而被作为游戏玩家

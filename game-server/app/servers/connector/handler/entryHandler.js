@@ -18,6 +18,7 @@ var Handler = function(app) {
  * @param  {Function} next    next step callback
  * @return {Void}
  */
+
 Handler.prototype.entry = function(msg, session, next) {
 	  var self_app = this.app;
 	  if(msg.token == null || msg.room == null){
@@ -69,6 +70,9 @@ var onRoleLeave = function (app, session) {
     var roomId = session.get('room'),
         currentRole= session.get('currentRole'),
         serverId= app.get('serverId');
+
+    //退出游戏scene
+	app.rpc.scene.sceneRemote.playerDisconnect(session, session.get('room'), currentRole, serverId);
 
     //从channel中去除 player 并推送PlayerLeaveEvent消息
     /*var channel = channelService.getChannel(roomId, true);
