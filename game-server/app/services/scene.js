@@ -633,7 +633,7 @@ SceneService.prototype.sendGift = function(roomId, gift, role, callback){
     scene.players[role.token] = role;
     sceneCollection.update(scene);;
     
-    return callback();
+    return callback(null, role.wealth);
 }
 
 // 人脸识别
