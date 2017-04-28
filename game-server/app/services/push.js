@@ -27,8 +27,11 @@ PushService.prototype.pushMessageToDealer = function(roomId, msg, route, callbac
     if (!channel) {
         return callback('no channel');
     }
+    if(!channel.getMember(roomId)){
+        return callback();
+    }
     var sid = channel.getMember(roomId)['sid'];
-    channelService.pushMessageByUids(route, msg, [{ uid: roomId, sid: sid }], callback);
+    return channelService.pushMessageByUids(route, msg, [{ uid: roomId, sid: sid }], callback);
 }
 
 PushService.prototype.pushMessageToPlayers = function(roomId, msg, route, callback){
@@ -48,9 +51,11 @@ PushService.prototype.pushMessageToPlayers = function(roomId, msg, route, callba
     });
     
     // add broadcaster
-    var sid = channel.getMember(roomId)['sid'];
-    group.push({uid: roomId, sid: sid});
-
+    if(!!channel.getMember(roomId)){
+        var sid = channel.getMember(roomId)['sid'];
+        group.push({uid: roomId, sid: sid});
+    }
+   
     if(group.length > 0){
         return channelService.pushMessageByUids(route, msg, group, callback);
     }
