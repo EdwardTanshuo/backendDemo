@@ -260,7 +260,7 @@ SceneService.prototype.startGame = function(roomId, callback){
         }, sceneConfig.durationPlayerTurn, roomId);
         
         //通知其他观众
-        pushService.pushMessages(roomId, { 
+        pushService.pushMessageToPlayers(roomId, { 
                                             dealer_platfrom: scene.dealer_platfrom, 
                                             dealer_value: scene.dealer_value, 
                                             dealer: scene.dealer, status: scene.status
@@ -461,7 +461,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         //同步远程
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
-            pushService.pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
+            pushService.pushMessageToPlayers(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
             if(!!err){
                 console.error(err.msg);
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
@@ -547,7 +547,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         return callback({code: Code.SCENE.NO_SCENE, msg: 'addPlayer: no scene' });
     }
     // 推送玩家加入游戏消息 (todo:是否有必要推送给所有玩家) 
-    pushService.pushMessages(roomId, role, 'PlayerEnterEvent');
+    pushService.pushMessageToDealer(roomId, role, 'PlayerEnterEvent');
     
     //TODO: 游戏人数不够的话
 
