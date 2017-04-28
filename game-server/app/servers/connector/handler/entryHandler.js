@@ -98,6 +98,7 @@ var onRoleLeave = function (app, session) {
 };
 
 var roleEnter = function (app, session, callback) {
+	
     var serverId = app.get('serverId'),
         currentRole = session.get('currentRole'),
         token = session.get('token');

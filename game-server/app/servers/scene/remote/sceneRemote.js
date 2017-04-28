@@ -20,7 +20,7 @@ exp.dealerEnter = function(roomId, dealer, serverId, callback){
 
 //主播离开游戏， 从channel中去掉主播信息， 推送 DealerLeaveEvent 给当前room内的全部人员
 exp.dealerLeave = function(roomId, dealer, serverId, callback){
-    var channel = channelService.getChannel(roomId, true);
+    var channel = channelService.getChannel(roomId, false);
     if(!channel) {
         return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerLeave: no channel' });
     }
@@ -84,9 +84,9 @@ exp.playerLeave = function(roomId, role, serverId, callback){
 exp.playerDisconnect = function(roomId, role, serverId, callback){
     console.log('----' + role.name + 'disconnected' + '---------');
     //并推送PlayerLeaveEvent消息
-    var channel = channelService.getChannel(roomId, true);
+    var channel = channelService.getChannel(roomId, false);
     if(!channel) {
-        return callback('no channel');
+        return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerEnter: no channel' });
     }
     //channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
     //从channel中去除 player sc
@@ -115,7 +115,7 @@ exp.playerDraw = function(roomId, token, deck, callback){
         return callback({ code: Code.COMMON.LESS_PARAM, result: 'playerDraw: missing params' });
     }
 	sceneService.playerDraw(roomId, token, deck, function(err, result){
-		return callback( err, result);
+		return callback(err, result);
 	});
 }
 
