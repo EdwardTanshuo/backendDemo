@@ -11,7 +11,7 @@ var logger = require('pomelo-logger').getLogger(__filename);
 exp.dealerEnter = function(roomId, dealer, serverId, callback){
     var channel = channelService.getChannel(roomId, true);
     if(!channel) {
-        return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerEnter: no channel' });
+        return callback({code: 500, msg: 'dealerEnter: no channel' });
     }
     channel.add(roomId, serverId);
     channel.pushMessage({ route: 'DealerEnterEvent', dealer: dealer });
@@ -22,7 +22,7 @@ exp.dealerEnter = function(roomId, dealer, serverId, callback){
 exp.dealerLeave = function(roomId, dealer, serverId, callback){
     var channel = channelService.getChannel(roomId, false);
     if(!channel) {
-        return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerLeave: no channel' });
+        return callback({code: 500, msg: 'dealerLeave: no channel' });
     }
     channel.pushMessage({route: 'DealerLeaveEvent', dealer: dealer});
     channel.leave(roomId, serverId);
@@ -37,7 +37,7 @@ exp.playerEnter = function(roomId, role, serverId, callback){
             //加入广播组
             var channel = channelService.getChannel(roomId, false);
             if(!channel) {
-                return callback({code: Code.COMMON.NO_CHANNEL, msg: 'addPlayer: no channel' });
+                return callback({code: 500, msg: 'addPlayer: no channel' });
             }
             channel.add(role.token, serverId);
 
@@ -86,7 +86,7 @@ exp.playerDisconnect = function(roomId, role, serverId, callback){
     //并推送PlayerLeaveEvent消息
     var channel = channelService.getChannel(roomId, false);
     if(!channel) {
-        return callback({code: Code.COMMAND.NO_CHANNEL, msg: 'dealerEnter: no channel' });
+        return callback({code: 500, msg: 'dealerEnter: no channel' });
     }
     //channel.pushMessage({route: 'PlayerLeaveEvent', role: role});
     //从channel中去除 player sc
@@ -97,7 +97,7 @@ exp.playerDisconnect = function(roomId, role, serverId, callback){
 //玩家下注 生成transaction， 推送PlayerBetEvent给所有人，玩家下注后，会被加入游戏的广播组，而被作为游戏玩家
 exp.playerBet = function(roomId, role, bet, deck, callback){
     if(roomId == null || role == null || bet == null){
-        return callback({ code: Code.COMMON.LESS_PARAM, result: 'playerBet: missing params' });
+        return callback({ code: 500, result: 'playerBet: missing params' });
     }
     sceneService.playerBet(roomId, role, bet, deck, function(err, result){
         return callback(err, result);
@@ -112,7 +112,7 @@ exp.playerFinish = function(args, callback){
 //玩家抽卡， 返回新的卡组以及卡片object
 exp.playerDraw = function(roomId, token, deck, callback){
     if(roomId == null || deck == null || token == null){
-        return callback({ code: Code.COMMON.LESS_PARAM, result: 'playerDraw: missing params' });
+        return callback({ code: 500, result: 'playerDraw: missing params' });
     }
 	sceneService.playerDraw(roomId, token, deck, function(err, result){
 		return callback(err, result);
