@@ -481,7 +481,7 @@ SceneService.prototype.cancelGame = function(roomId, callback){
         return callback('game is not at betting yet');
     }
 
-    pushService.pushMessageToPlayers(roomId, {}, 'CancelGameEvent');
+    pushService.pushMessages(roomId, {}, 'CancelGameEvent');
 
     //更新游戏状态
     scene.status = 'init';
