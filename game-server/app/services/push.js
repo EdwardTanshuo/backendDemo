@@ -6,7 +6,7 @@ function PushService() {
 
 
 PushService.prototype.pushMessages = function(roomId, msg, route, callback){
-	var channel = channelService.getChannel(roomId, true);
+	var channel = channelService.getChannel(roomId, false);
     if (!channel) {
         return callback('no channel');
     }
@@ -14,7 +14,7 @@ PushService.prototype.pushMessages = function(roomId, msg, route, callback){
 }
 
 PushService.prototype.pushMessageToOne = function(roomId, uid, msg, route, callback){
-    var channel = channelService.getChannel(roomId, true);
+    var channel = channelService.getChannel(roomId, false);
     if (!channel) {
         return callback('no channel');
     }
@@ -23,7 +23,7 @@ PushService.prototype.pushMessageToOne = function(roomId, uid, msg, route, callb
 }
 
 PushService.prototype.pushMessageToDealer = function(roomId, msg, route, callback){
-    var channel = channelService.getChannel(roomId, true);
+    var channel = channelService.getChannel(roomId, false);
     if (!channel) {
         return callback('no channel');
     }
@@ -36,7 +36,7 @@ PushService.prototype.pushMessageToPlayers = function(roomId, msg, route, callba
     if(!scene){
         return callback('room not found');
     } 
-    var channel = channelService.getChannel(roomId, true);
+    var channel = channelService.getChannel(roomId, false);
     if (!channel) {
         return callback('no channel');
     }
