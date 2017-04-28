@@ -214,7 +214,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
         pushService.pushMessageToDealer(roomId, { 
                                             totalPlayers: numOfPlayers,
                                            	totalBet: scene.dealer_bets
-                                         }, 'PlayerBetEvent');
+                                         }, 'PlayerBetEvent', function(err, result){});
         
         return callback(null, { newDeck: newDeck, isBet: true, quantity: bet, roleWealth: role.wealth, dealerWealth: scene.dealer.wealth, defaultCards: defaultCards, value: newValue });
     }); 
@@ -264,7 +264,7 @@ SceneService.prototype.startGame = function(roomId, callback){
                                             dealer_platfrom: scene.dealer_platfrom, 
                                             dealer_value: scene.dealer_value, 
                                             dealer: scene.dealer, status: scene.status
-                                         }, 'GameStartEvent');
+                                         }, 'GameStartEvent', function(err, result){});
         return callback(null, sceneConstructor.make(scene));
     });
 }
@@ -322,7 +322,7 @@ SceneService.prototype.endPlayerTurn = function(roomId, callback){
     }, sceneConfig.durationDealerTurn, roomId);
 
     //通知所有玩家
-    pushService.pushMessageToPlayers(roomId, sceneConstructor.make(scene), 'EndPlayerEvent');
+    pushService.pushMessageToPlayers(roomId, sceneConstructor.make(scene), 'EndPlayerEvent', function(err, result){});
 
     return callback(null, sceneConstructor.make(scene));
 }
@@ -350,7 +350,7 @@ SceneService.prototype.dealerDrawCard = function(roomId, callback){
         scene.dealer_deck = newDeck;
         sceneCollection.update(scene);
         //推送DealerGetCardEvent 广播主播抽到的卡
-        pushService.pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent'); 
+        pushService.pushMessageToPlayers(roomId, {card: card, value: newValue}, 'DealerGetCardEvent', function(err, result){}); 
         return callback(null, newDeck, card, newValue);
     });
 }
@@ -461,7 +461,7 @@ SceneService.prototype.dealerFinish = function(roomId, callback){
 
         //同步远程
         dataSyncService.syncTransactionToRemote(transactionList, function(err, result){
-            pushService.pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent');
+            pushService.pushMessages(roomId, { rankingList: rankingList, globalRank: globalRank }, 'DealerFinishEvent', function(err, result){});
             if(!!err){
                 console.error(err.msg);
                 return callback({code: Code.COMMON.MSG_FAIL, msg: 'DealerFinishEvent:  ' + err });
@@ -481,7 +481,7 @@ SceneService.prototype.cancelGame = function(roomId, callback){
         return callback('game is not at betting yet');
     }
 
-    pushService.pushMessages(roomId, {}, 'CancelGameEvent');
+    pushService.pushMessages(roomId, {}, 'CancelGameEvent', function(err, result){});
 
     //更新游戏状态
     scene.status = 'init';
@@ -523,7 +523,7 @@ SceneService.prototype.endGame = function(roomId, callback) {
                 return callback(err);
             }
             sceneCollection.remove(scene);
-            pushService.pushMessages(roomId, sceneConstructor.make(scene), 'DealerLeaveEvent');
+            pushService.pushMessages(roomId, sceneConstructor.make(scene), 'DealerLeaveEvent', function(err, result){});
             return callback(null, sceneConstructor.make(scene));
         });
     }
@@ -547,7 +547,7 @@ SceneService.prototype.addPlayer = function(roomId, role, serverId, callback){
         return callback({code: Code.SCENE.NO_SCENE, msg: 'addPlayer: no scene' });
     }
     // 推送玩家加入游戏消息 (todo:是否有必要推送给所有玩家) 
-    pushService.pushMessageToDealer(roomId, role, 'PlayerEnterEvent');
+    pushService.pushMessageToDealer(roomId, role, 'PlayerEnterEvent', function(err, result){});
     
     //TODO: 游戏人数不够的话
 
@@ -619,14 +619,14 @@ SceneService.prototype.playerFinish = function(room_id, token, callback){
 
 // 发送弹幕 并推送 DanmuEvent
 SceneService.prototype.sendDanmu = function(roomId, params, callback){
-    pushService.pushMessages(roomId, params, 'DanmuEvent');
+    pushService.pushMessages(roomId, params, 'DanmuEvent', function(err, result){});
     return callback();
 } 
 
 
 // 广播送礼 GiftEvent
 SceneService.prototype.sendGift = function(roomId, gift, role, callback){
-    pushService.pushMessages(roomId, gift, 'GiftEvent');
+    pushService.pushMessages(roomId, gift, 'GiftEvent', function(err, result){});
 
     //更新缓存
     var scene = sceneCollection.findOne({'room': roomId});
