@@ -35,7 +35,7 @@ DataSyncService.prototype.syncRole = function(role, callback) {
             record.exp = role.experience;
             record.next_level_experience = role.next_level_experience;
             record.follow = role.follow;
-            record.withdraw_gift_number: role.withdraw_gift_number;
+            record.withdraw_gift_number = role.withdraw_gift_number;
             console.log('updating user in server cache...');
             console.log(record);
             return record.save(callback);
