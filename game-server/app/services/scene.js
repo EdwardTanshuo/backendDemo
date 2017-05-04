@@ -637,7 +637,7 @@ SceneService.prototype.sendGift = function(roomId, gift, role, callback){
     scene.players[role.token] = role;
     sceneCollection.update(scene);;
     
-    return callback(null, role.wealth);
+    return callback(null, role.wealth, role.withdraw_gift_number);
 }
 
 // 人脸识别

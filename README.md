@@ -210,6 +210,7 @@ route:  scene.sceneHandler.listGift
 
 ```
 
+
 # 主播端推送事件说明
 
 ## 1. 主播进入游戏
@@ -449,7 +450,11 @@ Event:  UpdateCoorEvent
             "user_name": xxxxx,
          }
 
-    成功返回值:   { code: 200 }
+    成功返回值:   {  
+                    code: 200,              
+                    wealth: 1000,           //剩余魔法石
+                    withdraw_gift_number: 2 //剩余礼物数量 
+                }
 
     失败返回值: { code: errorCode, error: errMsg }
 
