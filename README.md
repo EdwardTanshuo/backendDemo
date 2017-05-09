@@ -451,9 +451,11 @@ Event:  UpdateCoorEvent
          }
 
     成功返回值:   {  
-                    code: 200,              
-                    wealth: 1000,           //剩余魔法石
-                    withdraw_gift_number: 2 //剩余礼物数量 
+                    code: 200,       
+                    result: {
+                        wealth: 1000,           //剩余魔法石
+                        withdraw_gift_number: 2 //剩余礼物数量 
+                    }
                 }
 
     失败返回值: { code: errorCode, error: errMsg }
