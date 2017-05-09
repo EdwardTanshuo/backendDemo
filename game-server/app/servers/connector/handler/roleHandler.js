@@ -244,7 +244,7 @@ Handler.prototype.sendGift = function(gift, session, next) {
                         }
                         console.error(oldGiftNum);
                         console.error(JSON.stringify(body));
-                        return next(null, { code: Code.OK, result: { wealth: body.result.wealth, withdrawGiftNumber: body.result.withdraw_gift_number } });
+                        return next(null, { code: Code.OK, wealth: body.result.wealth, withdrawGiftNumber: oldGiftNum });
                     });
                 }
             });
