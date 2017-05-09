@@ -242,8 +242,6 @@ Handler.prototype.sendGift = function(gift, session, next) {
                         if(!!err){
                             return next(new Error(err.msg), { code: err.code, error: err.msg });
                         }
-                        console.error(oldGiftNum);
-                        console.error(JSON.stringify(body));
                         return next(null, { code: Code.OK, wealth: body.result.wealth, withdrawGiftNumber: oldGiftNum });
                     });
                 }
