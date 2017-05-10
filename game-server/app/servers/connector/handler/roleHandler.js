@@ -231,7 +231,7 @@ Handler.prototype.sendGift = function(gift, session, next) {
         // 更新session
         session.set('currentRole', currentRole);
         session.pushAll(function(err) {
-            if (err) {
+            if (!!err) {
                 return next(new Error(err), {code: Code.FAIL, error: 'sendGift: update CurrentRole error :' + err});
             }
             giftService.sendGift(token, gift, (err, body)=>{
@@ -295,5 +295,28 @@ Handler.prototype.follow = function(msg, session, next) {
         } else{
             return next(null, { code: Code.OK });
         }
+    });
+}
+
+/**
+ * 玩家获取礼物数量
+ */
+Handler.prototype.getGiftNum = function(msg, session, next) {
+    var currentRole = session.get('currentRole'),
+        roomId = session.get('room'),
+        token = session.get('token');
+
+    roleService.auth(roomId, token, function(err, currentRole){
+        if(!!err){
+            return next(new Error(err), {code: Code.FAIL, error: 'getGiftNum: update CurrentRole error :' + err});
+        }
+        // 更新session
+        session.set('currentRole', currentRole);
+        session.pushAll(function(err) {
+            if (!!err) {
+                return next(new Error(err), {code: Code.FAIL, error: 'getGiftNum: update CurrentRole error :' + err});
+            }
+            return next(null, { code: Code.OK, result: currentRole.withdraw_gift_number });
+        });
     });
 }

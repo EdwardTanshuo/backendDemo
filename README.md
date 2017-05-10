@@ -477,6 +477,23 @@ route:  connector.roleHandler.getViewerCount
 
 ```
 
+## 玩家获取当前爱心礼物数量 
+
+```
+route:  connector.roleHandler.getGiftNum 
+
+参数: 无
+
+成功返回值:   {   
+code: 200, 
+result: 12 //礼物数量
+}
+
+失败返回值: 无
+
+```
+
+
 
 
   
