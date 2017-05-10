@@ -21,6 +21,9 @@
       {"id":"scene-server-4","host":"127.0.0.1","port":3853},
       {"id":"scene-server-5","host":"127.0.0.1","port":3854},
       {"id":"scene-server-6","host":"127.0.0.1","port":3855}
+    ],
+    "http": [
+      {"id":"http-server-1","host":"127.0.0.1","port":3950}
     ]
   },
 
@@ -45,6 +48,9 @@
       {"id":"scene-server-3","host":"127.0.0.1","port":3852},
       {"id":"scene-server-5","host":"127.0.0.1","port":3854},
       {"id":"scene-server-6","host":"127.0.0.1","port":3855}
+    ],
+    "http": [
+      {"id":"http-server-1","host":"127.0.0.1","port":3950}
     ]
   }
 }

@@ -44,6 +44,12 @@ function initMongo(){
         });
 }
 
+function initHttp(app){
+  var exp = require("./app/components/http/expressproxy");
+  app.load("expressproxy", exp(app));
+  console.log('http proxy start at port 3333');
+}
+
 var app = pomelo.createApp();
 app.set('name', 'luluvr');
 global.app = app;
@@ -118,6 +124,10 @@ app.configure('production|development', 'scene', function(){
   initMongo();
   initSceneCache();
   initTransactionCache();
+});
+
+app.configure('production|development', 'http', function(){
+  initHttp(app);
 });
 
 app.set('errorHandler', function(err, msg, resp, session, next) {
