@@ -243,7 +243,7 @@ Handler.prototype.sendGift = function(gift, session, next) {
                         if(!!err){
                             return next(new Error(err.msg), { code: err.code, error: err.msg });
                         }
-                        return next(null, { code: Code.OK, wealth: body.result.wealth, withdrawGiftNumber: oldGiftNum });
+                        return next(null, { code: Code.OK, wealth: body.result.wealth, withdrawGiftNumber: oldGiftNum, giftid: gift.gift_id });
                     });
                 }
             });
