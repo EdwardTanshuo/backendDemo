@@ -238,12 +238,11 @@ Handler.prototype.sendGift = function(gift, session, next) {
                 if(!!err){
                     return next(new Error(err.msg), { code: Code.FAIL, error: err.msg });
                 } else{
-                    currentRole.withdraw_gift_number = currentRole.withdraw_gift_number - 1;
                     app.rpc.scene.sceneRemote.sendGift(session, roomId, gift, currentRole, function(err, oldWealth, oldGiftNum){
                         if(!!err){
                             return next(new Error(err.msg), { code: err.code, error: err.msg });
                         }
-                        return next(null, { code: Code.OK, wealth: body.result.wealth, withdrawGiftNumber: oldGiftNum, giftid: gift.gift_id });
+                        return next(null, { code: Code.OK, wealth: body.result.wealth, withdrawGiftNumber: body.result.withdraw_gift_number, giftid: gift.gift_id });
                     });
                 }
             });
