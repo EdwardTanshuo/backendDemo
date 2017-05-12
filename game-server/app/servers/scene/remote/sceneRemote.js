@@ -6,6 +6,14 @@ var channelService = app.get('channelService');
 var logger = require('pomelo-logger').getLogger(__filename);
 
 
+//视频流停止后中断游戏
+exp.streamEnd = function(roomId, callback){
+    console.log('---- stream stop, end game ---------');
+    sceneService.endGame(roomId, function(err, result){
+        return callback(err, result);
+    });
+}
+
 //主播进入游戏，推送 DealerEnterEvent 消息给当前room的所有人，消息内容为主播的模型
 // 然后把主播的roomId加入该room的channel
 exp.dealerEnter = function(roomId, dealer, serverId, callback){

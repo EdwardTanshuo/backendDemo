@@ -25,7 +25,7 @@ exp.danmu = function(session, msg, context, cb) {
   	cb(null, id);
 };
 
-// todo: 可能要废弃
+// todo: 用于http请求获取sid， 请重命名
 exp.channel = function(roomId) {
 	var sceneServers = app.getServersByType('scene');
 	var hash = roomId;

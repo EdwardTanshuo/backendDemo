@@ -224,23 +224,7 @@ DataSyncService.prototype.syncAgainSceneToRemote = function(scene, callback) {
     };
 
     request(options,  function(err, response, body){
-        /*if (err) {
-            callback(err, null); // error response
-        } else {
-            try{
-                if(body.success){
-                    console.log('------syncSceneToRemote success result');
-                    console.log(body);
-                    return callback(null, body);
-                } else{
-                    return callback('syncSceneToRemote error', null);
-                }
-            }
-            catch(err){
-                return callback(err);
-            }
-        }*/
-        return callback();
+        return callback(err, body);
     });
 };
 

@@ -1,5 +1,7 @@
 var express = require("express");
-var fs = require("fs");
+var Code = require('../../../../shared/code');
+var utils = require('../../util/utils');
+var routeUtil = require('../../util/routeUtil');
 
 module.exports = function (app, opts) {
     opts = opts || {};
@@ -7,16 +9,32 @@ module.exports = function (app, opts) {
 };
 
 var ExpressProxy = function (app, opts) {
+	this.app = app;
     this.opts = opts;
     this.exp = express();  
     this.exp.use(express.bodyParser());
 
     this.exp.get("/start", function (req, res) { 
-        console.log('&&&&&&&&&&&&&&&&&');
+        return res.status(Code.OK).send("ok");
     });
 
     this.exp.get("/stop", function (req, res) { 
-        console.log('&&&&&&&&&&&&&&&&&');
+    	var uid = req.query.username;
+    	if(!uid){
+    		return res.status(Code.FAIL).send({error: 'no user id'});
+    	}
+    	var session = app.get('sessionService').getByUid(uid);
+    	if(!!session){
+    		app.rpc.scene.sceneRemote.streamEnd(session, uid, (err, result) => {
+		        if(!!err){
+		        	return res.status(Code.FAIL).send({error: err});
+		        } else{
+		        	return res.status(Code.OK).send({result: result});
+		        }
+		    });
+    	} else{
+    		return res.status(Code.FAIL).send({error: 'no session'});
+    	}
     });
 };
 

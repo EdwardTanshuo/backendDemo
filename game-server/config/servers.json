@@ -23,7 +23,7 @@
       {"id":"scene-server-6","host":"127.0.0.1","port":3855}
     ],
     "http": [
-      {"id":"http-server-1","host":"127.0.0.1","port":3950}
+      {"id":"http-server-1","host":"127.0.0.1","port":3950, "clientPort": 4050, "frontend": true}
     ]
   },
 
@@ -50,7 +50,7 @@
       {"id":"scene-server-6","host":"127.0.0.1","port":3855}
     ],
     "http": [
-      {"id":"http-server-1","host":"127.0.0.1","port":3950}
+      {"id":"http-server-1","host":"127.0.0.1","port":3950, "clientPort": 4050, "frontend": true}
     ]
   }
 }
