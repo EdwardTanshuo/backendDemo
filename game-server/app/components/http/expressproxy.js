@@ -15,7 +15,7 @@ var ExpressProxy = function (app, opts) {
     this.exp.use(express.bodyParser());
 
     this.exp.get("/start", function (req, res) { 
-        console.log('&&&&&&&&&&&&&&&&&');
+        return res.status(Code.OK).send('ok');
     });
 
     this.exp.get("/stop", function (req, res) { 
