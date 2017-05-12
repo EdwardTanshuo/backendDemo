@@ -15,7 +15,7 @@ var ExpressProxy = function (app, opts) {
     this.exp.use(express.bodyParser());
 
     this.exp.get("/start", function (req, res) { 
-        return res.status(Code.OK).send("ok");
+        console.log('&&&&&&&&&&&&&&&&&');
     });
 
     this.exp.get("/stop", function (req, res) { 
@@ -23,18 +23,21 @@ var ExpressProxy = function (app, opts) {
     	if(!uid){
     		return res.status(Code.FAIL).send({error: 'no user id'});
     	}
-    	var session = app.get('sessionService').getByUid(uid);
-    	if(!!session){
-    		app.rpc.scene.sceneRemote.streamEnd(session, uid, (err, result) => {
-		        if(!!err){
-		        	return res.status(Code.FAIL).send({error: err});
-		        } else{
-		        	return res.status(Code.OK).send({result: result});
-		        }
-		    });
-    	} else{
-    		return res.status(Code.FAIL).send({error: 'no session'});
-    	}
+    	app.get('backendSessionService').get(routeUtil.getBroadcasterServerID(uid), uid, (err, BackendSession) => {
+    		if(!!err){
+	        	return res.status(Code.FAIL).send({error: err});
+	        }
+	        if(BackendSession == null){
+	        	return res.status(Code.FAIL).send({error: 'no session'});
+	        }
+    		app.rpc.scene.sceneRemote.streamEnd(BackendSession, uid, (err, result) => {
+	        	if(!!err){
+	        		return res.status(Code.FAIL).send({error: err});
+	        	} else{
+	        		return res.status(Code.OK).send({result: result});
+	        	}
+	        });
+    	});
     });
 };
 

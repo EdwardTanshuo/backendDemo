@@ -25,13 +25,23 @@ exp.danmu = function(session, msg, context, cb) {
   	cb(null, id);
 };
 
-// todo: 用于http请求获取sid， 请重命名
+// todo: 需要废弃
 exp.channel = function(roomId) {
 	var sceneServers = app.getServersByType('scene');
 	var hash = roomId;
 	var lastChar = hash[hash.length -1];
 	var code = lastChar.charCodeAt(0);
  	var id = sceneServers[code % sceneServers.length].id;
+ 	return id;
+};
+
+// todo: 用于http请求获取sid
+exp.getBroadcasterServerID = function(roomId) {
+	var bsServers = app.getServersByType('broadcaster');
+	var hash = roomId;
+	var lastChar = hash[hash.length -1];
+	var code = lastChar.charCodeAt(0);
+ 	var id = bsServers[code % bsServers.length].id;
  	return id;
 };
 
