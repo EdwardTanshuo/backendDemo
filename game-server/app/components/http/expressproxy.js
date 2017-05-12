@@ -40,7 +40,7 @@ var ExpressProxy = function (app, opts) {
                 });
 	        }
     		
-            return res.status(Code.FAIL).send(backendSessions['0']);
+            return res.status(Code.FAIL).send('no session');
     	});
     });
 };
