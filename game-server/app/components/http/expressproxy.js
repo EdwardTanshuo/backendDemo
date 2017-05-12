@@ -25,7 +25,7 @@ var ExpressProxy = function (app, opts) {
     	}
 
     	app.get('backendSessionService').getByUid(routeUtil.getBroadcasterServerID(uid), uid, (err, backendSessions) => {
-            
+            consolo.log('serverID: ' + routeUtil.getBroadcasterServerID(uid));
     		if(!!err){
 	        	return res.status(Code.FAIL).send({error: err});
 	        }
