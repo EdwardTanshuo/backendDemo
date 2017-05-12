@@ -116,7 +116,23 @@ app.configure('production|development', 'gate', function(){
   app.set('connectorConfig',
     {
       connector : pomelo.connectors.hybridconnector,
-      useProtobuf : true
+      useProtobuf : true,
+      useDict: true,
+      //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
+      //transports : ['websocket'],
+      heartbeat: 3,
+    });
+});
+
+app.configure('production|development', 'gate_sio', function(){
+  app.set('connectorConfig',
+    {
+      connector : pomelo.connectors.sioconnector,
+      useProtobuf : true,
+      useDict: true,
+      //websocket, htmlfile, xhr-polling, jsonp-polling, flashsocket
+      //transports : ['websocket'],
+      heartbeat: 3,
     });
 });
 
