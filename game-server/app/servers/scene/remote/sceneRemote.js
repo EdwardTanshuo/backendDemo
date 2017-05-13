@@ -154,3 +154,18 @@ exp.getNum = function(roomId, callback) {
     var num = sceneService.getNumberOfPlayers(roomId);
     return callback({viewerCount: num});
 }
+
+exp.dumbSceneCache = function(params, callback) {
+    var result = sceneService.listAll(params);
+    if(result.length > 0){
+       return callback(result[0]); 
+    } else{
+        return callback(null); 
+    }
+}
+
+exp.dumbRoleCache = function(params, callback) {
+    var result = sceneService.queryUsers(params);
+    return callback(result);
+}
+

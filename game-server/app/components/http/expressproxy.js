@@ -43,6 +43,44 @@ var ExpressProxy = function (app, opts) {
             return res.status(Code.FAIL).send('no session');
     	});
     });
+
+    this.exp.post("/scene", function (req, res) { 
+        var uid = req.body.room;
+        if(!uid){
+            return res.status(Code.FAIL).send({error: 'no room'});
+        }
+        app.get('backendSessionService').getByUid(routeUtil.getBroadcasterServerID(uid), uid, (err, backendSessions) => {
+            if(!!err){
+                return res.status(Code.FAIL).send({error: err});
+            }
+            if(!!backendSessions && !!backendSessions["0"]){
+                var session = backendSessions['0'];
+                app.rpc.scene.sceneRemote.dumbSceneCache(session, params, (result) => {
+                    return res.status(Code.OK).send({result: result});
+                });
+            }
+            return res.status(Code.FAIL).send('no session');
+        });
+    });
+
+    this.exp.post("/users", function (req, res) { 
+        var uid = req.body.room;
+        if(!uid){
+            return res.status(Code.FAIL).send({error: 'no room'});
+        }
+        app.get('backendSessionService').getByUid(routeUtil.getBroadcasterServerID(uid), uid, (err, backendSessions) => {
+            if(!!err){
+                return res.status(Code.FAIL).send({error: err});
+            }
+            if(!!backendSessions && !!backendSessions["0"]){
+                var session = backendSessions['0'];
+                app.rpc.scene.sceneRemote.dumbRoleCache(session, params, (result) => {
+                    return res.status(Code.OK).send({result: result});
+                });
+            }
+            return res.status(Code.FAIL).send('no session');
+        });
+    });
 };
 
 var pro = ExpressProxy.prototype;

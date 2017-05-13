@@ -91,6 +91,15 @@ function SceneService() {
 }
 
 //主播创建游戏
+SceneService.prototype.listAll = function(params, callback){
+    return sceneCollection.find(params);
+}
+
+SceneService.prototype.queryUsers = function(params){
+    return roleCollection.find(params);
+}
+
+//主播创建游戏
 SceneService.prototype.createGame = function(dealer, roomId, callback) {
 	var scene = sceneCollection.findOne({'room': roomId});
     //主播 非主观意图断开游戏，重新加入
