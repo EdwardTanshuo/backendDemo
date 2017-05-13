@@ -64,6 +64,32 @@ $ node app.js
 ```
  init--->(BetStartEvent)--->betting--->(GameStartEvent)--->player_started--->(EndPlayerEvent)--->dealer_turn--->(DealerFinishEvent)--->init
 ```
+
+# 测试API
+## 1. 显示当前主播状态
+```
+url:  http://ip:3333/scene
+
+参数:  { room: XXXXXX }
+
+成功返回值: 200 { result: {scene object} }
+
+失败返回值: 500 { error: errMsg }
+
+```
+
+## 2. 显示当前房间里面所有用户
+```
+url:  http://ip:3333/users
+
+参数:  { room: XXXXXX }
+
+成功返回值: 200 { result: [{role object}] }
+
+失败返回值: 500 { error: errMsg }
+
+```
+
 # 弹幕接口说明
 ## 1. 发送弹幕
 ```
