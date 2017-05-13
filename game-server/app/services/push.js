@@ -1,5 +1,6 @@
 
 var channelService = app.get('channelService');
+var roleService = require('./role');
 
 function PushService() {
 }
@@ -39,15 +40,19 @@ PushService.prototype.pushMessageToPlayers = function(roomId, msg, route, callba
     if(!scene){
         return callback('room not found');
     } 
+
+    var storedPlayers = roleService.getAllInGame(roomId);
+
     var channel = channelService.getChannel(roomId, false);
     if (!channel) {
         return callback('no channel');
     }
     var group = [];
-    Object.keys(scene.player_bets).filter((key) => {
-        return scene.player_bets[key] > 0;
-    }).map((uid) => {
-        group.push({ uid: uid, sid: channel.getMember(uid)['sid'] });
+
+    roleService.getAllInGame(roomId).filter((aRole) => {
+        return aRole.inGame;
+    }).map((aRole) => {
+        return group.push({ uid: aRole.token, sid: channel.getMember(aRole.token)['sid'] });
     });
     
     // add broadcaster

@@ -17,7 +17,11 @@ var RoleSchema = mongoose.Schema({
     deckId: {type: String, required: false, default: "default"},
     intimacy: {type: Number, required: false, "default": 0},
     follow: {type: String, required: false, "default": "0"},
-    withdraw_gift_number: {type: Number, required: false, "default": 0}
+    withdraw_gift_number: {type: Number, required: false, "default": 0},
+    //cache
+    player_platfrom: {type: Array, required: false, "default": []},          //玩家抽卡记录
+    player_value: {type: Object, required: false, "default": {}},            //玩家当前的输赢情况
+    player_bet: {type: Number, required: false, "default": 0},               //玩家当前的下注
 });
 
 

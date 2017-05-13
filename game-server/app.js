@@ -18,6 +18,13 @@ function initSceneCache() {
     global.sceneCollection = sceneCollection;
 }
 
+function initRoleCache() {
+    var dbmem = new loki('role.json');
+    var roleCollection = dbmem.addCollection('roleCollection');
+    roleCollection.constraints.unique['token'];
+    global.roleCollection = roleCollection;
+}
+
 function initRoleDeckCache() {
     var dbmem = new loki('roleDeck.json');
     var roleDeckCollection = dbmem.addCollection('roleDeckCollection');
@@ -139,6 +146,7 @@ app.configure('production|development', 'gate_sio', function(){
 app.configure('production|development', 'scene', function(){
   initMongo();
   initSceneCache();
+  initRoleCache();
   initTransactionCache();
 });
 

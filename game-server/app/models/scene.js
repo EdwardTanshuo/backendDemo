@@ -4,10 +4,6 @@ var SceneSchema = mongoose.Schema({
     room: {type: String, required: true},                       //所在房间
     turns: {type: Number, required: true, default: 0},          //回合数
     status: {type: String, required: true, default: 'init'},    //状态
-    players: {type: Object, required: false},                   //玩家列表
-    player_platfroms: {type: Object, required: false},          //所有玩家抽卡记录
-    player_values: {type: Object, required: false},             //所有玩家当前的输赢情况
-    player_bets: {type: Object, required: false},               //所有玩家当前的下注
     dealer: {type: Object, required: false},                    //主播信息
     dealer_platfrom: {type: Array, required: false},            //主播抽卡记录
     dealer_value: {type: Object, required: false},              //主播输赢

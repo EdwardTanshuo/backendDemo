@@ -40,7 +40,7 @@ exp.dealerLeave = function(roomId, dealer, serverId, callback){
 //玩家进入游戏，查找并变更scene对象，channel中增加该玩家，推送 PlayerEnterEvent 消息给当前room内的全部人员
 exp.playerEnter = function(roomId, role, serverId, callback){
     console.log('----' + role.name + 'enter game' + '---------');
-    sceneService.addPlayer(roomId, role, serverId, function(err, scene){
+    sceneService.addPlayer(roomId, role, serverId, function(err, scene, newRole){
         if(scene != null){
             //加入广播组
             var channel = channelService.getChannel(roomId, false);
@@ -51,10 +51,13 @@ exp.playerEnter = function(roomId, role, serverId, callback){
 
             //生成返回数据
             var tempScene = {};
-            tempScene.player = scene.players[role.token];
-            tempScene.player_platfrom = scene.player_platfroms[role.token];
-            tempScene.player_value = scene.player_values[role.token];
-            tempScene.player_bet = scene.player_bets[role.token];
+            delete newRole['player_platfrom'];
+            delete newRole['player_value'];
+            delete newRole['player_bet'];
+            tempScene.player = newRole;
+            tempScene.player_platfrom = newRole.player_platfrom;
+            tempScene.player_value = newRole.player_value;
+            tempScene.player_bet = newRole.player_bet;
             tempScene.dealer_platfrom = scene.dealer_platfrom;
             tempScene.dealer_value = scene.dealer_value;
             tempScene.durationDealerTurn = scene.durationDealerTurn;

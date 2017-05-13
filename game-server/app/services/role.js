@@ -52,5 +52,67 @@ RoleService.prototype.initFromRemote = function(data, callback) {
 };
 
 
+RoleService.prototype.removeArrayFromCache = function(list) {
+	list.map((aRole) => {
+        roleCollection.remove(aRole);
+    });
+};
+
+RoleService.prototype.getAll = function(roomId) {
+	return roleCollection.find({room: roomId});
+};
+
+RoleService.prototype.getAllInGame = function(roomId) {
+	return roleCollection.find({room: roomId, inGame: true});
+};
+
+RoleService.prototype.getOne = function(role, roomId) {
+	return roleCollection.findOne({token: role.token, room: roomId});
+};
+
+RoleService.prototype.getOneInGame = function(role, roomId) {
+	return roleCollection.findOne({token: role.token, room: roomId, inGame: true});
+};
+
+RoleService.prototype.addIntoCache = function(role) {
+	roleCollection.insert(role);
+};
+
+RoleService.prototype.removeFromCache = function(role) {
+	roleCollection.remove(role);
+};
+
+RoleService.prototype.update = function(role) {
+	roleCollection.update(role);
+};
+
+RoleService.prototype.resetGameInfo = function(role) {
+	role.player_bet = 0;
+    role.player_platfrom = [];
+    role.inGame = false;
+    role.player_value = {value: 0, busted: false, numberOfHigh: 0};
+	roleCollection.update(role);
+	return role;
+};
+
+RoleService.prototype.initGameInfo = function(role) {
+    roleCollection.insert({
+    	name: role.name,
+    	avatar: role.avatar,
+    	token: role.token,
+    	withdraw_gift_number: role.withdraw_gift_number,
+    	intimacy: role.intimacy,
+    	follow: role.follow,
+    	wealth: role.wealth,
+    	diamond: role.diamond,
+    	room: role.room,
+    	sid: role.sid,
+    	inGame: false,
+    	player_platfrom: [],
+    	player_value: {value: 0, busted: false, numberOfHigh: 0},
+    	player_bet: 0
+    });
+    return role;
+};
 
 module.exports = new RoleService();
