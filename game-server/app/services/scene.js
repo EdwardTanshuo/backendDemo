@@ -186,7 +186,7 @@ SceneService.prototype.playerBet = function(roomId, role, bet, deck, callback){
     //update player cache
     storedRole.player_bet = bet;
     storedRole.inGame = true;
-    storedRole,wealth = role.wealth;
+    storedRole.wealth = role.wealth;
     storedRole.intimacy = role.intimacy;
     storedRole.exp = role.exp;
     storedRole.withdraw_gift_number = role.withdraw_gift_number;

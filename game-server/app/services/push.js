@@ -52,7 +52,10 @@ PushService.prototype.pushMessageToPlayers = function(roomId, msg, route, callba
     roleService.getAllInGame(roomId).filter((aRole) => {
         return aRole.inGame;
     }).map((aRole) => {
-        return group.push({ uid: aRole.token, sid: channel.getMember(aRole.token)['sid'] });
+        var member = channel.getMember(aRole.token);
+        if(!!member){
+            return group.push({ uid: aRole.token, sid: channel.getMember(aRole.token)['sid'] });
+        }
     });
     
     // add broadcaster
