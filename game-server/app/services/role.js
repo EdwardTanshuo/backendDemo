@@ -63,15 +63,18 @@ RoleService.prototype.getAll = function(roomId) {
 };
 
 RoleService.prototype.getAllInGame = function(roomId) {
-	return roleCollection.find({room: roomId, inGame: true});
+	//return roleCollection.find({room: roomId, inGame: true});
+	return roleCollection.find({'$and': [{room: roomId}, {inGame: true}]});
 };
 
 RoleService.prototype.getOne = function(role, roomId) {
-	return roleCollection.findOne({token: role.token, room: roomId});
+	//return roleCollection.findOne({token: role.token, room: roomId});
+	return roleCollection.findOne({'$and': [{token: role.token}, {room: roomId}]});
 };
 
 RoleService.prototype.getOneInGame = function(role, roomId) {
-	return roleCollection.findOne({token: role.token, room: roomId, inGame: true});
+	//return roleCollection.findOne({token: role.token, room: roomId, inGame: true});
+	return roleCollection.findOne({'$and': [{token: role.token}, {room: roomId}, {inGame: true}]});
 };
 
 RoleService.prototype.addIntoCache = function(role) {

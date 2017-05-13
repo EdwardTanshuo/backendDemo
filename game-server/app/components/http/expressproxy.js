@@ -38,6 +38,7 @@ var ExpressProxy = function (app, opts) {
                         return res.status(Code.OK).send({result: result});
                     }
                 });
+                return;
 	        }
     		
             return res.status(Code.FAIL).send('no session');
@@ -55,9 +56,10 @@ var ExpressProxy = function (app, opts) {
             }
             if(!!backendSessions && !!backendSessions["0"]){
                 var session = backendSessions['0'];
-                app.rpc.scene.sceneRemote.dumbSceneCache(session, params, (result) => {
+                app.rpc.scene.sceneRemote.dumbSceneCache(session, req.body, (result) => {
                     return res.status(Code.OK).send({result: result});
                 });
+                return;
             }
             return res.status(Code.FAIL).send('no session');
         });
@@ -74,9 +76,10 @@ var ExpressProxy = function (app, opts) {
             }
             if(!!backendSessions && !!backendSessions["0"]){
                 var session = backendSessions['0'];
-                app.rpc.scene.sceneRemote.dumbRoleCache(session, params, (result) => {
+                app.rpc.scene.sceneRemote.dumbRoleCache(session, req.body, (result) => {
                     return res.status(Code.OK).send({result: result});
                 });
+                return;
             }
             return res.status(Code.FAIL).send('no session');
         });
